@@ -1,0 +1,3 @@
+#!/bin/bash
+
+g++ -g -I armProc -I . -o exec armProc/*.cc test/"$1".cc
