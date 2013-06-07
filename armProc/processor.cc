@@ -289,105 +289,14 @@ void processor::execute(){
 		return;
 	}
 	if(condCheck()){
-		Byte bits = (pipeline[PIPELINE_EXECUTE] >> 21) & 0x7F;
-		switch(bits>>5){
-			case 0:
-				if(util::getInstance()->checkBits(&pipeline[PIPELINE_EXECUTE], BX_MASK) && util::getInstance()->checkBits(INVERT_W(pipeline[PIPELINE_EXECUTE]), NBX_MASK))
-					BX();
-				else if(util::getInstance()->checkBits(&pipeline[PIPELINE_EXECUTE], SWP_MASK) && util::getInstance()->checkBits(INVERT_W(pipeline[PIPELINE_EXECUTE]), NSWP_MASK))
-					SWP();
-				else if((util::getInstance()->checkBits(&pipeline[PIPELINE_EXECUTE], MUL_MASK) && util::getInstance()->checkBits(INVERT_W(pipeline[PIPELINE_EXECUTE]), NMUL_MASK)) ||
-						(util::getInstance()->checkBits(&pipeline[PIPELINE_EXECUTE], LMUL_MASK) && util::getInstance()->checkBits(INVERT_W(pipeline[PIPELINE_EXECUTE]), NLMUL_MASK)))
-					multiply();
-				else if((util::getInstance()->checkBits(&pipeline[PIPELINE_EXECUTE], HWT_MASK) && util::getInstance()->checkBits(INVERT_W(pipeline[PIPELINE_EXECUTE]), NHWT_MASK)) ||
-						(util::getInstance()->checkBits(&pipeline[PIPELINE_EXECUTE], HWTI_MASK) && util::getInstance()->checkBits(INVERT_W(pipeline[PIPELINE_EXECUTE]), NHWTI_MASK)))
-					halfwordDataTransfer();
-				else
-					dataProcessing();
-				break;
-			case 1:
-				if(util::getInstance()->checkBits(&pipeline[PIPELINE_EXECUTE], ((1<<4)|(3<<25))))
-					undefined();
-				else
-					singleDataTransfer();
-				break;
-			case 2:
-				if(util::getInstance()->checkBit(&pipeline[PIPELINE_EXECUTE], 25))
-					branch();
-				else
-					blockDataTransfer();
-				break;
-			case 3:
-				if(util::getInstance()->checkBits(&pipeline[PIPELINE_EXECUTE], 0xF<<24))
-					SWI();
-				else
-					coprocessorInstr();
-				break;
-		}
+		Byte codeHi = (Byte) (pipeline[PIPELINE_EXECUTE] >> 20) & 0xFF;
+		Byte codeLow = (Byte) (pipeline[PIPELINE_EXECUTE] >> 4) & 0xF;
+		(*this.*ARM_table[codeHi][codeLow])();	//execute funcion from ARM_table in cell instr[27:20][7:4]
 	} else
 		NOP();
 }
 
-void processor::dataProcessing(){
-	Byte opcode = (Byte) (pipeline[PIPELINE_EXECUTE] >> 21) & 0xF;
-	if((pipeline[PIPELINE_EXECUTE] & (1 << 25)) > 0)
-		barrelShifter(true, (pipeline[PIPELINE_EXECUTE] & 0xFF), ((pipeline[PIPELINE_EXECUTE] >> 8) & 0xF));
-	else
-		barrelShifter(false, ((pipeline[PIPELINE_EXECUTE] >> 4) & 0xFF), (pipeline[PIPELINE_EXECUTE] & 0xF));
-	Word op1 = *(getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF));
-	Word *dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
-	Word op2 = shifter_operand;
-	switch(opcode){
-		case 0:
-			AND(op1, op2, dest);
-			break;
-		case 1:
-			EOR(op1, op2, dest);
-			break;
-		case 2:
-			SUB(op1, op2, dest);
-			break;
-		case 3:
-			RSB(op1, op2, dest);
-			break;
-		case 4:
-			ADD(op1, op2, dest);
-			break;
-		case 5:
-			ADC(op1, op2, dest);
-			break;
-		case 6:
-			SBC(op1, op2, dest);
-			break;
-		case 7:
-			RSC(op1, op2, dest);
-			break;
-		case 8:
-			TST(op1, op2, dest);
-			break;
-		case 9:
-			TEQ(op1, op2, dest);
-			break;
-		case 10:
-			CMP(op1, op2, dest);
-			break;
-		case 11:
-			CMN(op1, op2, dest);
-			break;
-		case 12:
-			ORR(op1, op2, dest);
-			break;
-		case 13:
-			MOV(op1, op2, dest);
-			break;
-		case 14:
-			BIC(op1, op2, dest);
-			break;
-		case 15:
-			MVN(op1, op2, dest);
-			break;
-	}
-}
+
 
 void processor::multiply(){
 	
@@ -409,27 +318,6 @@ void processor::coprocessorInstr(){
 	
 }
 
-void processor::singleDataTransfer(){
-	Word offset;
-	if((pipeline[PIPELINE_EXECUTE] & (1 << 25)) > 0){	//I flag
-		barrelShifter(false, ((pipeline[PIPELINE_EXECUTE] >> 4) & 0xFF), (pipeline[PIPELINE_EXECUTE] & 0xF));
-		offset = shifter_operand;
-	} else
-		offset = pipeline[PIPELINE_EXECUTE] & 0xFFF;
-	bool P, U, B, W, L;
-	P = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 24);
-	U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 23);
-	B = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);
-	W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);
-	L = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 20);
-	Word *src = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
-	Word *dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
-	if(L)
-		LDR(P, U, B, W, src, offset, dest);
-	else
-		STR(P, U, B, W, src, offset, dest);
-}
-
 void processor::blockDataTransfer(){
 	
 }
@@ -448,79 +336,147 @@ void processor::unpredictable(){
  * 							   *
  * *************************** */
 
-void processor::ADC(Word op1, Word op2, Word *dest){
-	dataPsum(op1, op2, true, true, dest);
+void processor::ADC(){
+	dataProcessing(5);
 }
 
-void processor::ADD(Word op1, Word op2, Word *dest){	
-	dataPsum(op1, op2, false, true, dest);
+void processor::ADD(){	
+	dataProcessing(4);
 }
 
-void processor::AND(Word op1, Word op2, Word *dest){
-	*dest = op1 & op2;
-	bitwiseReturn(dest);
+void processor::AND(){
+	dataProcessing(0);
 }
 
-void processor::BIC(Word op1, Word op2, Word *dest){
-	*dest = op1 & (INVERT_W(op2));
-	bitwiseReturn(dest);
+void processor::B(){
+	
+}
+
+void processor::BIC(){
+	dataProcessing(14);
+}
+
+void processor::BL(){
+	
 }
 
 void processor::BX(){
 	
 }
 
-void processor::CMN(Word op1, Word op2, Word *dest){
-	pipeline[PIPELINE_EXECUTE] |= 1<<20;	//this instruction always updates CPSR
-	ADD(op1, op2, &alu_tmp);
+void processor::CDP(){
+	
 }
 
-void processor::CMP(Word op1, Word op2, Word *dest){
-	pipeline[PIPELINE_EXECUTE] |= 1<<20;	//this instruction always updates CPSR
-	SUB(op1, op2, &alu_tmp);
+void processor::CMN(){
+	dataProcessing(11);
 }
 
-void processor::EOR(Word op1, Word op2, Word *dest){
-	*dest = op1 ^ op2;
-	bitwiseReturn(dest);
+void processor::CMP(){
+	dataProcessing(10);
 }
 
-void processor::LDR(bool P, bool U, bool B, bool W, Word *src, Word offset, Word *dest){
-	singleMemoryAccess(true, P, U, B, W, src, offset, dest);
+void processor::EOR(){
+	dataProcessing(1);
 }
 
-void processor::MOV(Word op1, Word op2, Word *dest){
-	*dest = op2;
-	bitwiseReturn(dest);
+void processor::LDC(){
+	
 }
 
-void processor::MVN(Word op1, Word op2, Word *dest){
-	MOV(op1, INVERT_W(op2), dest);
+void processor::LDM(){
+	
 }
 
-void processor::ORR(Word op1, Word op2, Word *dest){
-	*dest = op1 | op2;
-	bitwiseReturn(dest);
+void processor::LDR(){
+	singleMemoryAccess(true);
 }
 
-void processor::RSB(Word op1, Word op2, Word *dest){
-	SUB(op2, op1, dest);
+void processor::LDRH(){
+	
 }
 
-void processor::RSC(Word op1, Word op2, Word *dest){
-	SBC(op2, op1, dest);
+void processor::LDRSB(){
+	
 }
 
-void processor::SBC(Word op1, Word op2, Word *dest){
-	dataPsum(op1, op2, true, false, dest);
+void processor::LDRSH(){
+	
+}
+void processor::MCR(){
+	
 }
 
-void processor::STR(bool P, bool U, bool B, bool W, Word *src, Word offset, Word *data){
-	singleMemoryAccess(false, P, U, B, W, src, offset, data);
+void processor::MLA(){
+	
 }
 
-void processor::SUB(Word op1, Word op2, Word *dest){
-	dataPsum(op1, op2, false, false, dest);
+void processor::MLAL(){
+	
+}
+
+void processor::MOV(){
+	dataProcessing(13);
+}
+
+void processor::MRC(){
+	
+}
+
+void processor::MRS(){
+	
+}
+
+void processor::MSR(){
+	
+}
+
+void processor::MUL(){
+	
+}
+
+void processor::MULL(){
+	
+}
+
+void processor::MVN(){
+	dataProcessing(15);
+}
+
+void processor::ORR(){
+	dataProcessing(12);
+}
+
+void processor::RSB(){
+	dataProcessing(3);
+}
+
+void processor::RSC(){
+	dataProcessing(7);
+}
+
+void processor::SBC(){
+	dataProcessing(6);
+}
+
+void processor::STC(){
+	
+}
+
+void processor::STM(){
+	
+}
+
+void processor::STR(){
+	singleMemoryAccess(false);
+}
+
+void processor::STRH(){
+	
+}
+
+void processor::SUB(){
+	dataProcessing(2);
 }
 
 void processor::SWI(){
@@ -531,18 +487,30 @@ void processor::SWP(){
 	
 }
 
-void processor::TEQ(Word op1, Word op2, Word *dest){
-	pipeline[PIPELINE_EXECUTE] |= 1<<20;	//this instruction always updates CPSR
-	EOR(op1, op2, &alu_tmp);
+void processor::TEQ(){
+	dataProcessing(9);
 }
 
-void processor::TST(Word op1, Word op2, Word *dest){
-	pipeline[PIPELINE_EXECUTE] |= 1<<20;	//this instruction always updates CPSR
-	AND(op1, op2, &alu_tmp);
+void processor::TST(){
+	dataProcessing(8);
 }
 
-void processor::singleMemoryAccess(bool L, bool P, bool U, bool B, bool W, Word *src, Word offset, Word *dest){
-		Word address = *src;
+
+void processor::singleMemoryAccess(bool L){
+	Word *src = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
+	Word *dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
+	Word offset, address = *src;
+	if((pipeline[PIPELINE_EXECUTE] & (1 << 25)) > 0){	//I flag
+		barrelShifter(false, ((pipeline[PIPELINE_EXECUTE] >> 4) & 0xFF), (pipeline[PIPELINE_EXECUTE] & 0xF));
+		offset = shifter_operand;
+	} else
+		offset = pipeline[PIPELINE_EXECUTE] & 0xFFF;
+	bool P, U, B, W;
+	P = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 24);
+	U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 23);
+	B = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);
+	W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);
+	
 	if(U)
 		address += offset;
 	else
@@ -562,18 +530,83 @@ void processor::singleMemoryAccess(bool L, bool P, bool U, bool B, bool W, Word 
 			*src = address;
 	}
 	else{
-		if(W);	//user-mode forced transfer (only available in privileged mode)
+		if(W)	//user-mode forced transfer (only available in privileged mode): use user mode registers
+			dest = getRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
 		if(B){
 			if(L)
 				*dest = bus->getRam()->read(src, BIGEND_sig);
 			else
 				bus->getRam()->write(src, ((Byte) *dest & 0xFF), BIGEND_sig);
 		} else
-			if(L)4
+			if(L)
 				*dest = bus->getRam()->readW(&address, BIGEND_sig);
 			else
 				bus->getRam()->writeW(&address, *dest, BIGEND_sig);
 		*src = address;
+	}
+}
+
+void processor::dataProcessing(Byte opcode){
+	if((pipeline[PIPELINE_EXECUTE] & (1 << 25)) > 0)
+		barrelShifter(true, (pipeline[PIPELINE_EXECUTE] & 0xFF), ((pipeline[PIPELINE_EXECUTE] >> 8) & 0xF));
+	else
+		barrelShifter(false, ((pipeline[PIPELINE_EXECUTE] >> 4) & 0xFF), (pipeline[PIPELINE_EXECUTE] & 0xF));
+	Word op1 = *(getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF));
+	Word *dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
+	Word op2 = shifter_operand;
+	switch(opcode){
+		case 8:		//TST
+			pipeline[PIPELINE_EXECUTE] |= 1<<20;	//this instruction always updates CPSR
+			dest = &alu_tmp;
+		case 0:		//AND
+			*dest = op1 & op2;
+			bitwiseReturn(dest);
+			break;
+		case 9:		//TEQ
+			pipeline[PIPELINE_EXECUTE] |= 1<<20;	//this instruction always updates CPSR
+			dest = &alu_tmp;
+		case 1:		//EOR
+			*dest = op1 ^ op2;
+			bitwiseReturn(dest);
+			break;
+		case 10:	//CMP
+			pipeline[PIPELINE_EXECUTE] |= 1<<20;	//this instruction always updates CPSR
+			dest = &alu_tmp;
+		case 2:		//SUB
+			dataPsum(op1, op2, false, false, dest);
+			break;
+		case 3:		//RSB
+			dataPsum(op2, op1, false, false, dest);
+			break;
+		case 11:	//CMN
+			pipeline[PIPELINE_EXECUTE] |= 1<<20;	//this instruction always updates CPSR
+			dest = &alu_tmp;
+		case 4:		//ADD
+			dataPsum(op1, op2, false, true, dest);
+			break;
+		case 5:		//ADC
+			dataPsum(op1, op2, true, true, dest);
+			break;
+		case 6:		//SBC
+			dataPsum(op1, op2, true, false, dest);
+			break;
+		case 7:		//RSC
+			dataPsum(op2, op1, true, false, dest);
+			break;
+		case 12:	//ORR
+			*dest = op1 | op2;
+			bitwiseReturn(dest);
+			break;
+		case 15:	//MVN
+			op2 = INVERT_W(op2);
+		case 13:	//MOV
+			*dest = op2;
+			bitwiseReturn(dest);
+			break;
+		case 14:	//BIC
+			*dest = op1 & (INVERT_W(op2));
+			bitwiseReturn(dest);
+			break;
 	}
 }
 
