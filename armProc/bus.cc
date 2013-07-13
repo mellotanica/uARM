@@ -26,6 +26,7 @@
 
 systemBus::systemBus(){
 	ram = new ramMemory();
+	cycles = 0;
 }
 
 systemBus::~systemBus(){
@@ -33,6 +34,10 @@ systemBus::~systemBus(){
 }
 
 void systemBus::fetch(Word *address){
+	while(cycles < 2){
+		currentFetch = ram->readW(address);
+		cycles++;
+	}
 	currentFetch = ram->readW(address);
 }
 

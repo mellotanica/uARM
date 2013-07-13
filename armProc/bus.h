@@ -38,6 +38,7 @@ public:
 	
 private:
 	ramMemory *ram;
+	long unsigned cycles;
 };
 
 #endif //UARM_SYSTEMBUS_H

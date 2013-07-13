@@ -51,12 +51,23 @@ public:
 	virtual void cycle() {
 		fetch();
 		decode();
+		setOP("Unknown");
 		execute();
 	};
+	
+	Word OPcode;
+	bool isOPcodeARM = true;
+	string mnemonicOPcode;
 	
 protected:
 	static systemBus *bus;
 	Word pipeline[PIPELINE_STAGES];
+	
+	virtual void setOP(string mnemonic){
+		isOPcodeARM = true;
+		OPcode = pipeline[PIPELINE_EXECUTE];
+		mnemonicOPcode = mnemonic;
+	}
 	
 	virtual void fetch() {pipeline[PIPELINE_EXECUTE] = pipeline[PIPELINE_DECODE]; pipeline[PIPELINE_DECODE] = pipeline[PIPELINE_FETCH]; pipeline[PIPELINE_FETCH] = bus->currentFetch;};
 	virtual void decode() {};

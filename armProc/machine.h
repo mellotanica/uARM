@@ -36,7 +36,7 @@
 
 class machine{
 public:
-	machine();
+	machine(Word ramSize);
 	~machine();
 	
 	processor *getCPU() {return cpu;};

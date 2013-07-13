@@ -69,6 +69,7 @@ public:
 	Word *getVisibleRegister(Byte reg);
 	
 	systemBus *getBus() {return bus;};
+	
 private:
 	coprocessor_interface *cpint;
 	ProcessorStatus status;
@@ -78,19 +79,20 @@ private:
 	bool BIGEND_sig;
 	
 	ProcessorMode getMode() {uint16_t mode = cpu_registers[REG_CPSR] & MODE_MASK; return (ProcessorMode) mode;};
+	void debugARM(string mnemonic);
 	bool condCheck();
 	void barrelShifter(bool immediate, Byte byte, Byte half);
 	
 	void execute();
 	void multiply();
 	void singleDataSwap();
-	void halfwordDataTransfer();
 	void branch();
 	void coprocessorInstr();
 	void blockDataTransfer();
 	void undefined();
-	void NOP() {};
+	void NOP() {debugARM("NOP");};
 	void unpredictable();
+	Word get_unpredictable();
 	
 	
 	void ADC();	//add with carry
@@ -136,6 +138,7 @@ private:
 	void TST();	//test bits
 	
 	void dataProcessing(Byte opcode);
+	void halfwordDataTransfer(bool sign, bool load_halfwd);
 	void singleMemoryAccess(bool L);
 	void dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest);
 	void bitwiseReturn(Word *dest);
@@ -203,7 +206,6 @@ private:
 		{&processor::ORR, &processor::ORR, &processor::ORR, &processor::ORR, &processor::ORR, &processor::ORR, &processor::ORR, &processor::ORR, &processor::ORR, &processor::ORR, &processor::ORR, &processor::ORR, &processor::ORR, &processor::ORR, &processor::ORR, &processor::ORR},
 		{&processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV},
 		{&processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV, &processor::MOV},
-		{&processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC},
 		{&processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC},
 		{&processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC, &processor::BIC},
 		{&processor::MVN, &processor::MVN, &processor::MVN, &processor::MVN, &processor::MVN, &processor::MVN, &processor::MVN, &processor::MVN, &processor::MVN, &processor::MVN, &processor::MVN, &processor::MVN, &processor::MVN, &processor::MVN, &processor::MVN, &processor::MVN},
@@ -401,7 +403,18 @@ private:
 		{&processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI},
 		{&processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI}
 	};
-
+	
+	void setOP(string mnemonic){
+		if(true) {	//thumb support not yet implemented
+			isOPcodeARM = true;
+			OPcode = pipeline[PIPELINE_EXECUTE];
+		} else {
+			isOPcodeARM = false;
+			OPcode = (HalfWord) pipeline[PIPELINE_EXECUTE] & 0xFFFF;	//this is only the first halfword case
+		}
+		mnemonicOPcode = mnemonic;
+	};
+	
 };
 
 #endif //UARM_PROCESSOR_CC

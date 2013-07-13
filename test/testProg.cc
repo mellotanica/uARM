@@ -3,19 +3,10 @@
 #include "const.h"
 
 void writeWord(ramMemory *ram, Word *word, Word addr){
-	Byte data = (Byte) (*word & 0xFF);
-	ram->write(&addr, data);
-	data = (Byte) ((*word >> 8) & 0xFF);
-	addr ++;
-	ram->write(&addr, data);
-	data = (Byte) ((*word >> 16) & 0xFF);
-	addr ++;
-	ram->write(&addr, data);
-	data = (Byte) ((*word >> 24) & 0xFF);
-	addr ++;
-	ram->write(&addr, data);
+	ram->writeW(&addr, *word, false);
 }
 
+#define DBRUN 1
 //must be word-aligned
 Word baseAddr = 0;
 Word proglen = 14;
@@ -26,8 +17,8 @@ Word program[] = {
 	0x0281120F,	//ADD EQ	r1, r1, #0xF0000000
 	0xE3A024FF,	//MOV		r2, #0xFF000000
 	0xE0913002,	//ADDs		r3, r1, r2
-	0x61430001,	//CMP VS	r3, r1
-	0x21420001,	//CMP CS	r2, r1
+	0x61530001,	//CMPs VS	r3, r1
+	0x21520001,	//CMPs CS	r2, r1
 	0xE3A0D804, //MOV		sp, #40000
 	0xE48D3004,	//STR		r3, [sp, #4]
 	0xE3A03000,	//MOV		r3, #0
@@ -61,8 +52,8 @@ Word program[] = {	0xE3A0D804, //MOV	sp, #40000
 					OP_HALT,
 				 };
 */ 
-void runcycle(machine *mac){
-	bool speedrun = true, debugRun = false;
+void runcycle(machine *mac, bool debugRun){
+	bool speedrun = true;
 	char read;
 	cout << "Run program: press return for next step, type f and press return for quick execution\n";
 	int c = 0;
@@ -82,9 +73,12 @@ void runcycle(machine *mac){
 	printStatus(mac);
 }
 
-main(){
+main(int argc, int* argv){
+	Word size = MEM_SIZE_W;
+	bool debugRun = DBRUN;
+	
 	cout << "TEST START, CREATING MACHINE..\n\n";
-	machine* mac = new machine();
+	machine* mac = new machine(size);
 	cout << "\n INIT COMPLETED!\n\n----\n\n";
 	
 	cout << "filling memory...\n";
@@ -105,7 +99,7 @@ main(){
 	
 	cout << "\nDONE, start execution\n";
 	
-	runcycle(mac);
+	runcycle(mac, debugRun);
 	
 	return 0;
 }

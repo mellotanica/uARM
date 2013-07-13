@@ -33,10 +33,12 @@
 systemBus *pu::bus;
 util *util::instance;
 
-machine::machine(){
+machine::machine(Word ramSize){
 	cpu = new processor();
 	
 	sysbus = cpu->getBus();
+	
+	sysbus->getRam()->init(ramSize);
 	
 	pu_list = cpu;
 	pu *last_added = pu_list;

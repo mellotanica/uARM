@@ -277,6 +277,11 @@ void processor::nextCycle() {
 	cpu_registers[REG_PC] += 4;
 };
 
+void processor::debugARM(string mnemonic){
+	cout << "Executing... "<<mnemonic << "\n";
+	setOP(mnemonic);
+}
+
 /* ******************** *
  * 						*
  * Instruction decoding *
@@ -306,10 +311,6 @@ void processor::singleDataSwap(){
 	
 }
 
-void processor::halfwordDataTransfer(){
-	
-}
-
 void processor::branch(){
 	
 }
@@ -330,6 +331,10 @@ void processor::unpredictable(){
 	
 }
 
+Word processor::get_unpredictable(){
+	return 123456;	//should be random
+}
+
 /* *************************** *
  * 							   *
  * Istructions implementations *
@@ -337,164 +342,271 @@ void processor::unpredictable(){
  * *************************** */
 
 void processor::ADC(){
-	dataProcessing(5);
+	debugARM("ADC");
+	
+		dataProcessing(5);
 }
 
-void processor::ADD(){	
-	dataProcessing(4);
+void processor::ADD(){
+	debugARM("ADD");
+	
+		dataProcessing(4);
 }
 
 void processor::AND(){
-	dataProcessing(0);
+	debugARM("AND");
+	
+		dataProcessing(0);
 }
 
 void processor::B(){
-	
+	debugARM("B");
 }
 
 void processor::BIC(){
-	dataProcessing(14);
+	debugARM("BIC");
+	
+		dataProcessing(14);
 }
 
 void processor::BL(){
-	
+	debugARM("BL");
 }
 
 void processor::BX(){
-	
+	debugARM("BX");
 }
 
 void processor::CDP(){
-	
+	debugARM("CDP");
 }
 
 void processor::CMN(){
-	dataProcessing(11);
+	debugARM("CMN");
+	
+		dataProcessing(11);
 }
 
 void processor::CMP(){
-	dataProcessing(10);
+	debugARM("CMP");
+	
+		dataProcessing(10);
 }
 
 void processor::EOR(){
-	dataProcessing(1);
+	debugARM("EOR");
+	
+		dataProcessing(1);
 }
 
 void processor::LDC(){
-	
+	debugARM("LDC");
 }
 
 void processor::LDM(){
-	
+	debugARM("LDM");
 }
 
 void processor::LDR(){
-	singleMemoryAccess(true);
+	debugARM("LDR");
+	
+		singleMemoryAccess(true);
 }
 
 void processor::LDRH(){
+	debugARM("LDRH");
 	
+		halfwordDataTransfer(false, true);
 }
 
 void processor::LDRSB(){
-	
+	debugARM("LDRSB");
+		
+		halfwordDataTransfer(true, false);
 }
 
 void processor::LDRSH(){
+	debugARM("LDRSH");
 	
+		halfwordDataTransfer(true, true);
 }
 void processor::MCR(){
-	
+	debugARM("MCR");
 }
 
 void processor::MLA(){
-	
+	debugARM("MLA");
 }
 
 void processor::MLAL(){
-	
+	debugARM("MLAL");
 }
 
 void processor::MOV(){
-	dataProcessing(13);
+	debugARM("MOV");
+	
+		dataProcessing(13);
 }
 
 void processor::MRC(){
-	
+	debugARM("MRC");
 }
 
 void processor::MRS(){
-	
+	debugARM("MRS");
 }
 
 void processor::MSR(){
-	
+	debugARM("MSR");
 }
 
 void processor::MUL(){
-	
+	debugARM("MUL");
 }
 
 void processor::MULL(){
-	
+	debugARM("MULL");
 }
 
 void processor::MVN(){
-	dataProcessing(15);
+	debugARM("MVN");
+	
+		dataProcessing(15);
 }
 
 void processor::ORR(){
-	dataProcessing(12);
+	debugARM("ORR");
+	
+		dataProcessing(12);
 }
 
 void processor::RSB(){
-	dataProcessing(3);
+	debugARM("RSB");
+	
+		dataProcessing(3);
 }
 
 void processor::RSC(){
-	dataProcessing(7);
+	debugARM("RSC");
+	
+		dataProcessing(7);
 }
 
 void processor::SBC(){
-	dataProcessing(6);
+	debugARM("SBC");
+	
+		dataProcessing(6);
 }
 
 void processor::STC(){
-	
+	debugARM("STC");
 }
 
 void processor::STM(){
-	
+	debugARM("STM");
 }
 
 void processor::STR(){
-	singleMemoryAccess(false);
+	debugARM("STR");
+	
+		singleMemoryAccess(false);
 }
 
 void processor::STRH(){
+	debugARM("STRH");
 	
+		halfwordDataTransfer(false, false);
 }
 
 void processor::SUB(){
-	dataProcessing(2);
+	debugARM("SUB");
+	
+		dataProcessing(2);
 }
 
 void processor::SWI(){
-	
+	debugARM("SWI");
 }
 
 void processor::SWP(){
-	
+	debugARM("SWP");
 }
 
 void processor::TEQ(){
-	dataProcessing(9);
+	debugARM("TEQ");
+	
+		dataProcessing(9);
 }
 
 void processor::TST(){
-	dataProcessing(8);
+	debugARM("TST");
+	
+		dataProcessing(8);
 }
 
+void processor::halfwordDataTransfer(bool sign, bool load_halfwd){
+	bool P, U, I, W;
+	P = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 24);
+	U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 23);
+	I = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);
+	W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);
+	
+	Word *src = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
+	Word *dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
+	Word offset, address = *src;
+	if(src = getVisibleRegister(REG_PC))	//if source is r15 the address must be instruction addr+12
+		address += 12;
+	
+	if(I)	//immediate offset
+		offset = (pipeline[PIPELINE_EXECUTE] & 0xF) + ((pipeline[PIPELINE_EXECUTE] >> 8) & 0xF);
+	else
+		offset = *(getVisibleRegister(pipeline[PIPELINE_EXECUTE] & 0xF));
+	
+	if(P){	//preindexing
+		if(U)
+			address += offset;
+		else
+			address -= offset;
+	}
+	
+	if(!(sign && !load_halfwd) && ((address & 1) > 0)) {	//if address is not halfword aligned return unpredictable value
+		*dest = get_unpredictable();
+	} else {	//address is ok
+		if(sign){ //it's a signed load
+			Word ret = 0;
+			if(load_halfwd){ //load halfword and sign extend
+				HalfWord readwd = bus->getRam()->readH(&address, BIGEND_sig);
+				ret = readwd;
+				if(readwd >> (sizeof(HalfWord)-1) != 0)
+					for(int i = sizeof(HalfWord); i < sizeof(Word); i ++)
+						ret |= 1<<i;
+			} else {	//load byte and sign extend
+				Byte readwd = bus->getRam()->read(&address, BIGEND_sig);
+				ret = readwd;
+				if(readwd >> (sizeof(Byte)-1) != 0)
+					for(int i = sizeof(Byte); i < sizeof(Word); i ++)
+						ret |= 1<<i;
+			}
+			*dest = ret;
+		} else {	//it's a halfword transfer
+			if(load_halfwd) {	//load val
+				*dest = bus->getRam()->readH(&address, BIGEND_sig);
+			} else {	//store val
+				bus->getRam()->writeH(&address, (HalfWord) (*dest & 0xFFFF), BIGEND_sig);
+			}
+		}
+	}
+	
+	if(P) {	//preindexing
+		if(W)	//Writeback
+			*src = address;
+	} else { //postindexing always writes back
+		if(U)
+			*src = address + offset;
+		else
+			*src = address - offset;
+	}
+}
 
 void processor::singleMemoryAccess(bool L){
 	Word *src = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
@@ -511,11 +623,12 @@ void processor::singleMemoryAccess(bool L){
 	B = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);
 	W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);
 	
-	if(U)
-		address += offset;
-	else
-		address -= offset;
 	if(P){	//pre-indexing
+		if(U)
+			address += offset;
+		else
+			address -= offset;
+			
 		if(B){
 			if(L)
 				*dest = bus->getRam()->read(&address, BIGEND_sig);
@@ -537,12 +650,16 @@ void processor::singleMemoryAccess(bool L){
 				*dest = bus->getRam()->read(src, BIGEND_sig);
 			else
 				bus->getRam()->write(src, ((Byte) *dest & 0xFF), BIGEND_sig);
-		} else
+		} else {
 			if(L)
 				*dest = bus->getRam()->readW(&address, BIGEND_sig);
 			else
 				bus->getRam()->writeW(&address, *dest, BIGEND_sig);
-		*src = address;
+		}
+		if(U)
+			*src = address + offset;
+		else
+			*src = address - offset;
 	}
 }
 

@@ -32,6 +32,8 @@
 
 using namespace std;
 
+void printCP15Reg(cp15 *cp);
+
 void aletr(string text) {
 	#if DEBUGGER_ON>0
 	cout << text;
@@ -98,14 +100,68 @@ void printRegister(string head, Word *reg) {
 	#endif
 }
 
+void printHalfWord(string head, HalfWord *wd) {
+	#if DEBUGGER_ON>0
+	if(wd > 0)
+		cout << head << "0x" << hex << uppercase << setw(4) << setfill('0') << *wd << nouppercase << dec;
+	else
+		cout << head << "UNDEF     ";
+	#endif
+}
+
+void printOP(pu *unit){
+	#if DEBUGGER_ON>0
+	cout << "\nExecuting "<<unit->mnemonicOPcode<<" : ";
+	if(unit->isOPcodeARM)
+		printRegister("(ARM) ", &(unit->OPcode));
+	else{
+		HalfWord hw = (HalfWord) unit->OPcode;
+		printHalfWord("(Thumb) ", &hw);
+	}
+	#endif
+}
+
 void printPipeline(pu *unit){
+	#if DEBUGGER_ON>0
 	cout << "\n\nPipeline:\tFetch\t\tDecode\t\tExecute\n";
 	printRegister("\t\t",unit->getPipeline(PIPELINE_FETCH));
 	printRegister("\t",unit->getPipeline(PIPELINE_DECODE));
 	printRegister("\t",unit->getPipeline(PIPELINE_EXECUTE));
+	printOP(unit);
+	#endif
+}
+
+
+void printCP15Reg(cp15 *cp){
+	#if DEBUGGER_ON>0
+	cout << "\n###########################################################\n";
+	cout << "#                   CP15    Status                        #\n";
+	cout << "###########################################################";
+	
+	printPipeline(cp);
+	
+	cout << "\n\nRegisters:";
+
+	unsigned int cols = 4;
+	unsigned int limit = CP15_REGISTERS_NUM/cols;
+	limit += (CP15_REGISTERS_NUM%cols == 0 ? 0 : 1);
+
+	for(unsigned int i = 0; i < limit; i++){
+		for(unsigned int j = 0; j < cols; j++){
+			unsigned int el = i+(j*limit);
+			if(el < CP15_REGISTERS_NUM){
+				cout << "\tr" << el << ":";
+				printRegister("\t", cp->getRegister(j));
+			} else
+				break;
+		}
+		cout << "\n\t";
+	}
+	#endif
 }
 
 void printCPUReg(processor *cpu){
+	#if DEBUGGER_ON>0
 	cout << "\n###########################################################\n";
 	cout << "#                   CPU     Status                        #\n";
 	cout << "###########################################################";
@@ -166,48 +222,29 @@ void printCPUReg(processor *cpu){
 	printRegister("\t",cpu->getRegister(33));
 	printRegister("\t",cpu->getRegister(34));
 	cout << "\tSPSR";
+	#endif
 }
 
-void printCP15Reg(cp15 *cp){
-	cout << "\n###########################################################\n";
-	cout << "#                   CP15    Status                        #\n";
-	cout << "###########################################################";
-	
-	printPipeline(cp);
-	
-	cout << "\n\nRegisters:";
 
-	unsigned int cols = 4;
-	unsigned int limit = CP15_REGISTERS_NUM/cols;
-	limit += (CP15_REGISTERS_NUM%cols == 0 ? 0 : 1);
-
-	for(unsigned int i = 0; i < limit; i++){
-		for(unsigned int j = 0; j < cols; j++){
-			unsigned int el = i+(j*limit);
-			if(el < CP15_REGISTERS_NUM){
-				cout << "\tr" << el << ":";
-				printRegister("\t", cp->getRegister(j));
-			} else
-				break;
-		}
-		cout << "\n\t";
-	}
-}
 
 void printBus(systemBus *bus){
+	#if DEBUGGER_ON>0
 	cout << "\n###########################################################\n";
 	cout << "#                   BUS    Status                        #\n";
 	cout << "###########################################################";
 	
 	printRegister("\n\nCurrent Fetch:\t", &bus->currentFetch);
+	#endif
 }
 
 void printStatus(machine *mac){
+	#if DEBUGGER_ON>0
 	system("clear");
 	printCPUReg(mac->getCPU());
 	printCP15Reg((cp15 *)mac->getCoprocessor(15));
 	printBus(mac->getBus());
 	cout << "\n###########################################################\n";
+	#endif
 }
 
 #endif //UARM_DEBUGGER
