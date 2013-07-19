@@ -2,14 +2,22 @@
 #include "services/debugger.cc"
 #include "const.h"
 
+void printWord(string head, Word reg) {
+	cout << head << "0x" << hex << uppercase << setw(8) << setfill('0') << reg << nouppercase << dec;
+}
+
 void writeWord(ramMemory *ram, Word *word, Word addr){
 	ram->writeW(&addr, *word, false);
 }
 
-#define DBRUN 1
+Word readWord(ramMemory *ram, Word addr){
+	return ram->readW(&addr, false);
+}
+
+#define DBRUN 0
 //must be word-aligned
 Word baseAddr = 0;
-Word proglen = 14;
+Word proglen = 27;
 Word program[] = {
 	0xE3A03003,	//MOV		r3, #3
 	0xE3B02003,	//MOVs		r2, #3
@@ -22,8 +30,21 @@ Word program[] = {
 	0xE3A0D804, //MOV		sp, #40000
 	0xE48D3004,	//STR		r3, [sp, #4]
 	0xE3A03000,	//MOV		r3, #0
-	0xE53D4004,	//LDR		r4, [sp, #-4]!
+	0xE53D4004,	//LDR		r4, [sp, #-4]!	//qualcuno scrive sul pc!!!
 	0xE5BD5001,	//LDR		r5, [sp, #1]!
+	0xE3A014FA,	//MOV		r1, #0xFA000000
+	0xE38138FB,	//ORR		r3, r1, #0x00FB0000
+	0xE3831CFC,	//ORR		r1, r3, #0x0000FC00
+	0xE38130FD,	//ORR		r3, r1, #0x000000FD
+	0xE16D30B1,	//STRHW		r3, [sp, #-1]!
+	0xE1DD10B0,	//LDRH		r1, [sp, #0]!
+	0xE0DD20F0,	//LDRSH		r2, [sp, #0]
+	0xE0DD40D0,	//LDRSB		r4, [sp, #0]
+	0xE3A010FF,	//MOV		r1, #0x000000FF
+	0xE3813C0F,	//ORR		r3, r1, #0x00000F00
+	0xE14D30B0,	//STRH		r3, [sp, #0]!
+	0xE0DD10F0,	//LDRSH		r1	[sp, #0]
+	0xE0DD20D0,	//LDRSB		r2	[sp, #0]
 	OP_HALT,
  };
 
@@ -82,9 +103,12 @@ main(int argc, int* argv){
 	cout << "\n INIT COMPLETED!\n\n----\n\n";
 	
 	cout << "filling memory...\n";
-	for(int i = 0; i < proglen; i++)
-		writeWord(mac->getBus()->getRam(), &program[i], (i*4)+baseAddr);
-	
+	for(int i = 0; i < proglen; i++){
+		writeWord(mac->getBus()->getRam(), &program[i], baseAddr+(i*4));
+		cout << "written prog[" <<i<< "]: ";
+		printWord("",readWord(mac->getBus()->getRam(), baseAddr+(i*4)));
+		cout << "\n";
+	}
 	
 	cout << "read first byte: ";
 	Byte b = mac->getBus()->getRam()->read(&baseAddr);

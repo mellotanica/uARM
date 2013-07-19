@@ -36,7 +36,7 @@ public:
 	//~ramMemory() {delete [] &memVector;};
 	~ramMemory() {delete [] memVector;};
 	
-	void init(Word ramSize) {if(memVector == NULL) memVector = new Byte[((DoubleWord)ramSize*4)];};
+	void init(Word ramSize) {if(memVector == NULL) memVector = new Byte[((DoubleWord)ramSize*4)];std::cout<<"RAM SIZE: "<<(ramSize * 4)<<"B";};
 	
 	Byte read(Word *address) {return read(address, false);};
 	void write(Word *address, Byte data) {write(address, data, false);};

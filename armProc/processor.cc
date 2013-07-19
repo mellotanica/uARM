@@ -554,7 +554,7 @@ void processor::halfwordDataTransfer(bool sign, bool load_halfwd){
 	Word *src = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
 	Word *dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
 	Word offset, address = *src;
-	if(src = getVisibleRegister(REG_PC))	//if source is r15 the address must be instruction addr+12
+	if(src == getVisibleRegister(REG_PC))	//if source is r15 the address must be instruction addr+12
 		address += 12;
 	
 	if(I)	//immediate offset
@@ -577,14 +577,14 @@ void processor::halfwordDataTransfer(bool sign, bool load_halfwd){
 			if(load_halfwd){ //load halfword and sign extend
 				HalfWord readwd = bus->getRam()->readH(&address, BIGEND_sig);
 				ret = readwd;
-				if(readwd >> (sizeof(HalfWord)-1) != 0)
-					for(int i = sizeof(HalfWord); i < sizeof(Word); i ++)
+				if(readwd >> ((sizeof(HalfWord)*8)-1) != 0)
+					for(int i = sizeof(HalfWord)*8; i < sizeof(Word)*8; i ++)
 						ret |= 1<<i;
 			} else {	//load byte and sign extend
 				Byte readwd = bus->getRam()->read(&address, BIGEND_sig);
 				ret = readwd;
-				if(readwd >> (sizeof(Byte)-1) != 0)
-					for(int i = sizeof(Byte); i < sizeof(Word); i ++)
+				if(readwd >> ((sizeof(Byte)*8)-1) != 0)
+					for(int i = sizeof(Byte)*8; i < sizeof(Word)*8; i ++)
 						ret |= 1<<i;
 			}
 			*dest = ret;

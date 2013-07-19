@@ -34,7 +34,7 @@ using namespace std;
 
 void printCP15Reg(cp15 *cp);
 
-void aletr(string text) {
+void alert(string text) {
 	#if DEBUGGER_ON>0
 	cout << text;
 	#endif
