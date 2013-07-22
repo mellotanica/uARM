@@ -767,11 +767,7 @@ void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest){
 		if(ures > 0xFFFFFFFF)
 			borrow = true;
 	} else {
-		int64_t ures;
-		uint64_t c = (carry && !(util::getInstance()->checkBit(getVisibleRegister(REG_CPSR), C_POS)) ? 1 : 0);
 		sres = (SDoubleWord)((SWord)op1)-(SDoubleWord)((SWord)op2)-c;
-		//ures = (SDoubleWord)((Word)op1-(Word)op2-c);
-		//if(ures < 0)
 		if(op1<(op2+c))
 			borrow = true;
 	}
