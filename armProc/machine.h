@@ -43,6 +43,7 @@ public:
 	coprocessor *getCoprocessor(int n) {return copList[n];};
 	systemBus *getBus() {return sysbus;};
 	
+	void init();
 	void step();
 	void run();
 	

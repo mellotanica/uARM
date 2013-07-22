@@ -69,7 +69,7 @@ protected:
 		mnemonicOPcode = mnemonic;
 	}
 	
-	virtual void fetch() {pipeline[PIPELINE_EXECUTE] = pipeline[PIPELINE_DECODE]; pipeline[PIPELINE_DECODE] = pipeline[PIPELINE_FETCH]; pipeline[PIPELINE_FETCH] = bus->currentFetch;};
+	virtual void fetch() {pipeline[PIPELINE_EXECUTE] = bus->pipeline[PIPELINE_EXECUTE]; pipeline[PIPELINE_DECODE] = bus->pipeline[PIPELINE_DECODE]; pipeline[PIPELINE_FETCH] = bus->pipeline[PIPELINE_FETCH];};
 	virtual void decode() {};
 	virtual void execute() = 0;
 	

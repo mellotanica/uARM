@@ -50,9 +50,21 @@ public:
 	const bool checkBit(Word *wd, unsigned bit) {return ((*wd & (1<<bit)) > 0 ? true : false);};
 	const bool checkBit(Word wd, unsigned bit) {return ((wd & (1<<bit)) > 0 ? true : false);};
 	
-	const void copyBitReg(Word *reg, unsigned bit, unsigned val) {*reg = *reg & INVERT_W(INVERT_B(val) << bit) | (val << bit);};
-	const void copyBitFromReg(Word *dest, unsigned bit, Word *src) {if((*src)&(1<<bit) > 0)	copyBitReg(dest, bit, 1); else copyBitReg(dest, bit, 0);};
-	const void copyBitFromReg(Word *dest, unsigned dbit, Word *src, unsigned sbit) {if((*src)&(1<<sbit) > 0) copyBitReg(dest, dbit, 1); else copyBitReg(dest, dbit, 0);};
+	const void copyBitReg(Word *reg, unsigned bit, unsigned val) {
+		*reg = *reg & INVERT_W(INVERT_B(val) << bit) | (val << bit);
+	};
+	const void copyBitFromReg(Word *dest, unsigned bit, Word *src) {
+		if(((*src>>bit)&1) != 0)	
+			copyBitReg(dest, bit, 1); 
+		else 
+			copyBitReg(dest, bit, 0);
+	};
+	const void copyBitFromReg(Word *dest, unsigned dbit, Word *src, unsigned sbit) {
+		if(((*src>>sbit)&1) != 0) 
+			copyBitReg(dest, dbit, 1); 
+		else 
+			copyBitReg(dest, dbit, 0);
+	};
 };
 
 #endif //UARM_UTIL_CC

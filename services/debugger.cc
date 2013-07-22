@@ -233,7 +233,7 @@ void printBus(systemBus *bus){
 	cout << "#                   BUS    Status                        #\n";
 	cout << "###########################################################";
 	
-	printRegister("\n\nCurrent Fetch:\t", &bus->currentFetch);
+	printRegister("\n\nCurrent Fetch:\t", &bus->pipeline[PIPELINE_FETCH]);
 	#endif
 }
 

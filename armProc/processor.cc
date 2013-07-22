@@ -274,8 +274,14 @@ bool processor::condCheck(){
 void processor::nextCycle() {
 	status = PS_RUNNING;
 	bus->fetch(getPC());
-	cpu_registers[REG_PC] += 4;
+	*getPC() += 4;
 };
+
+void processor::prefetch() {
+	*getPC() -= 8;
+	for(int i = 0; i < 3; i++)
+		nextCycle();
+}
 
 void processor::debugARM(string mnemonic){
 	cout << "Executing... "<<mnemonic << "\n";
@@ -308,10 +314,6 @@ void processor::multiply(){
 }
 
 void processor::singleDataSwap(){
-	
-}
-
-void processor::branch(){
 	
 }
 
@@ -361,6 +363,8 @@ void processor::AND(){
 
 void processor::B(){
 	debugARM("B");
+	
+		branch(false, false);
 }
 
 void processor::BIC(){
@@ -371,10 +375,14 @@ void processor::BIC(){
 
 void processor::BL(){
 	debugARM("BL");
+	
+		branch(true, false);
 }
 
 void processor::BX(){
 	debugARM("BX");
+	
+		branch(false, true);
 }
 
 void processor::CDP(){
@@ -542,6 +550,27 @@ void processor::TST(){
 	debugARM("TST");
 	
 		dataProcessing(8);
+}
+
+void processor::branch(bool link, bool exchange){
+	Word *pc = getVisibleRegister(REG_PC);
+	if(exchange){
+		Word *dest = getVisibleRegister(pipeline[PIPELINE_EXECUTE] & 0xF);
+		util::getInstance()->copyBitReg(getVisibleRegister(REG_CPSR), T_POS, (*dest & 1));
+		*pc = *dest & 0xFFFFFFFE;
+	} else {
+		if(link){
+			Word *lr = getVisibleRegister(REG_LR);
+			*lr = *pc+4;
+			*lr &= 0xFFFFFFFC;
+		}
+		Word offset = (pipeline[PIPELINE_EXECUTE] & 0xFFFFFF) << 2;
+		if(offset >> 24 != 0)
+			for(int i = 25; i < 32; i++)	//magic numbers, this operation is strictly based on 32bit words..
+				offset |= 1<<i;
+		*pc += (SWord) offset;
+	}
+	bus->branchHappened = true;
 }
 
 void processor::halfwordDataTransfer(bool sign, bool load_halfwd){
@@ -733,33 +762,34 @@ void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest){
 	if(sum){
 		uint64_t ures;
 		uint64_t c = (carry && util::getInstance()->checkBit(getVisibleRegister(REG_CPSR), C_POS) ? 1 : 0);
-		sres = (int64_t)((int32_t)op1)+(int64_t)((int32_t)op2)+c;
-		ures = (uint64_t)op1+(uint64_t)op2+c;
+		sres = (SDoubleWord)((SWord)op1)+(SDoubleWord)((SWord)op2)+c;
+		ures = (DoubleWord)op1+(DoubleWord)op2+c;
 		if(ures > 0xFFFFFFFF)
 			borrow = true;
 	} else {
 		int64_t ures;
 		uint64_t c = (carry && !(util::getInstance()->checkBit(getVisibleRegister(REG_CPSR), C_POS)) ? 1 : 0);
-		sres = (int64_t)((int32_t)op1)-(int64_t)((int32_t)op2)-c;
-		ures = (int64_t)((uint32_t)op1-(uint32_t)op2-c);
-		if(ures < 0)
+		sres = (SDoubleWord)((SWord)op1)-(SDoubleWord)((SWord)op2)-c;
+		//ures = (SDoubleWord)((Word)op1-(Word)op2-c);
+		//if(ures < 0)
+		if(op1<(op2+c))
 			borrow = true;
 	}
-	if(sres > (int64_t)0x7FFFFFFF || sres < (int64_t)0xFFFFFFFF80000000)
+	if(sres > (SDoubleWord)0x7FFFFFFF || sres < (SDoubleWord)0xFFFFFFFF80000000)
 		overflow = true;
 	*dest = (Word) sres & 0xFFFFFFFF;
 	if(pipeline[PIPELINE_EXECUTE] & (1<<20)){	// S == 1
-		if(((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF) == 15){	//Rd == 15
+		if(((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF) == 15){	//Rd == 15
 			Word *savedPSR = getVisibleRegister(REG_SPSR);
 			if(savedPSR != NULL)
 				cpu_registers[REG_CPSR] = *savedPSR;
 			else
 				unpredictable();
 		} else {
-			util::getInstance()->copyBitFromReg(getVisibleRegister(REG_CPSR), N_POS, dest, 31);
-			util::getInstance()->copyBitReg(getVisibleRegister(REG_CPSR), Z_POS, (*dest == 0 ? 1 : 0));
-			util::getInstance()->copyBitReg(getVisibleRegister(REG_CPSR), C_POS, (borrow ? 1 : 0));
-			util::getInstance()->copyBitReg(getVisibleRegister(REG_CPSR), V_POS, (overflow ? 1 : 0));
+			util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, dest, 31);
+			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], Z_POS, (*dest == 0 ? 1 : 0));
+			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], C_POS, (borrow ? 1 : 0));
+			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], V_POS, (overflow ? 1 : 0));
 		}
 	}
 }
@@ -773,9 +803,9 @@ void processor::bitwiseReturn(Word *dest){
 			else
 				unpredictable();
 		} else {
-			util::getInstance()->copyBitFromReg(getVisibleRegister(REG_CPSR), N_POS, dest, 31);
-			util::getInstance()->copyBitReg(getVisibleRegister(REG_CPSR), Z_POS, (*dest == 0 ? 1 : 0));
-			util::getInstance()->copyBitReg(getVisibleRegister(REG_CPSR), C_POS, (shifter_carry_out ? 1 : 0));
+			util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, dest, 31);
+			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], Z_POS, (*dest == 0 ? 1 : 0));
+			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], C_POS, (shifter_carry_out ? 1 : 0));
 		}
 	}
 }

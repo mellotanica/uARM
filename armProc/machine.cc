@@ -98,9 +98,17 @@ machine::~machine(){
 	delete sysbus;
 }
 
+void machine::init(){
+	for(int i = 0; i < 3; i++)
+		cpu->nextCycle();
+}
 
 void machine::step(){
-	cpu->nextCycle();
+	if(sysbus->branchHappened){
+		cpu->prefetch();
+		sysbus->branchHappened = false;
+	} else
+		cpu->nextCycle();
 	pu *tmp = pu_list;
 	while(tmp != NULL){
 		tmp->cycle();

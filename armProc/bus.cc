@@ -34,11 +34,9 @@ systemBus::~systemBus(){
 }
 
 void systemBus::fetch(Word *address){
-	while(cycles < 2){
-		currentFetch = ram->readW(address);
-		cycles++;
-	}
-	currentFetch = ram->readW(address);
+	pipeline[PIPELINE_EXECUTE] = pipeline[PIPELINE_DECODE];
+	pipeline[PIPELINE_DECODE] = pipeline[PIPELINE_FETCH];
+	pipeline[PIPELINE_FETCH] = ram->readW(address);
 }
 
 #endif //UARM_SYSTEMBUS_CC

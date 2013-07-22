@@ -30,12 +30,13 @@ public:
 	systemBus();
 	~systemBus();
 	
-	Word currentFetch;
+	Word pipeline[PIPELINE_STAGES];
 	
 	void fetch(Word *address);
 	
 	ramMemory *getRam() {return ram;};
 	
+	bool branchHappened;
 private:
 	ramMemory *ram;
 	long unsigned cycles;

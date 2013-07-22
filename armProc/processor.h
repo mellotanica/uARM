@@ -59,6 +59,8 @@ public:
 	Word *getPC() {return &cpu_registers[REG_PC];};
 	void nextCycle();
 	
+	void prefetch();
+	
 	void passCoprocessors(coprocessor **copList) {cpint->init(copList);};
 	coprocessor_interface *getCopInt() {return cpint;};
 	
@@ -86,7 +88,6 @@ private:
 	void execute();
 	void multiply();
 	void singleDataSwap();
-	void branch();
 	void coprocessorInstr();
 	void blockDataTransfer();
 	void undefined();
@@ -137,6 +138,7 @@ private:
 	void TEQ();	//test bitwiser equality
 	void TST();	//test bits
 	
+	void branch(bool link, bool exchange);
 	void dataProcessing(Byte opcode);
 	void halfwordDataTransfer(bool sign, bool load_halfwd);
 	void singleMemoryAccess(bool L);
