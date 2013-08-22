@@ -138,6 +138,7 @@ private:
 	void TEQ();	//test bitwiser equality
 	void TST();	//test bits
 	
+	void accessPSR(bool load);
 	void branch(bool link, bool exchange);
 	void dataProcessing(Byte opcode);
 	void halfwordDataTransfer(bool sign, bool load_halfwd);

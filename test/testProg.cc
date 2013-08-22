@@ -30,7 +30,7 @@ Word program[] = {
 	0xE3A0D804, //MOV		sp, #40000
 	0xE48D3004,	//STR		r3, [sp, #4]
 	0xE3A03000,	//MOV		r3, #0
-	0xE53D4004,	//LDR		r4, [sp, #-4]!	//qualcuno scrive sul pc!!!
+	0xE53D4004,	//LDR		r4, [sp, #-4]!
 	0xE5BD5001,	//LDR		r5, [sp, #1]!
 	0xE3A014FA,	//MOV		r1, #0xFA000000
 	0xE38138FB,	//ORR		r3, r1, #0x00FB0000
@@ -110,7 +110,7 @@ void runcycle(machine *mac, bool debugRun){
 	printStatus(mac);
 }
 
-main(int argc, int* argv){
+main(int argc, char** argv){
 	Word size = MEM_SIZE_W;
 	bool debugRun = DBRUN;
 	

@@ -1,0 +1,69 @@
+DATA PROCESSING:
+
+- carica il valore 3 in r2 e r3 impostando i flag di stato
+
+- se il risultato dell'ultima operazione non era 0 sottrae r2 ad r3 e salva il risultato in r1 e salva i flag di stato
+
+- se il risultato dell'ultima operazione era 0 incrementa r1 di 0xF0000000	(r1 = 0xF0000000)
+
+- carica il valore 0xFF000000 in r2	(r2 = 0xFF000000)
+
+- somma r1 ad r2 e salva il risultato in r3 impostando i flag di stato	(r3 = 0xEF000000)
+
+- se la precedente operazione ha generato overflw compara r3 a r1 (flag = 0b1000, non dovrebbe succedere), se ha generato riporto compara r3 a r2 settanto i flag di stato (flag = 0b0011)
+
+
+STR, LDR:
+
+- imposta lo stack pointer a 0x40000
+
+- salva sullo stack il contenuto di r3 e incrementa lo stack pointer di 4
+
+- azzera r3 e carica in r4 la parola che si trova in cima allo stack decrementandolo preventivamente di 4 (r4 = 0xEF000000)
+
+- carica in r5 il valore che si trova in una posizione non allineata di memoria all'indirizzo sp + 1 (r5 = 0x00EF0000)
+
+
+STRH, LDRH, LDRSH, LDRSB:
+
+- imposta r3 a 0xFAFBFCFD utilizzando operazioni ORR e r1 come registro d'appoggio
+
+- salva in cima allo stack la halfword bassa di r3
+
+- carica in r1 la halfword appena scritta (r1 = 0x0000FCFD)
+
+- carica in r2 la halfword in cima allo stack come semiparola con segno (r2 = 0xFFFFFCFD)
+
+- carica in r4 il byte in cima allo stack come byte con segno (r4= 0xFFFFFFFD)
+
+- imposta r3 a 0x00000FFF e salva la semiparola bassa in cima allo stack
+
+- carica in r1 la halfowrd con segno appena scritta (r1 = 0x00000FFF)
+
+- carica in r2 il byte con segno in cima allo stack (r2 = 0xFFFFFFFF)
+
+
+B, BX:
+
+- imposta r4 a 3 (contatore principale)   (ciclo.A)
+
+- imposta r3 a 3 (iteratore primo ciclo)  (ciclo.B)
+
+- decrementa r3 e salva il nuovo valore in r2 salvando i falg di stato, poi copia il valore di r2 in r3  (ciclo.C)
+
+- se r3 era maggiore o uguale ad 1 prima della sottrazione torna a (ciclo.C), altrimenti prosegue
+
+- decrementa r4 utilizzando r1 come registro d'appoggio (ciclo.D)
+
+- se r4 è uguale a 2 torna a (ciclo.D), altrimenti prosegue
+
+- se r4 è uguale a 1 salta a PC - 39 = (ciclo.B) usando r5 per calcolare l'indirizzo destinazione cambiando modalità (r5 = 0x00000075, r15 = 0x00000074, CPSR[5] = 1; se r15 = 0x75 legge una posizione di memoria in cui non c'è un'istruzione allineata), altrimenti prosegue
+
+- fa un salto condizionato in avanti all'istruzione PC+8 (ciclo.F) usando r5 per calcolare l'indirizzo destinazione cambiando modalità (r5 = 0x000000AC, CPSR[5] = 0)
+
+- se il salto è stato eseguito correttamente imposta r1 a 4 altrimenti lo imposta a 40
+
+
+MSR, MRS:
+
+-

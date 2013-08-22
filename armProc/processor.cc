@@ -462,10 +462,14 @@ void processor::MRC(){
 
 void processor::MRS(){
 	debugARM("MRS");
+	
+		accessPSR(true);
 }
 
 void processor::MSR(){
 	debugARM("MSR");
+	
+		accessPSR(false);
 }
 
 void processor::MUL(){
@@ -550,6 +554,64 @@ void processor::TST(){
 	debugARM("TST");
 	
 		dataProcessing(8);
+}
+
+void processor::accessPSR(bool load){
+	bool spsr = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);
+	if(getMode() == MODE_USER && spsr){	//user mode doesn't have SPSR register, unpredictable behavior
+		unpredictable();
+		return;
+	}
+	Word *psr = (spsr ? getVisibleRegister(REG_SPSR) : getVisibleRegister(REG_CPSR));
+	if(load){	//MRS
+		Byte destNum = (pipeline[PIPELINE_EXECUTE] >> 12) & 0xF;
+		if(destNum >= 15){	//pc must not be destination register
+			unpredictable();
+			return;
+		}
+		else{
+			Word *dest = getVisibleRegister(destNum);
+			*dest = *psr;
+		}
+	}
+	else{		//MSR
+		if(util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 16) && util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 25)){	//if immediate and field bits are set wrong unpredictable behavior
+			unpredictable();
+			return;
+		}
+		Word operand;
+		if(util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 25)){	//immediate value
+			Word val = pipeline[PIPELINE_EXECUTE] & 0xFF;
+			Word amount = (pipeline[PIPELINE_EXECUTE] >> 8) & 0xF;
+			operand = (val >> amount) | (val << (sizeof(Word)*8 - amount));
+		}
+		else{	//register value
+			if((pipeline[PIPELINE_EXECUTE] & 0xF) < 15)
+				operand = *(getVisibleRegister(pipeline[PIPELINE_EXECUTE] & 0xF));
+			else{
+				unpredictable();
+				return;
+			}
+		}
+		if((operand & PSR_UNALLOC_MASK) != 0){	//attempt to set reserved bits
+			unpredictable();
+			return;
+		}
+		Word mask = 0xFF000000 | (util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 16) ? 0xFF : 0);
+		if(spsr)
+			mask &= (PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK);
+		else{
+			if((operand & PSR_STATE_MASK) != 0){	//attempt to set non ARM execution state
+				unpredictable();
+				return;
+			}
+			if(getMode() == MODE_USER)
+				mask &= PSR_USER_MASK;
+			else
+				mask &= (PSR_USER_MASK | PSR_PRIV_MASK);
+		}
+		*psr = (*psr & ! mask) | (operand & mask);
+	}
 }
 
 void processor::branch(bool link, bool exchange){
@@ -759,9 +821,9 @@ void processor::dataProcessing(Byte opcode){
 void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest){
 	int64_t sres;
 	bool overflow = false, borrow = false;
+	uint64_t c = (carry && util::getInstance()->checkBit(getVisibleRegister(REG_CPSR), C_POS) ? 1 : 0);
 	if(sum){
 		uint64_t ures;
-		uint64_t c = (carry && util::getInstance()->checkBit(getVisibleRegister(REG_CPSR), C_POS) ? 1 : 0);
 		sres = (SDoubleWord)((SWord)op1)+(SDoubleWord)((SWord)op2)+c;
 		ures = (DoubleWord)op1+(DoubleWord)op2+c;
 		if(ures > 0xFFFFFFFF)
