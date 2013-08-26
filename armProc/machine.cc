@@ -85,6 +85,8 @@ machine::machine(Word ramSize){
 	listIt->next = NULL;
 	
 	cpu->passCoprocessors(copList);
+	
+	*(cpu->getPC()) = PROG_START;
 }
 
 machine::~machine(){

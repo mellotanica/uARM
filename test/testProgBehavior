@@ -12,6 +12,8 @@ DATA PROCESSING:
 
 - se la precedente operazione ha generato overflw compara r3 a r1 (flag = 0b1000, non dovrebbe succedere), se ha generato riporto compara r3 a r2 settanto i flag di stato (flag = 0b0011)
 
+- bisogna provare anche le altre chiamate
+
 
 STR, LDR:
 
@@ -64,6 +66,16 @@ B, BX:
 - se il salto è stato eseguito correttamente imposta r1 a 4 altrimenti lo imposta a 40
 
 
+SWI:
+
+- 
+
+
 MSR, MRS:
+
+-
+
+
+LDM, STM:
 
 -

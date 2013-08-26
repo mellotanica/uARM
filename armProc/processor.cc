@@ -321,10 +321,6 @@ void processor::coprocessorInstr(){
 	
 }
 
-void processor::blockDataTransfer(){
-	
-}
-
 void processor::undefined(){
 	
 }
@@ -334,7 +330,10 @@ void processor::unpredictable(){
 }
 
 Word processor::get_unpredictable(){
-	return 123456;	//should be random
+	Word ret;
+	for(int i = 0; i < sizeof(Word); i++)
+		ret += (rand() % 0xFF) << (i * 8);
+	return ret;
 }
 
 /* *************************** *
@@ -538,6 +537,8 @@ void processor::SUB(){
 
 void processor::SWI(){
 	debugARM("SWI");
+	
+		softwareInterruptTrap();
 }
 
 void processor::SWP(){
@@ -554,6 +555,26 @@ void processor::TST(){
 	debugARM("TST");
 	
 		dataProcessing(8);
+}
+
+void processor::blockDataTransfer(bool load){
+	
+}
+
+void processor::softwareInterruptTrap(){
+	cpu_registers[REG_LR_SVC] = *getPC() - 8;	//lr contains next instruction
+	Word *cpsr = getVisibleRegister(REG_CPSR);
+	cpu_registers[REG_SPSR_SVC] = *cpsr;	//spsr contains old cpsr
+	*cpsr &= 0xFFFFFFE0;
+	*cpsr |= MODE_SUPERVISOR;	//enter supervisor mode
+	util::getInstance()->resetBitReg(cpsr, 5);	//execute in arm state
+	util::getInstance()->setBitReg(cpsr, 7);	//disable normal interrupts
+	*getPC() = EXC_SWI;
+	
+	/*should do some prefetching to execute the supervisor code next cycle..*/
+	
+	nextCycle();
+	nextCycle();
 }
 
 void processor::accessPSR(bool load){

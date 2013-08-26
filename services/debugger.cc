@@ -22,7 +22,6 @@
 #include <bitset>
 #include <sstream>
 #include <iomanip>
-#include <stdlib.h>
 
 #ifndef UARM_DEBUGGER
 #define UARM_DEBUGGER

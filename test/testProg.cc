@@ -16,7 +16,7 @@ Word readWord(ramMemory *ram, Word addr){
 
 #define DBRUN 1
 //must be word-aligned
-Word baseAddr = 0;
+Word baseAddr = PROG_START;
 Word proglen = 43;
 Word program[] = {
 	0xE3A03003,	//MOV		r3, #3

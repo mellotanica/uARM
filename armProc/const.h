@@ -29,6 +29,7 @@
 #include "registers.h"
 #include "types.h"
 #include <math.h>
+#include <stdlib.h>
 
 #define DEBUG_ON
 
@@ -82,6 +83,8 @@
 #define MEM_SIZE_H 1073741824 //2^30
 #define MEM_SIZE_W 536870912 //2^29
 //#define MEM_SIZE_W 268435456 //2^28
+
+#define PROG_START 0x120	//starting pc..
 
 #define PIPELINE_STAGES 3
 #define PIPELINE_FETCH 0

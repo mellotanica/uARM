@@ -86,10 +86,6 @@ private:
 	void barrelShifter(bool immediate, Byte byte, Byte half);
 	
 	void execute();
-	void multiply();
-	void singleDataSwap();
-	void coprocessorInstr();
-	void blockDataTransfer();
 	void undefined();
 	void NOP() {debugARM("NOP");};
 	void unpredictable();
@@ -138,6 +134,12 @@ private:
 	void TEQ();	//test bitwiser equality
 	void TST();	//test bits
 	
+	void multiply();
+	void singleDataSwap();
+	void coprocessorInstr();
+	
+	void blockDataTransfer(bool load);
+	void softwareInterruptTrap();
 	void accessPSR(bool load);
 	void branch(bool link, bool exchange);
 	void dataProcessing(Byte opcode);
