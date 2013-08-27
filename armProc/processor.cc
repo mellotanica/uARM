@@ -558,7 +558,89 @@ void processor::TST(){
 }
 
 void processor::blockDataTransfer(bool load){
+	Word *base = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
+	if(base == getPC()){	//using r15 as base register gives unpredictable results
+		unpredictable();
+		return;
+	}
+	HalfWord list = pipeline[PIPELINE_EXECUTE] & 0xFFFF;
+	bool P, U, S, W;
+	P = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 24);	// pre/post indexing
+	U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 23);	// up/down
+	S = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);	// PSR & force user
+	W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);	// Write-back
 	
+	Byte regn;
+	for(int i = 0; i < sizeof(HalfWord) * 8; i++)
+		if(list & (1<<i))
+			regn++;
+	
+	Word address = *base + ((U ? 1 : -1) * (P ? 4 : 0)) - (U ? 0 : (regn * 4));
+	if(load){		//LDM
+		if(S){	//user bank transfer / mode change
+			if(getMode() == MODE_USER){	// S bit should be set only in privileged mode
+				unpredictable();
+				return;
+			}
+			for(int i = 0; i < (sizeof(HalfWord) * 8)-1; i++){
+				if(list & (1<<i)){		// if register i is marked load it
+					cpu_registers[i] = bus->getRam()->readW(&address);
+					address += 4;
+				}
+			}
+			if(list & 0x8000){			// if r15 is required for loading restore also CPSR
+				*getPC() = bus->getRam()->readW(&address);
+				cpu_registers[REG_CPSR] = *getVisibleRegister(REG_SPSR);
+				if(W)
+					*base += (U ? 1 : -1) * (regn * 4);
+			}
+			else{
+				if(W){					// base writeback should not be used in this case
+					unpredictable();
+					return;
+				}
+			}
+		}
+		else{	// regular multiple load
+			for(int i = 0; i < (sizeof(HalfWord) * 8); i++){
+				if(list & (1<<i)){		// if register i is marked load it
+					*getVisibleRegister(i) = bus->getRam()->readW(&address);
+					address += 4;
+				}
+			}
+		}
+	}
+	else{			//STM
+		if(S){	// user bank transfer
+			if(	W ||						// base writeback should not be used in this case
+				(getMode() == MODE_USER)){	// S bit should be set only in privileged mode
+				unpredictable();
+				return;
+			}
+			for(int i = 0; i < (sizeof(HalfWord) * 8); i++){
+				if(list & (1<<i)){		// if register i is marked store it
+					bus->getRam()->writeW(&address, cpu_registers[i]);
+					address += 4;
+				}
+			}
+		}
+		else{	// regular multiple store
+			bool firstChecked = false;
+			for(int i = 0; i < (sizeof(HalfWord) * 8); i++){
+				if(list & (1<<i)){		// if register i is marked store it
+					if(!firstChecked){	// if first register to be stored is base address register
+						firstChecked = true;
+						bus->getRam()->writeW(&address, *getVisibleRegister(i));	// store the initial value before writing back return address
+						if(W)
+							*base += (U ? 1 : -1) * (regn * 4);
+					}
+					else
+						bus->getRam()->writeW(&address, *getVisibleRegister(i));
+					address += 4;
+				}
+			}
+		}
+	}
 }
 
 void processor::softwareInterruptTrap(){
