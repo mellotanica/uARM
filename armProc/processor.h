@@ -134,10 +134,10 @@ private:
 	void TEQ();	//test bitwiser equality
 	void TST();	//test bits
 	
-	void multiply();
-	void singleDataSwap();
-	void coprocessorInstr();
 	
+	void multiply(bool accumulate, bool lngWord);
+	void coprocessorInstr(bool memAcc, bool toCoproc);
+	void singleDataSwap();
 	void blockDataTransfer(bool load);
 	void softwareInterruptTrap();
 	void accessPSR(bool load);
@@ -147,6 +147,8 @@ private:
 	void singleMemoryAccess(bool L);
 	void dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest);
 	void bitwiseReturn(Word *dest);
+	
+	void loadStore(bool load, bool P, bool U, bool B, bool W, Word* srcDst, Word* base, Word offset);
 	
 	typedef void(processor::*InstrPointer)();
 	

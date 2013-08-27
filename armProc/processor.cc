@@ -27,7 +27,7 @@
 
 processor::processor() : pu() {
 	status = PS_IDLE;
-	BIGEND_sig = false;
+	BIGEND_sig = ENDIANESS_BIGENDIAN;
 	cpint = new coprocessor_interface();
 	cpu_registers[REG_CPSR] = MODE_USER;
 	/*for(int i = 0; i < CPU_REGISTERS_NUM; i++)
@@ -307,20 +307,6 @@ void processor::execute(){
 		NOP();
 }
 
-
-
-void processor::multiply(){
-	
-}
-
-void processor::singleDataSwap(){
-	
-}
-
-void processor::coprocessorInstr(){
-	
-}
-
 void processor::undefined(){
 	
 }
@@ -408,10 +394,14 @@ void processor::EOR(){
 
 void processor::LDC(){
 	debugARM("LDC");
+	
+		coprocessorInstr(true, true);
 }
 
 void processor::LDM(){
 	debugARM("LDM");
+	
+		blockDataTransfer(true);
 }
 
 void processor::LDR(){
@@ -439,14 +429,20 @@ void processor::LDRSH(){
 }
 void processor::MCR(){
 	debugARM("MCR");
+	
+		coprocessorInstr(false, true);
 }
 
 void processor::MLA(){
 	debugARM("MLA");
+	
+		multiply(true, false);
 }
 
 void processor::MLAL(){
 	debugARM("MLAL");
+	
+		multiply(true, true);
 }
 
 void processor::MOV(){
@@ -457,6 +453,8 @@ void processor::MOV(){
 
 void processor::MRC(){
 	debugARM("MRC");
+	
+		coprocessorInstr(false, false);
 }
 
 void processor::MRS(){
@@ -473,10 +471,14 @@ void processor::MSR(){
 
 void processor::MUL(){
 	debugARM("MUL");
+	
+		multiply(false, false);
 }
 
 void processor::MULL(){
 	debugARM("MULL");
+	
+		multiply(false, true);
 }
 
 void processor::MVN(){
@@ -511,10 +513,14 @@ void processor::SBC(){
 
 void processor::STC(){
 	debugARM("STC");
+	
+		coprocessorInstr(true, false);
 }
 
 void processor::STM(){
 	debugARM("STM");
+	
+		blockDataTransfer(false);
 }
 
 void processor::STR(){
@@ -543,6 +549,8 @@ void processor::SWI(){
 
 void processor::SWP(){
 	debugARM("SWP");
+	
+		singleDataSwap();
 }
 
 void processor::TEQ(){
@@ -555,6 +563,35 @@ void processor::TST(){
 	debugARM("TST");
 	
 		dataProcessing(8);
+}
+
+void processor::multiply(bool accumulate, bool lngWord){
+	
+}
+
+void processor::coprocessorInstr(bool memAcc, bool toCoproc){
+	
+}
+
+void processor::singleDataSwap(){
+	Word *src = getVisibleRegister(pipeline[PIPELINE_EXECUTE] & 0xF);
+	Word *dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
+	Word *base = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
+	
+	if(src == getPC() || dest == getPC() || base == getPC()){
+		unpredictable();
+		return;
+	}
+	
+	bool B = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);	// swap byte/word
+	
+	Word tmpRead;
+	
+	bus->getRam()->lockMem();
+	loadStore(true, false, true, B, false, &tmpRead, base, 0);
+	loadStore(false, false, true, B, false, src, base, 0);
+	*dest = tmpRead;
+	bus->getRam()->unlockMem();
 }
 
 void processor::blockDataTransfer(bool load){
@@ -803,9 +840,9 @@ void processor::halfwordDataTransfer(bool sign, bool load_halfwd){
 }
 
 void processor::singleMemoryAccess(bool L){
-	Word *src = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
-	Word *dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
-	Word offset, address = *src;
+	Word *base = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
+	Word *srcDst = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
+	Word offset;
 	if((pipeline[PIPELINE_EXECUTE] & (1 << 25)) > 0){	//I flag
 		barrelShifter(false, ((pipeline[PIPELINE_EXECUTE] >> 4) & 0xFF), (pipeline[PIPELINE_EXECUTE] & 0xF));
 		offset = shifter_operand;
@@ -817,43 +854,42 @@ void processor::singleMemoryAccess(bool L){
 	B = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);
 	W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);
 	
+	loadStore(L, P, U, B, W, srcDst, base, offset);
+}
+
+void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, Word* base, Word offset){
+	Word address = *base;
 	if(P){	//pre-indexing
-		if(U)
-			address += offset;
-		else
-			address -= offset;
+		address += ((U ? 1 : -1) * offset);
 			
 		if(B){
 			if(L)
-				*dest = bus->getRam()->read(&address, BIGEND_sig);
+				*srcDst = bus->getRam()->read(&address, BIGEND_sig);
 			else
-				bus->getRam()->write(&address, ((Byte) *dest & 0xFF), BIGEND_sig);
+				bus->getRam()->write(&address, ((Byte) *srcDst & 0xFF), BIGEND_sig);
 		} else
 			if(L)
-				*dest = bus->getRam()->readW(&address, BIGEND_sig);
+				*srcDst = bus->getRam()->readW(&address, BIGEND_sig);
 			else
-				bus->getRam()->writeW(&address, *dest, BIGEND_sig);
+				bus->getRam()->writeW(&address, *srcDst, BIGEND_sig);
 		if(W)
-			*src = address;
+			*base = address;
 	}
 	else{
 		if(W)	//user-mode forced transfer (only available in privileged mode): use user mode registers
-			dest = getRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
+			srcDst = getRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
 		if(B){
 			if(L)
-				*dest = bus->getRam()->read(src, BIGEND_sig);
+				*srcDst = bus->getRam()->read(base, BIGEND_sig);
 			else
-				bus->getRam()->write(src, ((Byte) *dest & 0xFF), BIGEND_sig);
+				bus->getRam()->write(base, ((Byte) *srcDst & 0xFF), BIGEND_sig);
 		} else {
 			if(L)
-				*dest = bus->getRam()->readW(&address, BIGEND_sig);
+				*srcDst = bus->getRam()->readW(&address, BIGEND_sig);
 			else
-				bus->getRam()->writeW(&address, *dest, BIGEND_sig);
+				bus->getRam()->writeW(&address, *srcDst, BIGEND_sig);
 		}
-		if(U)
-			*src = address + offset;
-		else
-			*src = address - offset;
+		*base = address + ((U ? 1 : -1) * offset);
 	}
 }
 

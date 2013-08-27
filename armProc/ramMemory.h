@@ -36,6 +36,10 @@ public:
 	//~ramMemory() {delete [] &memVector;};
 	~ramMemory() {delete [] memVector;};
 	
+	void lockMem() { LOCK_sig = true; };
+	void unlockMem() { LOCK_sig = false; };
+	bool getMemLock() { return LOCK_sig; };
+	
 	void init(Word ramSize) {if(memVector == NULL) memVector = new Byte[((DoubleWord)ramSize*4)];std::cout<<"RAM SIZE: "<<(ramSize * 4)<<"B";};
 	
 	Byte read(Word *address) {return read(address, false);};
@@ -48,69 +52,86 @@ public:
 	void writeW(Word *address, Word data) {writeW(address, data, false);};
 	
 	Byte read(Word *address, bool bigEndian) {
-		if(!bigEndian)
-			return memVector[*address];
-		else
-			return memVector[(*address + 3 - 2 * (*address % 4))];
+		if(!LOCK_sig){
+			if(!bigEndian)
+				return memVector[*address];
+			else
+				return memVector[(*address + 3 - 2 * (*address % 4))];
+		}
+		return 0;
 	};
 	void write(Word *address, Byte data, bool bigEndian) {
-		if(!bigEndian)
-			memVector[*address] = data;
-		else
-			memVector[(*address + 3 - 2 * (*address % 4))] = data;
+		if(!LOCK_sig){
+			if(!bigEndian)
+				memVector[*address] = data;
+			else
+				memVector[(*address + 3 - 2 * (*address % 4))] = data;
+		}
 	};
 	
 	HalfWord readH(Word *address, bool bigEndian) {
-		HalfWord ret;
-		Word addr = *address;
-		Byte readb;
-		readb = read(&addr, bigEndian);
-		ret = readb;
-		addr++;
-		readb = read(&addr, bigEndian);
-		ret |= readb << 8;
-		return ret;
+		if(!LOCK_sig){
+			HalfWord ret;
+			Word addr = *address;
+			Byte readb;
+			readb = read(&addr, bigEndian);
+			ret = readb;
+			addr++;
+			readb = read(&addr, bigEndian);
+			ret |= readb << 8;
+			return ret;
+		}
+		return 0;
 	};
 	void writeH(Word *address, HalfWord data, bool bigEndian) {
-		Word addr = *address;
-		write(&addr, (Byte) data & 0xFF, bigEndian);
-		addr ++;
-		write(&addr, (Byte) (data >> 8) & 0xFF, bigEndian);
+		if(!LOCK_sig){
+			Word addr = *address;
+			write(&addr, (Byte) data & 0xFF, bigEndian);
+			addr ++;
+			write(&addr, (Byte) (data >> 8) & 0xFF, bigEndian);
+		}
 	};
 	
 	Word readW(Word *address, bool bigEndian) {
-		Word addr = *address - (*address % 4);
-		Word ret;
-		Byte readb;
-		readb = read(&addr, bigEndian);
-		ret = readb;
-		addr++;
-		readb = read(&addr, bigEndian);
-		ret |= readb << 8;
-		addr++;
-		readb = read(&addr, bigEndian);
-		ret |= readb << 16;
-		addr++;
-		readb = read(&addr, bigEndian);
-		ret |= readb << 24;
-		if((*address % 4) != 0)
-			ret = (ret >> 8*(*address%4)) | (ret << (sizeof(Word)*8 - (8*(*address%4))));
-		return ret;
+		if(!LOCK_sig){
+			Word addr = *address - (*address % 4);
+			Word ret;
+			Byte readb;
+			readb = read(&addr, bigEndian);
+			ret = readb;
+			addr++;
+			readb = read(&addr, bigEndian);
+			ret |= readb << 8;
+			addr++;
+			readb = read(&addr, bigEndian);
+			ret |= readb << 16;
+			addr++;
+			readb = read(&addr, bigEndian);
+			ret |= readb << 24;
+			if((*address % 4) != 0)
+				ret = (ret >> 8*(*address%4)) | (ret << (sizeof(Word)*8 - (8*(*address%4))));
+			return ret;
+		}
+		return 0;
 	};
 	void writeW(Word *address, Word data, bool bigEndian) {
-		Word addr = *address;
-		write(&addr, (Byte) data & 0xFF, bigEndian);
-		addr ++;
-		write(&addr, (Byte) (data >> 8) & 0xFF, bigEndian);
-		addr ++;
-		write(&addr, (Byte) (data >> 16) & 0xFF, bigEndian);
-		addr ++;
-		write(&addr, (Byte) (data >> 24) & 0xFF, bigEndian);
+		if(!LOCK_sig){
+			Word addr = *address;
+			write(&addr, (Byte) data & 0xFF, bigEndian);
+			addr ++;
+			write(&addr, (Byte) (data >> 8) & 0xFF, bigEndian);
+			addr ++;
+			write(&addr, (Byte) (data >> 16) & 0xFF, bigEndian);
+			addr ++;
+			write(&addr, (Byte) (data >> 24) & 0xFF, bigEndian);
+		}
 	};
 	
 private:
 	//scoped_array<Byte> memVector;
 	Byte *memVector;
+	
+	bool LOCK_sig = false;
 };
 
 #endif //UARM_MEMORY_H

@@ -56,6 +56,8 @@
 //#define COPROCESSOR_CP4 4
 
 
+#define ENDIANESS_BIGENDIAN false	//selects endianess used to communicate with the memory subsystem
+
 #define OP_HALT 0xFFFFFFFF	//fake opcode that represets the end of a program
 
 #define BX_MASK ((1<<4)|(0xFFF<<8)|(1<<21)|(1<<24))
