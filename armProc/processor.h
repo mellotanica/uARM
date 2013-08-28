@@ -85,12 +85,15 @@ private:
 	bool condCheck();
 	void barrelShifter(bool immediate, Byte byte, Byte half);
 	
-	void execute();
-	void undefined();
+	void undefinedTrap();
+	void softwareInterruptTrap();
+	void execTrap(ExceptionMode exception);
 	void NOP() {debugARM("NOP");};
 	void unpredictable();
 	Word get_unpredictable();
+	bool get_unpredictableB();
 	
+	void execute();
 	
 	void ADC();	//add with carry
 	void ADD();	//add
@@ -130,16 +133,16 @@ private:
 	void SUB();	//subtract
 	void SWI();	//software interrupt
 	void SWP();	//swap register with memory
-	void UND() {undefined();};	//undefined instruction
 	void TEQ();	//test bitwiser equality
 	void TST();	//test bits
+	void UND();	//undefined instruction
 	
 	
 	void multiply(bool accumulate, bool lngWord);
-	void coprocessorInstr(bool memAcc, bool toCoproc);
+	void coprocessorTransfer(bool memAcc, bool toCoproc);
+	void coprocessorOperation();
 	void singleDataSwap();
 	void blockDataTransfer(bool load);
-	void softwareInterruptTrap();
 	void accessPSR(bool load);
 	void branch(bool link, bool exchange);
 	void dataProcessing(Byte opcode);

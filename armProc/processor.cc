@@ -288,6 +288,67 @@ void processor::debugARM(string mnemonic){
 	setOP(mnemonic);
 }
 
+void processor::undefinedTrap(){
+	execTrap(EXC_UNDEF);
+}
+
+void processor::softwareInterruptTrap(){
+	execTrap(EXC_SWI);
+}
+
+void processor::execTrap(ExceptionMode exception){
+	Word lr, spsr;
+	switch(exception){	//set the right return registers
+		case EXC_SWI:
+			lr = REG_LR_SVC;
+			spsr = REG_SPSR_SVC;
+			break;
+		case EXC_UNDEF:
+			lr = REG_LR_UND;
+			spsr = REG_SPSR_UND;
+			break;
+	}
+	
+	cpu_registers[lr] = *getPC() - 8;	//lr contains next instruction
+	Word *cpsr = getVisibleRegister(REG_CPSR);
+	cpu_registers[spsr] = *cpsr;	//spsr contains old cpsr
+	*cpsr &= 0xFFFFFFE0;
+	
+	switch(exception){	//enter privileged mode and edit status register as needed
+		case EXC_SWI:
+			*cpsr |= MODE_SUPERVISOR;
+			util::getInstance()->resetBitReg(cpsr, 5);	//execute in arm state
+			util::getInstance()->setBitReg(cpsr, 7);	//disable normal interrupts
+			break;
+		case EXC_UNDEF:
+			*cpsr |= MODE_UNDEFINED;
+			
+			break;
+	}
+	
+	*getPC() = exception;
+	
+	/*should do some prefetching to execute the supervisor code next cycle..*/
+	
+	nextCycle();
+	nextCycle();
+}
+
+void processor::unpredictable(){
+	
+}
+
+Word processor::get_unpredictable(){
+	Word ret;
+	for(int i = 0; i < sizeof(Word); i++)
+		ret += (rand() % 0xFF) << (i * 8);
+	return ret;
+}
+
+bool processor::get_unpredictableB(){
+	return rand() % 1;
+}
+
 /* ******************** *
  * 						*
  * Instruction decoding *
@@ -305,21 +366,6 @@ void processor::execute(){
 		(*this.*ARM_table[codeHi][codeLow])();	//execute funcion from ARM_table in cell instr[27:20][7:4]
 	} else
 		NOP();
-}
-
-void processor::undefined(){
-	
-}
-
-void processor::unpredictable(){
-	
-}
-
-Word processor::get_unpredictable(){
-	Word ret;
-	for(int i = 0; i < sizeof(Word); i++)
-		ret += (rand() % 0xFF) << (i * 8);
-	return ret;
 }
 
 /* *************************** *
@@ -372,6 +418,8 @@ void processor::BX(){
 
 void processor::CDP(){
 	debugARM("CDP");
+	
+		coprocessorOperation();
 }
 
 void processor::CMN(){
@@ -395,7 +443,7 @@ void processor::EOR(){
 void processor::LDC(){
 	debugARM("LDC");
 	
-		coprocessorInstr(true, true);
+		coprocessorTransfer(true, true);
 }
 
 void processor::LDM(){
@@ -430,7 +478,7 @@ void processor::LDRSH(){
 void processor::MCR(){
 	debugARM("MCR");
 	
-		coprocessorInstr(false, true);
+		coprocessorTransfer(false, true);
 }
 
 void processor::MLA(){
@@ -454,7 +502,7 @@ void processor::MOV(){
 void processor::MRC(){
 	debugARM("MRC");
 	
-		coprocessorInstr(false, false);
+		coprocessorTransfer(false, false);
 }
 
 void processor::MRS(){
@@ -514,7 +562,7 @@ void processor::SBC(){
 void processor::STC(){
 	debugARM("STC");
 	
-		coprocessorInstr(true, false);
+		coprocessorTransfer(true, false);
 }
 
 void processor::STM(){
@@ -565,12 +613,80 @@ void processor::TST(){
 		dataProcessing(8);
 }
 
-void processor::multiply(bool accumulate, bool lngWord){
+void processor::UND(){
+	debugARM("UND");
+	
+		undefinedTrap();
+}
+
+void processor::coprocessorOperation(){
 	
 }
 
-void processor::coprocessorInstr(bool memAcc, bool toCoproc){
+void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
 	
+}
+
+void processor::multiply(bool accumulate, bool lngWord){ //without booth algorythm
+	bool S = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 20);	// set condition flags
+	Word *rm, *rs;
+	rm = getVisibleRegister(pipeline[PIPELINE_EXECUTE] & 0xF);
+	rs = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 8) & 0xF);
+		
+	if(lngWord){	//multiply (and accumulate) doublewords
+		bool U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);	// unsigned operation
+		Word *destHi, *destLo;
+		destLo = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
+		destHi = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
+		
+		if(	getPC() == rm || getPC() == rs || getPC() == destHi || getPC() == destLo ||	// r15 can't be used
+			rm == destHi || rm == destLo || destHi == destLo){	//destination registers and rm must be all different registers
+			unpredictable();
+			return;
+		}
+		
+		if(U){
+			DoubleWord result = (DoubleWord)*rm * (DoubleWord)*rs;
+			if(accumulate){
+				DoubleWord accumulator = (DoubleWord)*destLo + ((DoubleWord)*destHi << (sizeof(Word) * 8));
+				result += accumulator;
+			}
+			*destLo = result & 0xFFFFFFFF;
+			*destHi = (result >> (sizeof(Word)*8)) & 0xFFFFFFFF;
+		}
+		else{
+			SDoubleWord result = (SDoubleWord)((SWord) *rm) * (SDoubleWord)((SWord) *rs);
+			if(accumulate){
+				SDoubleWord accumulator = (SDoubleWord)((SWord)*destLo) + ((SDoubleWord)((SWord)*destHi) << (sizeof(Word) * 8));
+				result += accumulator;
+			}
+			*destLo = result & 0xFFFFFFFF;
+			*destHi = (result >> (sizeof(Word)*8)) & 0xFFFFFFFF;
+		}
+		
+		if(S){
+			util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, destHi, 31);
+			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], Z_POS, ((*destHi == 0 && *destLo == 0) ? 1 : 0));
+			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], C_POS, (get_unpredictableB() ? 1 : 0));	// C and V bit is set to a meaningless value
+			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], V_POS, (get_unpredictableB() ? 1 : 0));
+		}
+	}
+	else{			//multiply (and accumulate) words
+		Word *add, *dest;
+		add = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
+		dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
+		
+		if(rm == dest || getPC() == rm || getPC() == rs || getPC() == dest || getPC() == add){	// r15 can't be used, destination and first operand can't be the same register
+			unpredictable();
+			return;
+		}
+		*dest = (*rm) * (*rs) + (accumulate ? *add : 0);
+		if(S){
+			util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, dest, 31);
+			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], Z_POS, (*dest == 0 ? 1 : 0));
+			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], C_POS, (get_unpredictableB() ? 1 : 0));	// C bit is set to a meaningless value
+		}
+	}
 }
 
 void processor::singleDataSwap(){
@@ -678,22 +794,6 @@ void processor::blockDataTransfer(bool load){
 			}
 		}
 	}
-}
-
-void processor::softwareInterruptTrap(){
-	cpu_registers[REG_LR_SVC] = *getPC() - 8;	//lr contains next instruction
-	Word *cpsr = getVisibleRegister(REG_CPSR);
-	cpu_registers[REG_SPSR_SVC] = *cpsr;	//spsr contains old cpsr
-	*cpsr &= 0xFFFFFFE0;
-	*cpsr |= MODE_SUPERVISOR;	//enter supervisor mode
-	util::getInstance()->resetBitReg(cpsr, 5);	//execute in arm state
-	util::getInstance()->setBitReg(cpsr, 7);	//disable normal interrupts
-	*getPC() = EXC_SWI;
-	
-	/*should do some prefetching to execute the supervisor code next cycle..*/
-	
-	nextCycle();
-	nextCycle();
 }
 
 void processor::accessPSR(bool load){

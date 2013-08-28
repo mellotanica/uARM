@@ -59,7 +59,7 @@ B, BX:
 
 - se r4 è uguale a 2 torna a (ciclo.D), altrimenti prosegue
 
-- se r4 è uguale a 1 salta a PC - 39 = (ciclo.B) usando r5 per calcolare l'indirizzo destinazione cambiando modalità (r5 = 0x00000075, r15 = 0x00000074, CPSR[5] = 1; se r15 = 0x75 legge una posizione di memoria in cui non c'è un'istruzione allineata), altrimenti prosegue
+- se r4 è uguale a 1 salta a PC - 39 = (ciclo.B) usando r5 per calcolare l'indirizzo destinazione cambiando modalità (r5 = 0x00000195, r15 = 0x00000194, CPSR[5] = 1; se r15 = 0x195 legge una posizione di memoria in cui non c'è un'istruzione allineata), altrimenti prosegue
 
 - fa un salto condizionato in avanti all'istruzione PC+8 (ciclo.F) usando r5 per calcolare l'indirizzo destinazione cambiando modalità (r5 = 0x000000AC, CPSR[5] = 0)
 
@@ -79,3 +79,21 @@ MSR, MRS:
 LDM, STM:
 
 -
+
+
+MUL, MLA, MULL, MLAL:
+
+-
+
+
+LDC, STC, MRC, MCR:
+
+-
+
+
+CDP:
+
+-
+
+
+

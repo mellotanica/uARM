@@ -48,8 +48,20 @@
 #define REG_LR 14	//link return
 #define REG_FP 11	//frame pointer
 
+#define REG_LR_FIQ 23
+#define REG_SPSR_FIQ 24
+
 #define REG_LR_SVC 26
 #define REG_SPSR_SVC 27
+
+#define REG_LR_ABT 29
+#define REG_SPSR_ABT 30
+
+#define REG_LR_IRQ 32
+#define REG_SPSR_IRQ 33
+
+#define REG_LR_UND 35
+#define REG_SPSR_UND 36
 
 //register maps
 #define REG_FIQ_BASE 17
