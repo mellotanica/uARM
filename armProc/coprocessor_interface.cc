@@ -28,6 +28,30 @@
 
 #include "coprocessor_interface.h"
 
+coprocessor_interface::coprocessor_interface(){
+	
+	coprocessors = new coprocessor*[COPROCESSORS_NUM];
+	
+	coprocessors[COPROCESSOR_CP15] = new cp15();
+	
+#ifdef COPROCESSOR_CP14
+	coprocessors[COPROCESSOR_CP14] = new cp14();
+#endif
+#ifdef COPROCESSOR_CP7
+	coprocessors[COPROCESSOR_CP7] = new cp7();
+#endif
+#ifdef COPROCESSOR_CP6
+	coprocessors[COPROCESSOR_CP6] = new cp6();
+#endif
+#ifdef COPROCESSOR_CP5
+	coprocessors[COPROCESSOR_CP5] = new cp5();
+#endif
+#ifdef COPROCESSOR_CP4
+	coprocessors[COPROCESSOR_CP4] = new cp4();
+#endif
+}
+
+/* hardware-encoded functions
 bool coprocessor_interface::CPA(){
 	bool ret = true;
 	coprocessor *tmp = list;
@@ -125,6 +149,15 @@ bool coprocessor_interface::writeD(int mplex, Word *data){
 	default:
 		return false;
 	}
+}
+
+*/
+
+coprocessor *coprocessor_interface::getCoprocessor(Byte cpNum){
+	coprocessor *ret = NULL;
+	if(cpNum < COPROCESSORS_NUM)
+		ret = coprocessors[cpNum];
+	return ret;
 }
 
 #endif //UARM_COPROCESSOR_INTERFACE_CC

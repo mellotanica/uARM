@@ -25,7 +25,6 @@
 #include "services/util.h"
 #include "bus.h"
 #include "pu.h"
-#include "cp15.h"
 #include "coprocessor_interface.h"
 #include "processor.h"
 #include "machine.h"
@@ -40,63 +39,10 @@ machine::machine(Word ramSize){
 	
 	sysbus->getRam()->init(ramSize);
 	
-	pu_list = cpu;
-	pu *last_added = pu_list;
-	
-	coprocessor *listIt;
-	copList = new coprocessor*[COPROCESSORS_NUM];
-	
-	last_added->next = listIt = new cp15();
-	last_added = last_added->next;
-	copList[COPROCESSOR_CP15] = listIt;
-	
-#ifdef COPROCESSOR_CP14
-	last_added->next = listIt->next = new cp14();
-	listIt = listIt->next;
-	last_added = last_added->next;
-	copList[COPROCESSOR_CP14] = listIt;
-#endif
-#ifdef COPROCESSOR_CP7
-	last_added->next = listIt->next = new cp7();
-	listIt = listIt->next;
-	last_added = last_added->next;
-	copList[COPROCESSOR_CP7] = listIt;
-#endif
-#ifdef COPROCESSOR_CP6
-	last_added->next = listIt->next = new cp6();
-	listIt = listIt->next;
-	last_added = last_added->next;
-	copList[COPROCESSOR_CP6] = listIt;
-#endif
-#ifdef COPROCESSOR_CP5
-	last_added->next = listIt->next = new cp5();
-	listIt = listIt->next;
-	last_added = last_added->next;
-	copList[COPROCESSOR_CP5] = listIt;
-#endif
-#ifdef COPROCESSOR_CP4
-	last_added->next = listIt->next = new cp4();
-	listIt = listIt->next;
-	last_added = last_added->next;
-	copList[COPROCESSOR_CP4] = listIt;
-#endif
-	
-	last_added->next = NULL;
-	listIt->next = NULL;
-	
-	cpu->passCoprocessors(copList);
-	
 	*(cpu->getPC()) = PROG_START;
 }
 
 machine::~machine(){
-	pu *tmp = pu_list;
-	while(tmp != NULL){
-		pu_list = tmp->next;
-		delete tmp;
-		tmp = pu_list;
-	}
-	delete [] copList;
 	delete sysbus;
 }
 
@@ -111,11 +57,7 @@ void machine::step(){
 		sysbus->branchHappened = false;
 	} else
 		cpu->nextCycle();
-	pu *tmp = pu_list;
-	while(tmp != NULL){
-		tmp->cycle();
-		tmp = tmp->next;
-	}
+	cpu->cycle();
 }
 
 void machine::run(){

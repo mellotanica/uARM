@@ -27,15 +27,15 @@
 #define UARM_COPROCESSOR_INTERFACE_H
 
 #include "const.h"
+#include "cp15.h"
 #include "pu.h"
 
 class coprocessor_interface{
 public:
-	coprocessor_interface() {};
+	coprocessor_interface();
 	~coprocessor_interface() {delete [] coprocessors;};
 	
-	void init(coprocessor **cops) {coprocessors = cops; list = cops[COPROCESSOR_CP15];};
-	
+	/* hardware-encoded functions
 	void setnCPI(bool val);
 	
 	bool CPA();
@@ -43,10 +43,12 @@ public:
 	
 	bool readD(int mplex, Word *data);
 	bool writeD(int mplex, Word *data);
+	*/
+	
+	coprocessor *getCoprocessor(Byte cpNum);
 	
 private:
 	coprocessor **coprocessors;
-	coprocessor *list;
 };
 
 #endif //UARM_COPROCESSOR_INTERFACE_H

@@ -29,6 +29,8 @@ processor::processor() : pu() {
 	status = PS_IDLE;
 	BIGEND_sig = ENDIANESS_BIGENDIAN;
 	cpint = new coprocessor_interface();
+	for(int i = 0; i < PIPELINE_STAGES; i++)
+		pipeline[i] = 0;
 	cpu_registers[REG_CPSR] = MODE_USER;
 	/*for(int i = 0; i < CPU_REGISTERS_NUM; i++)
 		cpu_registers[i] = 0;*/
@@ -322,7 +324,6 @@ void processor::execTrap(ExceptionMode exception){
 			break;
 		case EXC_UNDEF:
 			*cpsr |= MODE_UNDEFINED;
-			
 			break;
 	}
 	
@@ -335,13 +336,17 @@ void processor::execTrap(ExceptionMode exception){
 }
 
 void processor::unpredictable(){
-	
+	//just for now fill a random number of registers (excluding r13, r14, r15 and PSR) with random words
+	Word regmask = rand() % 0x1FFF;
+	for(int i = 0; i < 13; i++)
+		if(regmask & (1 << i))
+			*getVisibleRegister(i) = get_unpredictable();
 }
 
 Word processor::get_unpredictable(){
 	Word ret;
-	for(int i = 0; i < sizeof(Word); i++)
-		ret += (rand() % 0xFF) << (i * 8);
+	for(int i = 0; i < sizeof(Word) * 8; i++)
+		ret |= (rand() % 1 ? 1 : 0) << i;
 	return ret;
 }
 
@@ -620,11 +625,102 @@ void processor::UND(){
 }
 
 void processor::coprocessorOperation(){
-	
+	// a coprocessor starts an indipendent task with this instruction...
+	// if not multithreaded, this is the place where to make the coprocessor start its task
+	/*	this is the hardware-emulated code
+	cpint->setnCPI(false);
+	if(cpint->CPA())	//no coprocessor has taken the task.. undefined trap!
+		undefinedTrap();
+	else
+		cpint->setnCPI(true);
+	*/
+	coprocessor *cp = cpint->getCoprocessor((pipeline[PIPELINE_EXECUTE] >> 8) & 0xF);
+	if(cp == NULL){	//no coprocessor can take this command: undefined trap!
+		undefinedTrap();
+		return;
+	}
+	Byte opcode = (pipeline[PIPELINE_EXECUTE] >> 20) & 0xF;
+	Byte rn = (pipeline[PIPELINE_EXECUTE] >> 16) & 0xF;
+	Byte rm = pipeline[PIPELINE_EXECUTE] & 0xF;
+	Byte rd = (pipeline[PIPELINE_EXECUTE] >> 12) & 0xF;
+	Byte info = (pipeline[PIPELINE_EXECUTE] >> 5) & 7;
+	cp->executeOperation(opcode, rm, rn, rd, info);
 }
 
+
+// controllare gli addendi del pc sia in memAcc che no!!!
+
 void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
-	
+	Byte cpNum = (pipeline[PIPELINE_EXECUTE] >> 8) & 0xF;
+	coprocessor *cp = cpint->getCoprocessor(cpNum);
+	if(cp == NULL){	//no coprocessor can take this command: undefined trap!
+		undefinedTrap();
+		return;
+	}
+	if(memAcc){
+		Word *base = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
+		Word cpRegNum = (pipeline[PIPELINE_EXECUTE] >> 12) & 0xF;
+		Word *cpReg;
+		Byte offset = pipeline[PIPELINE_EXECUTE] & 0xFF;
+		bool P, U, W, N;
+		P = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 24);	// pre/post indexing
+		U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 23);	// up/down
+		W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);	// Write-back
+		N = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);	// single/multiple transfer
+		Word address = (base == getPC() ? (*base - 4) : *base) + ((U ? 1 : -1) * (offset << 2));	//if PC is specified as base the value should be the index of current instruction + 8 (== PC - 4)
+		if(N){	//multiple transfer
+			while((cpReg = cp->getRegister(cpRegNum)) != NULL){	// load all registers starting from cpRegNum
+				if(toCoproc){	//load
+					*cpReg = bus->getRam()->readW(&address, BIGEND_sig);
+				}
+				else{			//store
+					bus->getRam()->writeW(&address, *cpReg, BIGEND_sig);
+				}
+				cpRegNum++;
+				address += 4;
+			}
+		}
+		else{	//single transfer
+			cpReg = cp->getRegister(cpRegNum);
+			if(cpReg != NULL){
+				if(toCoproc){	//load
+					*cpReg = bus->getRam()->read(&address, BIGEND_sig);
+				}
+				else{			//store
+					bus->getRam()->writeW(&address, *cpReg, BIGEND_sig);
+				}
+			}
+		}
+		if(W)
+			*base = address;
+	}
+	else{
+		Byte opcode = (pipeline[PIPELINE_EXECUTE] >> 21) & 7;
+		Byte info = (pipeline[PIPELINE_EXECUTE] >> 5) & 7;
+		Byte rm = pipeline[PIPELINE_EXECUTE] & 0xF;
+		Byte rn = (pipeline[PIPELINE_EXECUTE] >> 16) & 0xF;
+		Word *srcDest = cp->getRegister(rn);
+		Word *rd = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
+		if(toCoproc){	//MCR
+			*srcDest = *rd + (rd == getPC() ? 8 : 0);	//if pc is source register, stores PC+12
+			cp->registerTransfer(opcode, rm, rn, info);
+		}
+		else{			//MRC
+		
+			//va comunque eseguito il codice del coprocessore??
+			//cp->registerTransfer(opcode, rm, rn, info);
+		
+			if(rd == getPC()){
+				util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, srcDest);
+				util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], Z_POS, srcDest);
+				util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], C_POS, srcDest);
+				util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], V_POS, srcDest);
+			}
+			else{
+				*rd = *srcDest;
+			}
+		}
+	}
 }
 
 void processor::multiply(bool accumulate, bool lngWord){ //without booth algorythm
@@ -650,6 +746,7 @@ void processor::multiply(bool accumulate, bool lngWord){ //without booth algoryt
 			if(accumulate){
 				DoubleWord accumulator = (DoubleWord)*destLo + ((DoubleWord)*destHi << (sizeof(Word) * 8));
 				result += accumulator;
+			
 			}
 			*destLo = result & 0xFFFFFFFF;
 			*destHi = (result >> (sizeof(Word)*8)) & 0xFFFFFFFF;
@@ -956,6 +1053,11 @@ void processor::singleMemoryAccess(bool L){
 	
 	loadStore(L, P, U, B, W, srcDst, base, offset);
 }
+
+/*
+ * accesso alla memoria di rifare, tutte le funzioni devono ritornare un bool che, 
+ * se falso, segnala un abort, e in quel caso si lancia la trap!!!!
+ */ 
 
 void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, Word* base, Word offset){
 	Word address = *base;

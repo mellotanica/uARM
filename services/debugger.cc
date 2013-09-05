@@ -108,7 +108,7 @@ void printHalfWord(string head, HalfWord *wd) {
 	#endif
 }
 
-void printOP(pu *unit){
+void printOP(processor *unit){
 	#if DEBUGGER_ON>0
 	cout << "\nExecuting "<<unit->mnemonicOPcode<<" : ";
 	if(unit->isOPcodeARM)
@@ -120,7 +120,7 @@ void printOP(pu *unit){
 	#endif
 }
 
-void printPipeline(pu *unit){
+void printPipeline(processor *unit){
 	#if DEBUGGER_ON>0
 	cout << "\n\nPipeline:\tFetch\t\tDecode\t\tExecute\n";
 	printRegister("\t\t",unit->getPipeline(PIPELINE_FETCH));
@@ -136,8 +136,6 @@ void printCP15Reg(cp15 *cp){
 	cout << "\n###########################################################\n";
 	cout << "#                   CP15    Status                        #\n";
 	cout << "###########################################################";
-	
-	printPipeline(cp);
 	
 	cout << "\n\nRegisters:";
 
@@ -240,7 +238,7 @@ void printStatus(machine *mac){
 	#if DEBUGGER_ON>0
 	system("clear");
 	printCPUReg(mac->getCPU());
-	printCP15Reg((cp15 *)mac->getCoprocessor(15));
+	printCP15Reg((cp15 *)mac->getCPU()->getCopInt()->getCoprocessor(15));
 	printBus(mac->getBus());
 	cout << "\n###########################################################\n";
 	#endif

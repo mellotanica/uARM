@@ -30,6 +30,14 @@ cp15::cp15(): coprocessor() {
 		cp15_registers[i] = 0;*/
 }
 
+void cp15::executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info){
+	
+}
+
+void cp15::registerTransfer(Byte opcode, Byte operand, Byte srcDest, Byte info){
+	
+}
+
 void cp15::execute(){
 	
 }

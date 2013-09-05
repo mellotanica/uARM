@@ -40,7 +40,6 @@ public:
 	~machine();
 	
 	processor *getCPU() {return cpu;};
-	coprocessor *getCoprocessor(int n) {return copList[n];};
 	systemBus *getBus() {return sysbus;};
 	
 	void init();
@@ -50,9 +49,6 @@ public:
 private:
 	systemBus *sysbus;
 	processor *cpu;
-	
-	pu *pu_list;
-	coprocessor **copList;
 };
 
 #endif //UARM_MACHINE_CC

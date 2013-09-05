@@ -61,7 +61,6 @@ public:
 	
 	void prefetch();
 	
-	void passCoprocessors(coprocessor **copList) {cpint->init(copList);};
 	coprocessor_interface *getCopInt() {return cpint;};
 	
 	void setEndianess(bool bigEndian) {BIGEND_sig = bigEndian;};	//system is set little endian by default, use this method to change the setting
@@ -70,11 +69,27 @@ public:
 	
 	Word *getVisibleRegister(Byte reg);
 	
+	Word *getPipeline(unsigned int i) {return &pipeline[i];};
+	
 	systemBus *getBus() {return bus;};
 	
+	/* processor could abort the execution cycle of coprocessors in case of interrupts or traps
+	 * also, the first two cycles only do fetches to load the pipeline
+	 */
+	void cycle() {
+		fetch();
+		decode();
+		setOP("Unknown");
+		execute();
+	};
+	
+	Word OPcode;
+	bool isOPcodeARM = true;
+	string mnemonicOPcode;
 private:
 	coprocessor_interface *cpint;
 	ProcessorStatus status;
+	Word pipeline[PIPELINE_STAGES];
 	Word cpu_registers[CPU_REGISTERS_NUM];
 	Word shifter_operand, alu_tmp;
 	bool shifter_carry_out;
@@ -93,6 +108,8 @@ private:
 	Word get_unpredictable();
 	bool get_unpredictableB();
 	
+	void fetch() {pipeline[PIPELINE_EXECUTE] = bus->pipeline[PIPELINE_EXECUTE]; pipeline[PIPELINE_DECODE] = bus->pipeline[PIPELINE_DECODE]; pipeline[PIPELINE_FETCH] = bus->pipeline[PIPELINE_FETCH];};
+	void decode() {};
 	void execute();
 	
 	void ADC();	//add with carry

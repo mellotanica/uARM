@@ -35,44 +35,11 @@ public:
 	pu() {
 		if(bus == NULL)
 			bus = new systemBus();
-		for(int i = 0; i < PIPELINE_STAGES; i++){
-			pipeline[i] = 0;
-		}
 	};
 	~pu() {};
 	
-	pu* next;
-	
-	Word *getPipeline(unsigned int i) {return &pipeline[i];};
-	
-	/* processor could abort the execution cycle of coprocessors in case of interrupts or traps
-	 * also, the first two cycles only do fetches to load the pipeline
-	 */
-	virtual void cycle() {
-		fetch();
-		decode();
-		setOP("Unknown");
-		execute();
-	};
-	
-	Word OPcode;
-	bool isOPcodeARM = true;
-	string mnemonicOPcode;
-	
 protected:
 	static systemBus *bus;
-	Word pipeline[PIPELINE_STAGES];
-	
-	virtual void setOP(string mnemonic){
-		isOPcodeARM = true;
-		OPcode = pipeline[PIPELINE_EXECUTE];
-		mnemonicOPcode = mnemonic;
-	}
-	
-	virtual void fetch() {pipeline[PIPELINE_EXECUTE] = bus->pipeline[PIPELINE_EXECUTE]; pipeline[PIPELINE_DECODE] = bus->pipeline[PIPELINE_DECODE]; pipeline[PIPELINE_FETCH] = bus->pipeline[PIPELINE_FETCH];};
-	virtual void decode() {};
-	virtual void execute() = 0;
-	
 };
 
 class coprocessor : public pu{
@@ -80,17 +47,10 @@ public:
 	coprocessor() : pu() {};
 	~coprocessor() {};
 	
-	coprocessor *next;
+	virtual Word *getRegister(Word regNum) = 0;
 	
-	void setnCPI(bool val) {nCPI_line = val;};
-	bool CPA() {return CPA_line;};
-	bool CPB() {return CPB_line;};
-	Word getD()	{return D;};
-	void setD(Word *data) {D = *data;};
-	
-protected:
-	Word D;
-	bool CPA_line, CPB_line, nCPI_line;
+	virtual void executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info) = 0;
+	virtual void registerTransfer(Byte opcode, Byte operand, Byte srcDest, Byte info) = 0;
 };
 
 #endif //UARM_PU_H

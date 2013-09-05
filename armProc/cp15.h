@@ -30,7 +30,10 @@ public:
 	cp15();
 	~cp15() {};
 	
-	Word *getRegister(unsigned int i) {return &cp15_registers[i];};
+	Word *getRegister(Word i) {return &cp15_registers[i];};
+	
+	void executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info);
+	void registerTransfer(Byte opcode, Byte operand, Byte srcDest, Byte info);
 	
 private:
 	ramMemory *ram;
