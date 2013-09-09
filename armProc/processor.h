@@ -112,6 +112,23 @@ private:
 	void decode() {};
 	void execute();
 	
+	void multiply(bool accumulate, bool lngWord);
+	void coprocessorTransfer(bool memAcc, bool toCoproc);
+	void coprocessorOperation();
+	void singleDataSwap();
+	void blockDataTransfer(bool load);
+	void accessPSR(bool load);
+	void branch(bool link, bool exchange);
+	void dataProcessing(Byte opcode);
+	void halfwordDataTransfer(bool sign, bool load_halfwd);
+	void singleMemoryAccess(bool L);
+	void dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest);
+	void bitwiseReturn(Word *dest);
+	
+	void loadStore(bool load, bool P, bool U, bool B, bool W, Word* srcDst, Word* base, Word offset);
+	
+	//ARM ISA
+	
 	void ADC();	//add with carry
 	void ADD();	//add
 	void AND();	//AND
@@ -153,22 +170,6 @@ private:
 	void TEQ();	//test bitwiser equality
 	void TST();	//test bits
 	void UND();	//undefined instruction
-	
-	
-	void multiply(bool accumulate, bool lngWord);
-	void coprocessorTransfer(bool memAcc, bool toCoproc);
-	void coprocessorOperation();
-	void singleDataSwap();
-	void blockDataTransfer(bool load);
-	void accessPSR(bool load);
-	void branch(bool link, bool exchange);
-	void dataProcessing(Byte opcode);
-	void halfwordDataTransfer(bool sign, bool load_halfwd);
-	void singleMemoryAccess(bool L);
-	void dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest);
-	void bitwiseReturn(Word *dest);
-	
-	void loadStore(bool load, bool P, bool U, bool B, bool W, Word* srcDst, Word* base, Word offset);
 	
 	typedef void(processor::*InstrPointer)();
 	
@@ -429,6 +430,63 @@ private:
 		{&processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI},
 		{&processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI},
 		{&processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI, &processor::SWI}
+	};
+	
+	//Thumb ISA
+	
+	void ADD_T();
+	void ADDH_T();
+	void ADDPC_T();
+	void ADDSP_T();
+	void ASR_T();
+	void B_T();
+	void Bcond_T();
+	void BL_T();
+	void BX_T();
+	void CMP_T();
+	void CMPH_T();
+	void DP_T();
+	void LDMIA_T();
+	void LDR_T();
+	void LDRB_T();
+	void LDRH_T();
+	void LDRPC_T();
+	void LDRSB_T();
+	void LDRSH_T();
+	void LDRSP_T();
+	void LSL_T();
+	void LSR_T();
+	void MOV_T();
+	void MOVH_T();
+	void POP_T();
+	void PUSH_T();
+	void STMIA_T();
+	void STR_T();
+	void STRB_T();
+	void STRH_T();
+	void STRSP_T();
+	void SUB_T();
+	void SWI_T();
+	void UND_T();
+	
+	//istruzioni da verificare in mezzo..
+	const InstrPointer Thumb_table[16][16] = {
+		{&processor::LSL_T, &processor::LSL_T, &processor::LSL_T, &processor::LSL_T, &processor::LSL_T, &processor::LSL_T, &processor::LSL_T, &processor::LSL_T, &processor::LSR_T, &processor::LSR_T, &processor::LSR_T, &processor::LSR_T, &processor::LSR_T, &processor::LSR_T, &processor::LSR_T, &processor::LSR_T},
+		{&processor::ASR_T, &processor::ASR_T, &processor::ASR_T, &processor::ASR_T, &processor::ASR_T, &processor::ASR_T, &processor::ASR_T, &processor::ASR_T, &processor::ADD_T, &processor::ADD_T, &processor::SUB_T, &processor::SUB_T, &processor::ADD_T, &processor::ADD_T, &processor::SUB_T, &processor::SUB_T},
+		{&processor::MOV_T, &processor::MOV_T, &processor::MOV_T, &processor::MOV_T, &processor::MOV_T, &processor::MOV_T, &processor::MOV_T, &processor::MOV_T, &processor::CMP_T, &processor::CMP_T, &processor::CMP_T, &processor::CMP_T, &processor::CMP_T, &processor::CMP_T, &processor::CMP_T, &processor::CMP_T},
+		{&processor::ADD_T, &processor::ADD_T, &processor::ADD_T, &processor::ADD_T, &processor::ADD_T, &processor::ADD_T, &processor::ADD_T, &processor::ADD_T, &processor::SUB_T, &processor::SUB_T, &processor::SUB_T, &processor::SUB_T, &processor::SUB_T, &processor::SUB_T, &processor::SUB_T, &processor::SUB_T},
+		{&processor::DP_T, &processor::DP_T, &processor::DP_T, &processor::DP_T, &processor::ADDH_T, &processor::CMPH_T, &processor::MOVH_T, &processor::BX_T, &processor::LDRPC_T, &processor::LDRPC_T, &processor::LDRPC_T, &processor::LDRPC_T, &processor::LDRPC_T, &processor::LDRPC_T, &processor::LDRPC_T, &processor::LDRPC_T},
+		{&processor::STR_T, &processor::STR_T, &processor::STRH_T, &processor::STRH_T, &processor::STRB_T, &processor::STRB_T, &processor::LDRSB_T, &processor::LDRSB_T, &processor::LDR_T, &processor::LDR_T, &processor::LDRH_T, &processor::LDRH_T, &processor::LDRB_T, &processor::LDRB_T, &processor::LDRSH_T, &processor::LDRSH_T},
+		{&processor::STR_T, &processor::STR_T, &processor::STR_T, &processor::STR_T, &processor::STR_T, &processor::STR_T, &processor::STR_T, &processor::STR_T, &processor::LDR_T, &processor::LDR_T, &processor::LDR_T, &processor::LDR_T, &processor::LDR_T, &processor::LDR_T, &processor::LDR_T, &processor::LDR_T},
+		{&processor::STRB_T, &processor::STRB_T, &processor::STRB_T, &processor::STRB_T, &processor::STRB_T, &processor::STRB_T, &processor::STRB_T, &processor::STRB_T, &processor::LDRB_T, &processor::LDRB_T, &processor::LDRB_T, &processor::LDRB_T, &processor::LDRB_T, &processor::LDRB_T, &processor::LDRB_T, &processor::LDRB_T},
+		{&processor::STRH_T, &processor::STRH_T, &processor::STRH_T, &processor::STRH_T, &processor::STRH_T, &processor::STRH_T, &processor::STRH_T, &processor::STRH_T, &processor::LDRH_T, &processor::LDRH_T, &processor::LDRH_T, &processor::LDRH_T, &processor::LDRH_T, &processor::LDRH_T, &processor::LDRH_T, &processor::LDRH_T},
+		{&processor::STRSP_T, &processor::STRSP_T, &processor::STRSP_T, &processor::STRSP_T, &processor::STRSP_T, &processor::STRSP_T, &processor::STRSP_T, &processor::STRSP_T, &processor::LDRSP_T, &processor::LDRSP_T, &processor::LDRSP_T, &processor::LDRSP_T, &processor::LDRSP_T, &processor::LDRSP_T, &processor::LDRSP_T, &processor::LDRSP_T},
+		{&processor::ADDPC_T, &processor::ADDPC_T, &processor::ADDPC_T, &processor::ADDPC_T, &processor::ADDPC_T, &processor::ADDPC_T, &processor::ADDPC_T, &processor::ADDPC_T, &processor::ADDSP_T, &processor::ADDSP_T, &processor::ADDSP_T, &processor::ADDSP_T, &processor::ADDSP_T, &processor::ADDSP_T, &processor::ADDSP_T, &processor::ADDSP_T},
+		{&processor::ADDSP_T, &processor::UND_T, &processor::UND_T, &processor::UND_T, &processor::PUSH_T, &processor::PUSH_T, &processor::UND_T, &processor::UND_T, &processor::UND_T, &processor::UND_T, &processor::UND_T, &processor::UND_T, &processor::POP_T, &processor::POP_T, &processor::UND_T/* da verificare!! */, &processor::UND_T},
+		{&processor::STMIA_T, &processor::STMIA_T, &processor::STMIA_T, &processor::STMIA_T, &processor::STMIA_T, &processor::STMIA_T, &processor::STMIA_T, &processor::STMIA_T, &processor::LDMIA_T, &processor::LDMIA_T, &processor::LDMIA_T, &processor::LDMIA_T, &processor::LDMIA_T, &processor::LDMIA_T, &processor::LDMIA_T, &processor::LDMIA_T},
+		{&processor::Bcond_T, &processor::Bcond_T, &processor::Bcond_T, &processor::Bcond_T, &processor::Bcond_T, &processor::Bcond_T, &processor::Bcond_T, &processor::Bcond_T, &processor::Bcond_T, &processor::Bcond_T, &processor::Bcond_T, &processor::Bcond_T, &processor::Bcond_T, &processor::Bcond_T, &processor::UND_T, &processor::SWI_T},
+		{&processor::B_T, &processor::B_T, &processor::B_T, &processor::B_T, &processor::B_T, &processor::B_T, &processor::B_T, &processor::B_T, /*il resto è da controllare da qui in poi*/ &processor::B_T, &processor::B_T, &processor::B_T, &processor::B_T, &processor::B_T, &processor::B_T, &processor::B_T, &processor::B_T},
+		{&processor::BL_T, &processor::BL_T, &processor::BL_T, &processor::BL_T, &processor::BL_T, &processor::BL_T, &processor::BL_T, &processor::BL_T, &processor::BL_T, &processor::BL_T, &processor::BL_T, &processor::BL_T, &processor::BL_T, &processor::BL_T, &processor::BL_T, &processor::BL_T}
 	};
 	
 	void setOP(string mnemonic){

@@ -378,6 +378,12 @@ void processor::execute(){
  * Istructions implementations *
  * 							   *
  * *************************** */
+ 
+ /* *************** *
+  * 				*
+  * 	ARM ISA		*
+  * 				*
+  * *************** */
 
 void processor::ADC(){
 	debugARM("ADC");
@@ -620,6 +626,152 @@ void processor::TST(){
 
 void processor::UND(){
 	debugARM("UND");
+	
+		undefinedTrap();
+}
+
+ /* *************** *
+  * 				*
+  *    Thumb ISA	*
+  * 				*
+  * *************** */
+
+void processor::ADD_T(){
+	debugARM("ADD (T)");
+}
+
+void processor::ADDH_T(){
+	debugARM("ADDH (T)");
+}
+
+void processor::ADDPC_T(){
+	debugARM("ADDPC (T)");
+}
+
+void processor::ADDSP_T(){
+	debugARM("ADDSP (T)");
+}
+
+void processor::ASR_T(){
+	debugARM("ASR (T)");
+}
+
+void processor::B_T(){
+	debugARM("B (T)");
+}
+
+void processor::Bcond_T(){
+	debugARM("conditional B (T)");
+}
+
+void processor::BL_T(){
+	debugARM("BL (T)");
+}
+
+void processor::BX_T(){
+	debugARM("BX (T)");
+}
+
+void processor::CMP_T(){
+	debugARM("CMP (T)");
+}
+
+void processor::CMPH_T(){
+	debugARM("CMPH (T)");
+}
+
+void processor::DP_T(){
+	debugARM("DP (T)");
+}
+
+void processor::LDMIA_T(){
+	debugARM("LDMIA (T)");
+}
+
+void processor::LDR_T(){
+	debugARM("LDR (T)");
+}
+
+void processor::LDRB_T(){
+	debugARM("LDRB (T)");
+}
+
+void processor::LDRH_T(){
+	debugARM("LDRH (T)");
+}
+
+void processor::LDRPC_T(){
+	debugARM("LDRPC (T)");
+}
+
+void processor::LDRSB_T(){
+	debugARM("LDRSB (T)");
+}
+
+void processor::LDRSH_T(){
+	debugARM("LDRSH (T)");
+}
+
+void processor::LDRSP_T(){
+	debugARM("LDRSP (T)");
+}
+
+void processor::LSL_T(){
+	debugARM("LSL (T)");
+}
+
+void processor::LSR_T(){
+	debugARM("LSR (T)");
+}
+
+void processor::MOV_T(){
+	debugARM("MOV (T)");
+}
+
+void processor::MOVH_T(){
+	debugARM("MOVH (T)");
+}
+
+void processor::POP_T(){
+	debugARM("POP (T)");
+}
+
+void processor::PUSH_T(){
+	debugARM("PUSH (T)");
+}
+
+void processor::STMIA_T(){
+	debugARM("STMIA (T)");
+}
+
+void processor::STR_T(){
+	debugARM("STR (T)");
+}
+
+void processor::STRB_T(){
+	debugARM("STRB (T)");
+}
+
+void processor::STRH_T(){
+	debugARM("STRH (T)");
+}
+
+void processor::STRSP_T(){
+	debugARM("STRSP (T)");
+}
+
+void processor::SUB_T(){
+	debugARM("SUB (T)");
+}
+
+void processor::SWI_T(){
+	debugARM("SWI (T)");
+	
+		softwareInterruptTrap();
+}
+
+void processor::UND_T(){
+	debugARM("UND (T)");
 	
 		undefinedTrap();
 }

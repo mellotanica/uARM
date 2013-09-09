@@ -39,8 +39,6 @@ private:
 	ramMemory *ram;
 	
 	Word cp15_registers[CP15_REGISTERS_NUM];
-	
-	void execute();
 };
 
 #endif //UARM_CP15_CC
