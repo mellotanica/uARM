@@ -110,6 +110,36 @@ void runcycle(machine *mac, bool debugRun){
 	printStatus(mac);
 }
 
+void setupMemory(char *fname, ramMemory *ram){
+	cout << "reading program from file " << fname << "\n";
+	
+	FILE *inf = fopen(fname, "rb");
+	fseek(inf, 0, SEEK_END);
+	long lenght = ftell(inf);
+	fseek(inf, 0, SEEK_SET);
+	cout << "start pos: " << ftell(inf) << "\n";
+	Word inW = 0;
+	int inI;
+	int addr = baseAddr;
+	char c = 0;
+	while((inI = fgetc(inf)) != EOF){ 
+		inW |= inI << (c*8);
+		if(c == 3){
+			printWord("word done: ",inW);
+			writeWord(ram, &inW, addr);
+			cout << "\nwritten prog[" <<(ftell(inf) / 4)<< "]: ";
+			printWord("",readWord(ram, addr));
+			cout << "\n";
+			addr += 4;
+			inW = 0;
+		}
+		c = (c+1)%4;
+	}
+	inW = OP_HALT;
+	writeWord(ram, &inW, addr);
+	fclose(inf);
+}
+
 main(int argc, char** argv){
 	Word size = MEM_SIZE_W;
 	bool debugRun = DBRUN;
@@ -118,12 +148,16 @@ main(int argc, char** argv){
 	machine* mac = new machine(size);
 	
 	cout << "FILLING MEMORY...\n";
-	for(int i = 0; i < proglen; i++){
-		writeWord(mac->getBus()->getRam(), &program[i], baseAddr+(i*4));
-		cout << "written prog[" <<i<< "]: ";
-		printWord("",readWord(mac->getBus()->getRam(), baseAddr+(i*4)));
-		cout << "\n";
+	if(argc > 1){
+		setupMemory(argv[1], mac->getBus()->getRam());
 	}
+	else
+		for(int i = 0; i < proglen; i++){
+			writeWord(mac->getBus()->getRam(), &program[i], baseAddr+(i*4));
+			cout << "written prog[" <<i<< "]: ";
+			printWord("",readWord(mac->getBus()->getRam(), baseAddr+(i*4)));
+			cout << "\n";
+		}
 	
 	cout << "PREPARING PC..\n";
 	mac->init();

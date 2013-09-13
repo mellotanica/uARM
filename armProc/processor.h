@@ -82,7 +82,7 @@ public:
 	void cycle() {
 		fetch();
 		decode();
-		setOP("Unknown");
+		setOP("Unknown", true);
 		execute();
 	};
 	
@@ -105,11 +105,17 @@ private:
 	
 	ProcessorMode getMode() {uint16_t mode = cpu_registers[REG_CPSR] & MODE_MASK; return (ProcessorMode) mode;};
 	void debugARM(string mnemonic);
+	void debugThumb(string mnemonic);
 	bool condCheck();
 	void barrelShifter(bool immediate, Byte byte, Byte half);
 	
 	void undefinedTrap();
 	void softwareInterruptTrap();
+	void dataAbortTrap();
+	void resetTrap();
+	void prefetchAbortTrap();
+	void interruptTrap();
+	void fastInterruptTrap();
 	void execTrap(ExceptionMode exception);
 	void NOP() {debugARM("NOP");};
 	void unpredictable();
@@ -130,19 +136,21 @@ private:
 	void dataProcessing(Byte opcode);
 	void halfwordDataTransfer(bool sign, bool load_halfwd);
 	void singleMemoryAccess(bool L);
-	void dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest);
-	void bitwiseReturn(Word *dest);
+	void dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest, bool S);
+	void bitwiseReturn(Word *dest, bool S);
 	
 	void loadStore(bool load, bool P, bool U, bool B, bool W, Word* srcDst, Word* base, Word offset);
 
-	void setOP(string mnemonic){
-		if(true) {	//thumb support not yet implemented
-			isOPcodeARM = true;
+	void setOP(string mnemonic, bool isARM){
+		if(isARM)
 			OPcode = pipeline[PIPELINE_EXECUTE];
-		} else {
-			isOPcodeARM = false;
-			OPcode = (HalfWord) pipeline[PIPELINE_EXECUTE] & 0xFFFF;	//this is only the first halfword case
+		else{
+			if((*getPC() >> 1) & 1)	//second halfword
+				OPcode = (HalfWord) (pipeline[PIPELINE_EXECUTE] >> 16) & 0xFFFF;
+			else 					//first halfword
+				OPcode = (HalfWord) pipeline[PIPELINE_EXECUTE] & 0xFFFF;	//this is only the first halfword case
 		}
+		isOPcodeARM = isARM;
 		mnemonicOPcode = mnemonic;
 	};
 };

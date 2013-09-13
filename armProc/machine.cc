@@ -47,8 +47,7 @@ machine::~machine(){
 }
 
 void machine::init(){
-	for(int i = 0; i < 2; i++)
-		cpu->nextCycle();
+	cpu->prefetch();
 }
 
 void machine::step(){

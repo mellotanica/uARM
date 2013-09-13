@@ -277,19 +277,27 @@ bool processor::condCheck(){
 
 void processor::nextCycle() {
 	status = PS_RUNNING;
-	bus->fetch(getPC());
-	*getPC() += 4;
+	if(cpu_registers[REG_CPSR] & T_MASK)	//Thumb state
+		*getPC() += 2;
+	else 									//ARM state
+		*getPC() += 4;
+	if(*getPC() % 4 == 0)	//in ARM state or after second halfword in Thumb state, fetch new word
+		bus->fetch(getPC());
 };
 
 void processor::prefetch() {
-	*getPC() -= 8;
-	for(int i = 0; i < 3; i++)
-		nextCycle();
+	bus->fetch(getPC());
+	nextCycle();
 }
 
 void processor::debugARM(string mnemonic){
-	cout << "Executing... "<<mnemonic << "\n";
-	setOP(mnemonic);
+	//cout << "Executing... "<< mnemonic << " (ARM)\n";
+	setOP(mnemonic, true);
+}
+
+void processor::debugThumb(string mnemonic){
+	//cout << "Executing... "<< mnemonic << " (Thumb)\n";
+	setOP(mnemonic, false);
 }
 
 /* *************************** *
@@ -306,22 +314,74 @@ void processor::softwareInterruptTrap(){
 	execTrap(EXC_SWI);
 }
 
+void processor::dataAbortTrap(){
+	execTrap(EXC_DATAABT);
+}
+
+void processor::resetTrap(){
+	execTrap(EXC_RESET);
+}
+
+void processor::prefetchAbortTrap(){
+	execTrap(EXC_PREFABT);
+}
+
+void processor::interruptTrap(){
+	execTrap(EXC_IRQ);
+}
+
+void processor::fastInterruptTrap(){
+	execTrap(EXC_FIQ);
+}
+
 void processor::execTrap(ExceptionMode exception){
 	Word lr, spsr;
 	switch(exception){	//set the right return registers
 		case EXC_SWI:
-			lr = REG_LR_SVC;
+			if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
+				cpu_registers[REG_LR_SVC] = *getPC() - 6;
+			else 									//ARM state
+				cpu_registers[REG_LR_SVC] = *getPC() - 4;
 			spsr = REG_SPSR_SVC;
 			break;
 		case EXC_UNDEF:
-			lr = REG_LR_UND;
+			if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
+				cpu_registers[REG_LR_UND] = *getPC() - 6;
+			else 									//ARM state
+				cpu_registers[REG_LR_UND] = *getPC() - 4;
 			spsr = REG_SPSR_UND;
+			break;
+		case EXC_DATAABT:
+			cpu_registers[REG_LR_ABT] = *getPC();
+			spsr = REG_SPSR_ABT;
+			break;
+		case EXC_RESET:
+			cpu_registers[REG_LR_SVC] = get_unpredictable();
+			cpu_registers[REG_SPSR_SVC] = get_unpredictable();
+			break;
+		case EXC_PREFABT:
+			cpu_registers[REG_LR_ABT] = *getPC() + 4;
+			spsr = REG_SPSR_ABT;
+			break;
+		case EXC_IRQ:
+			if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
+				cpu_registers[REG_LR_IRQ] = *getPC() - 2;
+			else 									//ARM state
+				cpu_registers[REG_LR_IRQ] = *getPC();
+			spsr = REG_SPSR_IRQ;
+			break;
+		case EXC_FIQ:
+			if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
+				cpu_registers[REG_LR_FIQ] = *getPC() - 2;
+			else 									//ARM state
+				cpu_registers[REG_LR_FIQ] = *getPC();
+			spsr = REG_SPSR_FIQ;
 			break;
 	}
 	
-	cpu_registers[lr] = *getPC() - 8;	//lr contains next instruction
 	Word *cpsr = getVisibleRegister(REG_CPSR);
-	cpu_registers[spsr] = *cpsr;	//spsr contains old cpsr
+	if(exception != EXC_RESET)
+		cpu_registers[spsr] = *cpsr;	//spsr contains old cpsr
 	*cpsr &= 0xFFFFFFE0;
 	
 	switch(exception){	//enter privileged mode and edit status register as needed
@@ -333,14 +393,27 @@ void processor::execTrap(ExceptionMode exception){
 		case EXC_UNDEF:
 			*cpsr |= MODE_UNDEFINED;
 			break;
+		case EXC_DATAABT:
+			*cpsr != MODE_ABORT;
+			break;
+		case EXC_RESET:
+			*cpsr |= MODE_SUPERVISOR | I_MASK | F_MASK;
+			*cpsr &= INVERT_W(T_MASK);
+			break;
+		case EXC_PREFABT:
+			*cpsr |= MODE_ABORT;
+			break;
+		case EXC_IRQ:
+			*cpsr |= MODE_INTERRUPT;
+			break;
+		case EXC_FIQ:
+			*cpsr |= MODE_FAST_INTERRUPT;
+			break;
 	}
 	
 	*getPC() = exception;
 	
-	/*should do some prefetching to execute the supervisor code next cycle..*/
-	
-	nextCycle();
-	nextCycle();
+	prefetch();
 }
 
 void processor::unpredictable(){
@@ -377,8 +450,13 @@ void processor::execute(){
 	Byte codeLow;
 	
 	if(cpu_registers[REG_CPSR] & T_MASK){	// processor in Thumb state
-		codeHi = (Byte) (pipeline[PIPELINE_EXECUTE] >> 12) & 0xF;
-		codeLow = (Byte) (pipeline[PIPELINE_EXECUTE] >> 8) & 0xF;
+		if(*getPC() & 2){	//read second halfword
+			codeHi = (Byte) (pipeline[PIPELINE_EXECUTE] >> 28) & 0xF;
+			codeLow = (Byte) (pipeline[PIPELINE_EXECUTE] >> 24) & 0xF;
+		} else {
+			codeHi = (Byte) (pipeline[PIPELINE_EXECUTE] >> 12) & 0xF;
+			codeLow = (Byte) (pipeline[PIPELINE_EXECUTE] >> 8) & 0xF;
+		}
 		execThumb->execute(codeHi, codeLow);
 	}
 	else{									// processor in ARM state
@@ -395,15 +473,6 @@ void processor::execute(){
  * *************************** */
  
 void processor::coprocessorOperation(){
-	// a coprocessor starts an indipendent task with this instruction...
-	// if not multithreaded, this is the place where to make the coprocessor start its task
-	/*	this is the hardware-emulated code
-	cpint->setnCPI(false);
-	if(cpint->CPA())	//no coprocessor has taken the task.. undefined trap!
-		undefinedTrap();
-	else
-		cpint->setnCPI(true);
-	*/
 	coprocessor *cp = cpint->getCoprocessor((pipeline[PIPELINE_EXECUTE] >> 8) & 0xF);
 	if(cp == NULL){	//no coprocessor can take this command: undefined trap!
 		undefinedTrap();
@@ -730,7 +799,7 @@ void processor::branch(bool link, bool exchange){
 	} else {
 		if(link){
 			Word *lr = getVisibleRegister(REG_LR);
-			*lr = *pc+4;
+			*lr = *pc-4;
 			*lr &= 0xFFFFFFFC;
 		}
 		Word offset = (pipeline[PIPELINE_EXECUTE] & 0xFFFFFF) << 2;
@@ -873,63 +942,64 @@ void processor::dataProcessing(Byte opcode){
 	Word op1 = *(getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF));
 	Word *dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
 	Word op2 = shifter_operand;
+	bool S = pipeline[PIPELINE_EXECUTE] & (1<<20);
 	switch(opcode){
 		case 8:		//TST
-			pipeline[PIPELINE_EXECUTE] |= 1<<20;	//this instruction always updates CPSR
+			S = true;	//this instruction always updates CPSR
 			dest = &alu_tmp;
 		case 0:		//AND
 			*dest = op1 & op2;
-			bitwiseReturn(dest);
+			bitwiseReturn(dest, S);
 			break;
 		case 9:		//TEQ
-			pipeline[PIPELINE_EXECUTE] |= 1<<20;	//this instruction always updates CPSR
+			S = true;	//this instruction always updates CPSR
 			dest = &alu_tmp;
 		case 1:		//EOR
 			*dest = op1 ^ op2;
-			bitwiseReturn(dest);
+			bitwiseReturn(dest, S);
 			break;
 		case 10:	//CMP
-			pipeline[PIPELINE_EXECUTE] |= 1<<20;	//this instruction always updates CPSR
+			S = true;	//this instruction always updates CPSR
 			dest = &alu_tmp;
 		case 2:		//SUB
-			dataPsum(op1, op2, false, false, dest);
+			dataPsum(op1, op2, false, false, dest, S);
 			break;
 		case 3:		//RSB
-			dataPsum(op2, op1, false, false, dest);
+			dataPsum(op2, op1, false, false, dest, S);
 			break;
 		case 11:	//CMN
-			pipeline[PIPELINE_EXECUTE] |= 1<<20;	//this instruction always updates CPSR
+			S = true;	//this instruction always updates CPSR
 			dest = &alu_tmp;
 		case 4:		//ADD
-			dataPsum(op1, op2, false, true, dest);
+			dataPsum(op1, op2, false, true, dest, S);
 			break;
 		case 5:		//ADC
-			dataPsum(op1, op2, true, true, dest);
+			dataPsum(op1, op2, true, true, dest, S);
 			break;
 		case 6:		//SBC
-			dataPsum(op1, op2, true, false, dest);
+			dataPsum(op1, op2, true, false, dest, S);
 			break;
 		case 7:		//RSC
-			dataPsum(op2, op1, true, false, dest);
+			dataPsum(op2, op1, true, false, dest, S);
 			break;
 		case 12:	//ORR
 			*dest = op1 | op2;
-			bitwiseReturn(dest);
+			bitwiseReturn(dest, S);
 			break;
 		case 15:	//MVN
 			op2 = INVERT_W(op2);
 		case 13:	//MOV
 			*dest = op2;
-			bitwiseReturn(dest);
+			bitwiseReturn(dest, S);
 			break;
 		case 14:	//BIC
 			*dest = op1 & (INVERT_W(op2));
-			bitwiseReturn(dest);
+			bitwiseReturn(dest, S);
 			break;
 	}
 }
 
-void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest){
+void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest, bool S){
 	int64_t sres;
 	bool overflow = false, borrow = false;
 	uint64_t c = (carry && util::getInstance()->checkBit(getVisibleRegister(REG_CPSR), C_POS) ? 1 : 0);
@@ -947,8 +1017,8 @@ void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest){
 	if(sres > (SDoubleWord)0x7FFFFFFF || sres < (SDoubleWord)0xFFFFFFFF80000000)
 		overflow = true;
 	*dest = (Word) sres & 0xFFFFFFFF;
-	if(pipeline[PIPELINE_EXECUTE] & (1<<20)){	// S == 1
-		if(((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF) == 15){	//Rd == 15
+	if(S){	// S == 1
+		if(dest == getPC()){
 			Word *savedPSR = getVisibleRegister(REG_SPSR);
 			if(savedPSR != NULL)
 				cpu_registers[REG_CPSR] = *savedPSR;
@@ -963,9 +1033,9 @@ void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest){
 	}
 }
 
-void processor::bitwiseReturn(Word *dest){
-	if(pipeline[PIPELINE_EXECUTE] & (1<<20)){	// S == 1
-		if(((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF) == 15){	//Rd == 15
+void processor::bitwiseReturn(Word *dest, bool S){
+	if(S){
+		if(dest == getPC()){
 			Word *savedPSR = getVisibleRegister(REG_SPSR);
 			if(savedPSR != NULL)
 				cpu_registers[REG_CPSR] = *savedPSR;

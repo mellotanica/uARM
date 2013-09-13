@@ -36,51 +36,51 @@ void Thumbisa::execute(Byte hi, Byte low){
   * *************** */
 
 void Thumbisa::ADD(){
-	p->debugARM("ADD (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::ADDH(){
-	p->debugARM("ADDH (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::ADDPC(){
-	p->debugARM("ADDPC (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::ADDSP(){
-	p->debugARM("ADDSP (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::ASR(){
-	p->debugARM("ASR (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::B(){
-	p->debugARM("B (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::Bcond(){
-	p->debugARM("conditional B (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::BL(){
-	p->debugARM("BL (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::BX(){
-	p->debugARM("BX (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::CMP(){
-	p->debugARM("CMP (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::CMPH(){
-	p->debugARM("CMPH (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::DP(){	//data processing, triggers an ALU operation
-	p->debugARM("DP (T)");
+	p->debugThumb(__FUNCTION__);
 	
 	Byte hi = (p->pipeline[PIPELINE_EXECUTE] >> 8) & 3;
 	Byte low = (p->pipeline[PIPELINE_EXECUTE] >> 6) & 3;
@@ -88,93 +88,93 @@ void Thumbisa::DP(){	//data processing, triggers an ALU operation
 }
 
 void Thumbisa::LDMIA(){
-	p->debugARM("LDMIA (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::LDR(){
-	p->debugARM("LDR (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::LDRB(){
-	p->debugARM("LDRB (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::LDRH(){
-	p->debugARM("LDRH (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::LDRPC(){
-	p->debugARM("LDRPC (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::LDRSB(){
-	p->debugARM("LDRSB (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::LDRSH(){
-	p->debugARM("LDRSH (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::LDRSP(){
-	p->debugARM("LDRSP (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::LSL(){
-	p->debugARM("LSL (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::LSR(){
-	p->debugARM("LSR (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::MOV(){
-	p->debugARM("MOV (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::MOVH(){
-	p->debugARM("MOVH (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::POP(){
-	p->debugARM("POP (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::PUSH(){
-	p->debugARM("PUSH (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::STMIA(){
-	p->debugARM("STMIA (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::STR(){
-	p->debugARM("STR (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::STRB(){
-	p->debugARM("STRB (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::STRH(){
-	p->debugARM("STRH (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::STRSP(){
-	p->debugARM("STRSP (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::SUB(){
-	p->debugARM("SUB (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::SWI(){
-	p->debugARM("SWI (T)");
+	p->debugThumb(__FUNCTION__);
 	
 		p->softwareInterruptTrap();
 }
 
 void Thumbisa::UND(){
-	p->debugARM("UND (T)");
+	p->debugThumb(__FUNCTION__);
 	
 		p->undefinedTrap();
 }
@@ -184,67 +184,67 @@ void Thumbisa::UND(){
  */
 
 void Thumbisa::ADD_ALU(){
-	p->debugARM("ADD_ALU (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::AND_ALU(){
-	p->debugARM("AND_ALU (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::ASR_ALU(){
-	p->debugARM("ASR_ALU (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::BIC_ALU(){
-	p->debugARM("BIC_ALU (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::CMN_ALU(){
-	p->debugARM("CMN_ALU (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::CMP_ALU(){
-	p->debugARM("CMP_ALU (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::EOR_ALU(){
-	p->debugARM("EOR_ALU (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::LSL_ALU(){
-	p->debugARM("LSL_ALU (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::LSR_ALU(){
-	p->debugARM("LSR_ALU (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::MUL_ALU(){
-	p->debugARM("MUL_ALU (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::MVN_ALU(){
-	p->debugARM("MVN_ALU (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::NEG_ALU(){
-	p->debugARM("NEG_ALU (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::ORR_ALU(){
-	p->debugARM("ORR_ALU (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::ROR_ALU(){
-	p->debugARM("ROR_ALU (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::SUB_ALU(){
-	p->debugARM("SUB_ALU (T)");
+	p->debugThumb(__FUNCTION__);
 }
 
 void Thumbisa::TST_ALU(){
-	p->debugARM("TST_ALU (T)");	
+	p->debugThumb(__FUNCTION__);	
 }
 
 #endif //UARM_THUMBISA_CC

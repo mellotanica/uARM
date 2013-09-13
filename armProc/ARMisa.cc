@@ -44,241 +44,241 @@ void ARMisa::ADC(){
 }
 
 void ARMisa::ADD(){
-	p->debugARM("ADD");
+	p->debugARM(__FUNCTION__);
 	
 		p->dataProcessing(4);
 }
 
 void ARMisa::AND(){
-	p->debugARM("AND");
+	p->debugARM(__FUNCTION__);
 	
 		p->dataProcessing(0);
 }
 
 void ARMisa::B(){
-	p->debugARM("B");
+	p->debugARM(__FUNCTION__);
 	
 		p->branch(false, false);
 }
 
 void ARMisa::BIC(){
-	p->debugARM("BIC");
+	p->debugARM(__FUNCTION__);
 	
 		p->dataProcessing(14);
 }
 
 void ARMisa::BL(){
-	p->debugARM("BL");
+	p->debugARM(__FUNCTION__);
 	
 		p->branch(true, false);
 }
 
 void ARMisa::BX(){
-	p->debugARM("BX");
+	p->debugARM(__FUNCTION__);
 	
 		p->branch(false, true);
 }
 
 void ARMisa::CDP(){
-	p->debugARM("CDP");
+	p->debugARM(__FUNCTION__);
 	
 		p->coprocessorOperation();
 }
 
 void ARMisa::CMN(){
-	p->debugARM("CMN");
+	p->debugARM(__FUNCTION__);
 	
 		p->dataProcessing(11);
 }
 
 void ARMisa::CMP(){
-	p->debugARM("CMP");
+	p->debugARM(__FUNCTION__);
 	
 		p->dataProcessing(10);
 }
 
 void ARMisa::EOR(){
-	p->debugARM("EOR");
+	p->debugARM(__FUNCTION__);
 	
 		p->dataProcessing(1);
 }
 
 void ARMisa::LDC(){
-	p->debugARM("LDC");
+	p->debugARM(__FUNCTION__);
 	
 		p->coprocessorTransfer(true, true);
 }
 
 void ARMisa::LDM(){
-	p->debugARM("LDM");
+	p->debugARM(__FUNCTION__);
 	
 		p->blockDataTransfer(true);
 }
 
 void ARMisa::LDR(){
-	p->debugARM("LDR");
+	p->debugARM(__FUNCTION__);
 	
 		p->singleMemoryAccess(true);
 }
 
 void ARMisa::LDRH(){
-	p->debugARM("LDRH");
+	p->debugARM(__FUNCTION__);
 	
 		p->halfwordDataTransfer(false, true);
 }
 
 void ARMisa::LDRSB(){
-	p->debugARM("LDRSB");
+	p->debugARM(__FUNCTION__);
 		
 		p->halfwordDataTransfer(true, false);
 }
 
 void ARMisa::LDRSH(){
-	p->debugARM("LDRSH");
+	p->debugARM(__FUNCTION__);
 	
 		p->halfwordDataTransfer(true, true);
 }
 
 void ARMisa::MCR(){
-	p->debugARM("MCR");
+	p->debugARM(__FUNCTION__);
 	
 		p->coprocessorTransfer(false, true);
 }
 
 void ARMisa::MLA(){
-	p->debugARM("MLA");
+	p->debugARM(__FUNCTION__);
 	
 		p->multiply(true, false);
 }
 
 void ARMisa::MLAL(){
-	p->debugARM("MLAL");
+	p->debugARM(__FUNCTION__);
 	
 		p->multiply(true, true);
 }
 
 void ARMisa::MOV(){
-	p->debugARM("MOV");
+	p->debugARM(__FUNCTION__);
 	
 		p->dataProcessing(13);
 }
 
 void ARMisa::MRC(){
-	p->debugARM("MRC");
+	p->debugARM(__FUNCTION__);
 	
 		p->coprocessorTransfer(false, false);
 }
 
 void ARMisa::MRS(){
-	p->debugARM("MRS");
+	p->debugARM(__FUNCTION__);
 	
 		p->accessPSR(true);
 }
 
 void ARMisa::MSR(){
-	p->debugARM("MSR");
+	p->debugARM(__FUNCTION__);
 	
 		p->accessPSR(false);
 }
 
 void ARMisa::MUL(){
-	p->debugARM("MUL");
+	p->debugARM(__FUNCTION__);
 	
 		p->multiply(false, false);
 }
 
 void ARMisa::MULL(){
-	p->debugARM("MULL");
+	p->debugARM(__FUNCTION__);
 	
 		p->multiply(false, true);
 }
 
 void ARMisa::MVN(){
-	p->debugARM("MVN");
+	p->debugARM(__FUNCTION__);
 	
 		p->dataProcessing(15);
 }
 
 void ARMisa::ORR(){
-	p->debugARM("ORR");
+	p->debugARM(__FUNCTION__);
 	
 		p->dataProcessing(12);
 }
 
 void ARMisa::RSB(){
-	p->debugARM("RSB");
+	p->debugARM(__FUNCTION__);
 	
 		p->dataProcessing(3);
 }
 
 void ARMisa::RSC(){
-	p->debugARM("RSC");
+	p->debugARM(__FUNCTION__);
 	
 		p->dataProcessing(7);
 }
 
 void ARMisa::SBC(){
-	p->debugARM("SBC");
+	p->debugARM(__FUNCTION__);
 	
 		p->dataProcessing(6);
 }
 
 void ARMisa::STC(){
-	p->debugARM("STC");
+	p->debugARM(__FUNCTION__);
 	
 		p->coprocessorTransfer(true, false);
 }
 
 void ARMisa::STM(){
-	p->debugARM("STM");
+	p->debugARM(__FUNCTION__);
 	
 		p->blockDataTransfer(false);
 }
 
 void ARMisa::STR(){
-	p->debugARM("STR");
+	p->debugARM(__FUNCTION__);
 	
 		p->singleMemoryAccess(false);
 }
 
 void ARMisa::STRH(){
-	p->debugARM("STRH");
+	p->debugARM(__FUNCTION__);
 	
 		p->halfwordDataTransfer(false, false);
 }
 
 void ARMisa::SUB(){
-	p->debugARM("SUB");
+	p->debugARM(__FUNCTION__);
 	
 		p->dataProcessing(2);
 }
 
 void ARMisa::SWI(){
-	p->debugARM("SWI");
+	p->debugARM(__FUNCTION__);
 	
 		p->softwareInterruptTrap();
 }
 
 void ARMisa::SWP(){
-	p->debugARM("SWP");
+	p->debugARM(__FUNCTION__);
 	
 		p->singleDataSwap();
 }
 
 void ARMisa::TEQ(){
-	p->debugARM("TEQ");
+	p->debugARM(__FUNCTION__);
 	
 		p->dataProcessing(9);
 }
 
 void ARMisa::TST(){
-	p->debugARM("TST");
+	p->debugARM(__FUNCTION__);
 	
 		p->dataProcessing(8);
 }
 
 void ARMisa::UND(){
-	p->debugARM("UND");
+	p->debugARM(__FUNCTION__);
 	
 		p->undefinedTrap();
 }
