@@ -24,6 +24,8 @@
 
 #include "processor.h"
 #include "services/util.h"
+#include "ARMisa.h"
+#include "Thumbisa.h"
 
 processor::processor() : pu() {
 	status = PS_IDLE;
@@ -32,8 +34,8 @@ processor::processor() : pu() {
 	for(int i = 0; i < PIPELINE_STAGES; i++)
 		pipeline[i] = 0;
 	cpu_registers[REG_CPSR] = MODE_USER;
-	/*for(int i = 0; i < CPU_REGISTERS_NUM; i++)
-		cpu_registers[i] = 0;*/
+	execARM = new ARMisa(this);
+	execThumb = new Thumbisa(this);
 }
 
 /* ******************** *
@@ -290,6 +292,12 @@ void processor::debugARM(string mnemonic){
 	setOP(mnemonic);
 }
 
+/* *************************** *
+ * 							   *
+ * Exceptions & traps handling *
+ *                             *
+ * *************************** */
+
 void processor::undefinedTrap(){
 	execTrap(EXC_UNDEF);
 }
@@ -365,12 +373,19 @@ void processor::execute(){
 		status = PS_HALTED;
 		return;
 	}
-	if(condCheck()){
-		Byte codeHi = (Byte) (pipeline[PIPELINE_EXECUTE] >> 20) & 0xFF;
-		Byte codeLow = (Byte) (pipeline[PIPELINE_EXECUTE] >> 4) & 0xF;
-		(*this.*ARM_table[codeHi][codeLow])();	//execute funcion from ARM_table in cell instr[27:20][7:4]
-	} else
-		NOP();
+	Byte codeHi;
+	Byte codeLow;
+	
+	if(cpu_registers[REG_CPSR] & T_MASK){	// processor in Thumb state
+		codeHi = (Byte) (pipeline[PIPELINE_EXECUTE] >> 12) & 0xF;
+		codeLow = (Byte) (pipeline[PIPELINE_EXECUTE] >> 8) & 0xF;
+		execThumb->execute(codeHi, codeLow);
+	}
+	else{									// processor in ARM state
+		codeHi = (Byte) (pipeline[PIPELINE_EXECUTE] >> 20) & 0xFF;
+		codeLow = (Byte) (pipeline[PIPELINE_EXECUTE] >> 4) & 0xF;
+		execARM->execute(codeHi, codeLow);
+	}
 }
 
 /* *************************** *
@@ -379,403 +394,6 @@ void processor::execute(){
  * 							   *
  * *************************** */
  
- /* *************** *
-  * 				*
-  * 	ARM ISA		*
-  * 				*
-  * *************** */
-
-void processor::ADC(){
-	debugARM("ADC");
-	
-		dataProcessing(5);
-}
-
-void processor::ADD(){
-	debugARM("ADD");
-	
-		dataProcessing(4);
-}
-
-void processor::AND(){
-	debugARM("AND");
-	
-		dataProcessing(0);
-}
-
-void processor::B(){
-	debugARM("B");
-	
-		branch(false, false);
-}
-
-void processor::BIC(){
-	debugARM("BIC");
-	
-		dataProcessing(14);
-}
-
-void processor::BL(){
-	debugARM("BL");
-	
-		branch(true, false);
-}
-
-void processor::BX(){
-	debugARM("BX");
-	
-		branch(false, true);
-}
-
-void processor::CDP(){
-	debugARM("CDP");
-	
-		coprocessorOperation();
-}
-
-void processor::CMN(){
-	debugARM("CMN");
-	
-		dataProcessing(11);
-}
-
-void processor::CMP(){
-	debugARM("CMP");
-	
-		dataProcessing(10);
-}
-
-void processor::EOR(){
-	debugARM("EOR");
-	
-		dataProcessing(1);
-}
-
-void processor::LDC(){
-	debugARM("LDC");
-	
-		coprocessorTransfer(true, true);
-}
-
-void processor::LDM(){
-	debugARM("LDM");
-	
-		blockDataTransfer(true);
-}
-
-void processor::LDR(){
-	debugARM("LDR");
-	
-		singleMemoryAccess(true);
-}
-
-void processor::LDRH(){
-	debugARM("LDRH");
-	
-		halfwordDataTransfer(false, true);
-}
-
-void processor::LDRSB(){
-	debugARM("LDRSB");
-		
-		halfwordDataTransfer(true, false);
-}
-
-void processor::LDRSH(){
-	debugARM("LDRSH");
-	
-		halfwordDataTransfer(true, true);
-}
-void processor::MCR(){
-	debugARM("MCR");
-	
-		coprocessorTransfer(false, true);
-}
-
-void processor::MLA(){
-	debugARM("MLA");
-	
-		multiply(true, false);
-}
-
-void processor::MLAL(){
-	debugARM("MLAL");
-	
-		multiply(true, true);
-}
-
-void processor::MOV(){
-	debugARM("MOV");
-	
-		dataProcessing(13);
-}
-
-void processor::MRC(){
-	debugARM("MRC");
-	
-		coprocessorTransfer(false, false);
-}
-
-void processor::MRS(){
-	debugARM("MRS");
-	
-		accessPSR(true);
-}
-
-void processor::MSR(){
-	debugARM("MSR");
-	
-		accessPSR(false);
-}
-
-void processor::MUL(){
-	debugARM("MUL");
-	
-		multiply(false, false);
-}
-
-void processor::MULL(){
-	debugARM("MULL");
-	
-		multiply(false, true);
-}
-
-void processor::MVN(){
-	debugARM("MVN");
-	
-		dataProcessing(15);
-}
-
-void processor::ORR(){
-	debugARM("ORR");
-	
-		dataProcessing(12);
-}
-
-void processor::RSB(){
-	debugARM("RSB");
-	
-		dataProcessing(3);
-}
-
-void processor::RSC(){
-	debugARM("RSC");
-	
-		dataProcessing(7);
-}
-
-void processor::SBC(){
-	debugARM("SBC");
-	
-		dataProcessing(6);
-}
-
-void processor::STC(){
-	debugARM("STC");
-	
-		coprocessorTransfer(true, false);
-}
-
-void processor::STM(){
-	debugARM("STM");
-	
-		blockDataTransfer(false);
-}
-
-void processor::STR(){
-	debugARM("STR");
-	
-		singleMemoryAccess(false);
-}
-
-void processor::STRH(){
-	debugARM("STRH");
-	
-		halfwordDataTransfer(false, false);
-}
-
-void processor::SUB(){
-	debugARM("SUB");
-	
-		dataProcessing(2);
-}
-
-void processor::SWI(){
-	debugARM("SWI");
-	
-		softwareInterruptTrap();
-}
-
-void processor::SWP(){
-	debugARM("SWP");
-	
-		singleDataSwap();
-}
-
-void processor::TEQ(){
-	debugARM("TEQ");
-	
-		dataProcessing(9);
-}
-
-void processor::TST(){
-	debugARM("TST");
-	
-		dataProcessing(8);
-}
-
-void processor::UND(){
-	debugARM("UND");
-	
-		undefinedTrap();
-}
-
- /* *************** *
-  * 				*
-  *    Thumb ISA	*
-  * 				*
-  * *************** */
-
-void processor::ADD_T(){
-	debugARM("ADD (T)");
-}
-
-void processor::ADDH_T(){
-	debugARM("ADDH (T)");
-}
-
-void processor::ADDPC_T(){
-	debugARM("ADDPC (T)");
-}
-
-void processor::ADDSP_T(){
-	debugARM("ADDSP (T)");
-}
-
-void processor::ASR_T(){
-	debugARM("ASR (T)");
-}
-
-void processor::B_T(){
-	debugARM("B (T)");
-}
-
-void processor::Bcond_T(){
-	debugARM("conditional B (T)");
-}
-
-void processor::BL_T(){
-	debugARM("BL (T)");
-}
-
-void processor::BX_T(){
-	debugARM("BX (T)");
-}
-
-void processor::CMP_T(){
-	debugARM("CMP (T)");
-}
-
-void processor::CMPH_T(){
-	debugARM("CMPH (T)");
-}
-
-void processor::DP_T(){
-	debugARM("DP (T)");
-}
-
-void processor::LDMIA_T(){
-	debugARM("LDMIA (T)");
-}
-
-void processor::LDR_T(){
-	debugARM("LDR (T)");
-}
-
-void processor::LDRB_T(){
-	debugARM("LDRB (T)");
-}
-
-void processor::LDRH_T(){
-	debugARM("LDRH (T)");
-}
-
-void processor::LDRPC_T(){
-	debugARM("LDRPC (T)");
-}
-
-void processor::LDRSB_T(){
-	debugARM("LDRSB (T)");
-}
-
-void processor::LDRSH_T(){
-	debugARM("LDRSH (T)");
-}
-
-void processor::LDRSP_T(){
-	debugARM("LDRSP (T)");
-}
-
-void processor::LSL_T(){
-	debugARM("LSL (T)");
-}
-
-void processor::LSR_T(){
-	debugARM("LSR (T)");
-}
-
-void processor::MOV_T(){
-	debugARM("MOV (T)");
-}
-
-void processor::MOVH_T(){
-	debugARM("MOVH (T)");
-}
-
-void processor::POP_T(){
-	debugARM("POP (T)");
-}
-
-void processor::PUSH_T(){
-	debugARM("PUSH (T)");
-}
-
-void processor::STMIA_T(){
-	debugARM("STMIA (T)");
-}
-
-void processor::STR_T(){
-	debugARM("STR (T)");
-}
-
-void processor::STRB_T(){
-	debugARM("STRB (T)");
-}
-
-void processor::STRH_T(){
-	debugARM("STRH (T)");
-}
-
-void processor::STRSP_T(){
-	debugARM("STRSP (T)");
-}
-
-void processor::SUB_T(){
-	debugARM("SUB (T)");
-}
-
-void processor::SWI_T(){
-	debugARM("SWI (T)");
-	
-		softwareInterruptTrap();
-}
-
-void processor::UND_T(){
-	debugARM("UND (T)");
-	
-		undefinedTrap();
-}
-
 void processor::coprocessorOperation(){
 	// a coprocessor starts an indipendent task with this instruction...
 	// if not multithreaded, this is the place where to make the coprocessor start its task
