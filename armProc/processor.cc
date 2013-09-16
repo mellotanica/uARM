@@ -394,7 +394,7 @@ void processor::execTrap(ExceptionMode exception){
 			*cpsr |= MODE_UNDEFINED;
 			break;
 		case EXC_DATAABT:
-			*cpsr != MODE_ABORT;
+            *cpsr |= MODE_ABORT;
 			break;
 		case EXC_RESET:
 			*cpsr |= MODE_SUPERVISOR | I_MASK | F_MASK;
@@ -426,7 +426,7 @@ void processor::unpredictable(){
 
 Word processor::get_unpredictable(){
 	Word ret;
-	for(int i = 0; i < sizeof(Word) * 8; i++)
+    for(unsigned i = 0; i < sizeof(Word) * 8; i++)
 		ret |= (rand() % 1 ? 1 : 0) << i;
 	return ret;
 }
@@ -660,7 +660,7 @@ void processor::blockDataTransfer(bool load){
 	W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);	// Write-back
 	
 	Byte regn;
-	for(int i = 0; i < sizeof(HalfWord) * 8; i++)
+    for(unsigned i = 0; i < sizeof(HalfWord) * 8; i++)
 		if(list & (1<<i))
 			regn++;
 	
@@ -671,7 +671,7 @@ void processor::blockDataTransfer(bool load){
 				unpredictable();
 				return;
 			}
-			for(int i = 0; i < (sizeof(HalfWord) * 8)-1; i++){
+            for(unsigned i = 0; i < (sizeof(HalfWord) * 8)-1; i++){
 				if(list & (1<<i)){		// if register i is marked load it
 					cpu_registers[i] = bus->getRam()->readW(&address);
 					address += 4;
@@ -691,7 +691,7 @@ void processor::blockDataTransfer(bool load){
 			}
 		}
 		else{	// regular multiple load
-			for(int i = 0; i < (sizeof(HalfWord) * 8); i++){
+            for(unsigned i = 0; i < (sizeof(HalfWord) * 8); i++){
 				if(list & (1<<i)){		// if register i is marked load it
 					*getVisibleRegister(i) = bus->getRam()->readW(&address);
 					address += 4;
@@ -706,7 +706,7 @@ void processor::blockDataTransfer(bool load){
 				unpredictable();
 				return;
 			}
-			for(int i = 0; i < (sizeof(HalfWord) * 8); i++){
+            for(unsigned i = 0; i < (sizeof(HalfWord) * 8); i++){
 				if(list & (1<<i)){		// if register i is marked store it
 					bus->getRam()->writeW(&address, cpu_registers[i]);
 					address += 4;
@@ -715,7 +715,7 @@ void processor::blockDataTransfer(bool load){
 		}
 		else{	// regular multiple store
 			bool firstChecked = false;
-			for(int i = 0; i < (sizeof(HalfWord) * 8); i++){
+            for(unsigned i = 0; i < (sizeof(HalfWord) * 8); i++){
 				if(list & (1<<i)){		// if register i is marked store it
 					if(!firstChecked){	// if first register to be stored is base address register
 						firstChecked = true;
@@ -845,13 +845,13 @@ void processor::halfwordDataTransfer(bool sign, bool load_halfwd){
 				HalfWord readwd = bus->getRam()->readH(&address, BIGEND_sig);
 				ret = readwd;
 				if(readwd >> ((sizeof(HalfWord)*8)-1) != 0)
-					for(int i = sizeof(HalfWord)*8; i < sizeof(Word)*8; i ++)
+                    for(unsigned i = sizeof(HalfWord)*8; i < sizeof(Word)*8; i ++)
 						ret |= 1<<i;
 			} else {	//load byte and sign extend
 				Byte readwd = bus->getRam()->read(&address, BIGEND_sig);
 				ret = readwd;
 				if(readwd >> ((sizeof(Byte)*8)-1) != 0)
-					for(int i = sizeof(Byte)*8; i < sizeof(Word)*8; i ++)
+                    for(unsigned i = sizeof(Byte)*8; i < sizeof(Word)*8; i ++)
 						ret |= 1<<i;
 			}
 			*dest = ret;

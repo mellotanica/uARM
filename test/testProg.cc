@@ -1,6 +1,6 @@
-#include "machine.h"
+#include "armProc/machine.h"
 #include "services/debugger.cc"
-#include "const.h"
+#include "armProc/const.h"
 
 void printWord(string head, Word reg) {
 	cout << head << "0x" << hex << uppercase << setw(8) << setfill('0') << reg << nouppercase << dec;

@@ -24,7 +24,7 @@
 
 //flag operations
 
-#include "const.h"
+#include "armProc/const.h"
 
 class util {
 private:
@@ -51,7 +51,7 @@ public:
 	const bool checkBit(Word wd, unsigned bit) {return ((wd & (1<<bit)) > 0 ? true : false);};
 	
 	const void copyBitReg(Word *reg, unsigned bit, unsigned val) {
-		*reg = *reg & INVERT_W(INVERT_B(val) << bit) | (val << bit);
+        *reg = (*reg & INVERT_W(INVERT_B(val) << bit)) | (val << bit);
 	};
 	const void copyBitFromReg(Word *dest, unsigned bit, Word *src) {
 		if(((*src>>bit)&1) != 0)	

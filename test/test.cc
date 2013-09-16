@@ -1,4 +1,4 @@
-#include "machine.h"
+#include "armProc/machine.h"
 
 main(){
 	cout << "TEST START, CREATING MACHINE..\n\n";
