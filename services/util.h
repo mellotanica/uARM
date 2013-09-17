@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef UARM_UTIL_CC
-#define UARM_UTIL_CC
+#ifndef UARM_UTIL_H
+#define UARM_UTIL_H
 
 //flag operations
 
@@ -29,42 +29,42 @@
 class util {
 private:
 	static util *instance;
-	util() {};
+    util() {}
 public:
-	~util() {};
+    ~util() {}
 	
 	static util *getInstance() {
 		if(instance == NULL)
 			instance = new util();
 		return instance;
-	};
+    }
 	
-	const void setBitsReg(Word *reg, Word mask) {*reg = *reg | mask;};
-	const void setBitReg(Word *reg, unsigned bit) {setBitsReg(reg, 1<<bit);};
+    void setBitsReg(Word *reg, Word mask) {*reg = *reg | mask;}
+    void setBitReg(Word *reg, unsigned bit) {setBitsReg(reg, 1<<bit);}
 
-	const void resetBitsReg(Word *reg, Word mask) {*reg = *reg & INVERT_W(mask);};
-	const void resetBitReg(Word *reg, unsigned bit) {resetBitsReg(reg, 1<<bit);};
+    void resetBitsReg(Word *reg, Word mask) {*reg = *reg & INVERT_W(mask);}
+    void resetBitReg(Word *reg, unsigned bit) {resetBitsReg(reg, 1<<bit);}
 
-	const bool checkBits(Word *wd, Word mask) {return ((*wd & mask) == mask ? true : false);};	//returns true if all bits set in mask are
-	const bool checkBits(Word wd, Word mask) {return ((wd & mask) == mask ? true : false);};	//also set in word
-	const bool checkBit(Word *wd, unsigned bit) {return ((*wd & (1<<bit)) > 0 ? true : false);};
-	const bool checkBit(Word wd, unsigned bit) {return ((wd & (1<<bit)) > 0 ? true : false);};
+    bool checkBits(Word *wd, Word mask) {return ((*wd & mask) == mask ? true : false);}	//returns true if all bits set in mask are
+    bool checkBits(Word wd, Word mask) {return ((wd & mask) == mask ? true : false);}	//also set in word
+    bool checkBit(Word *wd, unsigned bit) {return ((*wd & (1<<bit)) > 0 ? true : false);}
+    bool checkBit(Word wd, unsigned bit) {return ((wd & (1<<bit)) > 0 ? true : false);}
 	
-	const void copyBitReg(Word *reg, unsigned bit, unsigned val) {
+    void copyBitReg(Word *reg, unsigned bit, unsigned val) {
         *reg = (*reg & INVERT_W(INVERT_B(val) << bit)) | (val << bit);
-	};
-	const void copyBitFromReg(Word *dest, unsigned bit, Word *src) {
+    }
+    void copyBitFromReg(Word *dest, unsigned bit, Word *src) {
 		if(((*src>>bit)&1) != 0)	
 			copyBitReg(dest, bit, 1); 
 		else 
 			copyBitReg(dest, bit, 0);
-	};
-	const void copyBitFromReg(Word *dest, unsigned dbit, Word *src, unsigned sbit) {
+    }
+    void copyBitFromReg(Word *dest, unsigned dbit, Word *src, unsigned sbit) {
 		if(((*src>>sbit)&1) != 0) 
 			copyBitReg(dest, dbit, 1); 
 		else 
 			copyBitReg(dest, dbit, 0);
-	};
+    }
 };
 
-#endif //UARM_UTIL_CC
+#endif //UARM_UTIL_H

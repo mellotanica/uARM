@@ -49,6 +49,7 @@ signals:
 private slots:
     void setSpeedLab(int speedVal);
     void playToggled(bool checked);
+    void stopPressed();
     void plus();
     void minus();
     void openPressed();

@@ -36,7 +36,12 @@ public:
 		if(bus == NULL)
 			bus = new systemBus();
     }
-    ~pu() {}
+    virtual ~pu() {
+        if(bus != NULL){
+            delete bus;
+            bus = NULL;
+        }
+    }
 	
     virtual Word *getRegList() = 0;
 
@@ -47,7 +52,7 @@ protected:
 class coprocessor : public pu{
 public:
     coprocessor() : pu() {}
-    ~coprocessor() {}
+    ~coprocessor(){}
 	
     virtual Word *getRegList() = 0;
 

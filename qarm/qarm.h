@@ -25,6 +25,9 @@
 #include <QMainWindow>
 #include <QVBoxLayout>
 #include <QTimer>
+#include <QFile>
+#include <QDataStream>
+#include <QMessageBox>
 #include "armProc/machine.h"
 #include "mainbar.h"
 #include "guiConst.h"
@@ -39,6 +42,7 @@ public:
 
 signals:
     void resetDisplay();
+    void resetMachine(unsigned long memSize);
 
 private slots:
     void start(int speed);
@@ -57,6 +61,8 @@ private:
     QVBoxLayout *layout;
     mainBar *toolbar;
     QTimer *clock;
+
+    void fillMemory(ramMemory *ram, QDataStream *in);
 };
 
 #endif // QARM_H

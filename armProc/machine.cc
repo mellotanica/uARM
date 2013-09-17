@@ -55,9 +55,10 @@ void machine::initMac(){
     sysbus->branchHappened = true;
 }
 
-void machine::refreshRam(int size){
-    delete sysbus->getRam();
-    sysbus->resetRam(size);
+void machine::reset(unsigned long memSize){
+    delete cpu;
+    initMac();
+    sysbus->getRam()->init(memSize);
 }
 
 void machine::step(){

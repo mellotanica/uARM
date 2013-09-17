@@ -98,7 +98,7 @@ mainBar::mainBar(QWidget *parent) :
     connect(this, SIGNAL(speedChanged(int)), this, SLOT(setSpeedLab(int)));
     connect(speedSl, SIGNAL(valueChanged(int)), this, SIGNAL(speedChanged(int)));
     connect(playB, SIGNAL(toggled(bool)), this, SLOT(playToggled(bool)));
-    connect(stopB, SIGNAL(clicked()), this, SIGNAL(stop()));
+    connect(stopB, SIGNAL(clicked()), this, SLOT(stopPressed()));
     connect(stepB, SIGNAL(clicked()), this, SIGNAL(step()));
     connect(openB, SIGNAL(clicked()), this, SLOT(openPressed()));
     connect(ramB, SIGNAL(clicked()), this, SIGNAL(showRam()));
@@ -115,6 +115,12 @@ void mainBar::playToggled(bool checked){
         playB->setIcon(*playIco);
         emit pause();
     }
+}
+
+void mainBar::stopPressed(){
+    if(playB->isChecked())
+        playB->toggle();
+    emit stop();
 }
 
 void mainBar::setSpeedLab(int spV){

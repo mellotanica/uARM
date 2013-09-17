@@ -33,7 +33,7 @@
 class coprocessor_interface{
 public:
 	coprocessor_interface();
-	~coprocessor_interface() {delete [] coprocessors;};
+    ~coprocessor_interface() {delete [] coprocessors;}
 	
 	/* hardware-encoded functions
 	void setnCPI(bool val);

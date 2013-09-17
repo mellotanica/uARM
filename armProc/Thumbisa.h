@@ -30,8 +30,8 @@
 
 class Thumbisa{
 public:
-	Thumbisa(processor *father){p = father;};
-	~Thumbisa(){};
+    Thumbisa(processor *father){p = father;}
+    ~Thumbisa(){}
 	
 	void execute(Byte hi, Byte low);
 	

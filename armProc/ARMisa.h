@@ -29,8 +29,8 @@
 
 class ARMisa{
 public:
-	ARMisa(processor *father){p = father;};
-	~ARMisa(){};
+    ARMisa(processor *father){p = father;}
+    ~ARMisa(){}
 	
 	void execute(Byte hi, Byte low);
 	

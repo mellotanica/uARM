@@ -57,7 +57,7 @@ class Thumbisa;
 class processor : public pu{
 public:
 	processor();
-    ~processor() {delete cpint;}
+    ~processor();
 	
     Word *getPC() {return &cpu_registers[REG_PC];}
 	void nextCycle();

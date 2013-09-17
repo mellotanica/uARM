@@ -50,10 +50,10 @@ signals:
 
 public slots:
     void step();
-    void refreshRam(int size);
 
 private slots:
     void run();
+    void reset(unsigned long memSize);
 
 private:
     void initMac();

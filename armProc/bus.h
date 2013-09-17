@@ -28,15 +28,13 @@
 class systemBus{
 public:
 	systemBus();
-	~systemBus();
+    ~systemBus();
 	
 	Word pipeline[PIPELINE_STAGES];
 	
 	void fetch(Word *address);
 	
     ramMemory *getRam() {return ram;}
-
-    void resetRam(int size);
 	
 	bool branchHappened;
 private:

@@ -33,9 +33,17 @@ processor::processor() : pu() {
 	cpint = new coprocessor_interface();
 	for(int i = 0; i < PIPELINE_STAGES; i++)
 		pipeline[i] = 0;
+    for(int i = 0; i < CPU_REGISTERS_NUM; i++)
+        cpu_registers[i] = 0;
 	cpu_registers[REG_CPSR] = MODE_USER;
 	execARM = new ARMisa(this);
 	execThumb = new Thumbisa(this);
+}
+
+processor::~processor(){
+    delete cpint;
+    delete execARM;
+    delete execThumb;
 }
 
 /* ******************** *
@@ -335,7 +343,7 @@ void processor::fastInterruptTrap(){
 }
 
 void processor::execTrap(ExceptionMode exception){
-	Word lr, spsr;
+    Word spsr;
 	switch(exception){	//set the right return registers
 		case EXC_SWI:
 			if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
@@ -506,7 +514,9 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
 		U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 23);	// up/down
 		W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);	// Write-back
 		N = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);	// single/multiple transfer
-		Word address = (base == getPC() ? (*base - 4) : *base) + ((U ? 1 : -1) * (offset << 2));	//if PC is specified as base the value should be the index of current instruction + 8 (== PC - 4)
+        Word address = (base == getPC() ? (*base - 4) : *base); 	//if PC is specified as base the value should be the index of current instruction + 8 (== PC - 4)
+        if(P)
+            address += ((U ? 1 : -1) * (offset << 2));
 		if(N){	//multiple transfer
 			while((cpReg = cp->getRegister(cpRegNum)) != NULL){	// load all registers starting from cpRegNum
 				if(toCoproc){	//load
@@ -530,6 +540,8 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
 				}
 			}
 		}
+        if(!P)
+            address += ((U ? 1 : -1) * (offset << 2));
 		if(W)
 			*base = address;
 	}

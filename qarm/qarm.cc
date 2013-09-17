@@ -48,35 +48,67 @@ qarm::qarm(){
 
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
 
+    ramSize = MEM_SIZE_W;
+
+    mac = new machine();
+
+    connect(this, SIGNAL(resetMachine(ulong)), this, SIGNAL(resetDisplay()));
+    connect(this, SIGNAL(resetMachine(ulong)), mac, SLOT(reset(ulong)));
     connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,QString)), display, SLOT(updateVals(Word*,Word*,Word*,QString)));
     connect(this, SIGNAL(resetDisplay()), display, SLOT(reset()));
-
-    ramSize = MEM_SIZE_W;
 
     setCentralWidget(mainWidget);
 }
 
 void qarm::start(int speed){
-
+    int time;
+    if(speed <= IPSTRESH)
+        time = 1000 / speed;
+    else
+        time = 1;
+    clock->start(time);
 }
 
 void qarm::step(){
-    if(resetFlag){
-        emit resetDisplay();
-        if(mac != NULL)
-            delete mac;
-        mac = new machine(ramSize);
-    }
+    if(resetFlag)
+        emit resetMachine(ramSize);
     mac->step();
-
 }
 
 void qarm::stop(){
     resetFlag = true;
+    clock->stop();
 }
 
 void qarm::open(QString fname){
+    QFile f (fname);
+    if(!f.open(QIODevice::ReadOnly)) {
+        QMessageBox::critical(this, "Error", "Could not open file");
+        return;
+    }
+    QDataStream in(&f);
+    ramMemory *ram = mac->getBus()->getRam();
+    if(ram != NULL)
+        fillMemory(ram, &in);
+    f.close();
+}
 
+void qarm::fillMemory(ramMemory *ram, QDataStream *in){
+    Word tmp;
+    char read;
+    Word address = PROG_START;
+    int c = 0;
+    while((in->readRawData(&read, 1)) == 1){
+        tmp |= read << (c*8);
+            if(c == 3){
+                ram->writeW(&address, tmp, false);
+                address += 4;
+                tmp = 0;
+            }
+            c = (c+1)%4;
+    }
+    tmp = OP_HALT;
+    ram->writeW(&address, tmp, false);
 }
 
 void qarm::showRam(){
