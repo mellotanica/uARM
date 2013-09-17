@@ -18,11 +18,11 @@ HEADERS += \
     armProc/ARMisa.h \
     qarm/qarm.h \
     services/util.h \
-    services/lang.h \
     qarm/mainbar.h \
     qarm/guiConst.h \
     qarm/procdisplay.h \
-    qarm/QLine.h
+    qarm/QLine.h \
+    qarm/ramview.h
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -35,7 +35,8 @@ SOURCES += \
     qarm/qarm.cc \
     qarm/main.cc \
     qarm/mainbar.cc \
-    qarm/procdisplay.cc
+    qarm/procdisplay.cc \
+    qarm/ramview.cc
 
 OTHER_FILES += \
     test/testProgBehavior \

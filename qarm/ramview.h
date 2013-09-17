@@ -19,51 +19,26 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-/* 
- * This class does machine initialization and component binding
- */
+#ifndef RAMVIEW_H
+#define RAMVIEW_H
 
-#ifndef UARM_MACHINE_H
-#define UARM_MACHINE_H
+#include <QWidget>
+#include <QVBoxLayout>
+#include <QTableView>
+#include "QLine.h"
 
-#include <QObject>
-#include "services/util.h"
-#include "const.h"
-#include "bus.h"
-#include "pu.h"
-#include "cp15.h"
-#include "coprocessor_interface.h"
-#include "processor.h"
-
-class machine : public QObject{
+class ramView : public QWidget
+{
     Q_OBJECT
 public:
-    machine(QObject *parent = 0);
-    machine(Word ramSize, QObject *parent = 0);
-	~machine();
-	
-    processor *getCPU() {return cpu;}
-    systemBus *getBus() {return sysbus;}
-
+    explicit ramView(QWidget *parent = 0);
+    
 signals:
-    void dataReady(Word *cpu, Word *cp15, Word *pipeline, QString mnemonic);
-    void updateStatus(QString state);
-
+    
 public slots:
-    void step();
-    void refreshData();
-
-private slots:
-    void run();
-    void reset(unsigned long memSize);
-
+    
 private:
-    void initMac();
-
-    QString status2QString();
-
-	systemBus *sysbus;
-	processor *cpu;
+    QTableView *ramViewer;
 };
 
-#endif //UARM_MACHINE_CC
+#endif // RAMVIEW_H

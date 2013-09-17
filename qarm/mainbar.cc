@@ -43,8 +43,8 @@ mainBar::mainBar(QWidget *parent) :
     playB->setCheckable(true);
     playB->setIcon(*playIco);
 
-    stopB = new styledButton();
-    stopB->setIcon(*stopIco);
+    resetB = new styledButton();
+    resetB->setIcon(*stopIco);
 
     stepB = new styledButton();
     stepB->setIcon(*stepIco);
@@ -64,6 +64,7 @@ mainBar::mainBar(QWidget *parent) :
     plusMinusW->setLayout(plusMinusL);
 
     scrollerL = new QVBoxLayout;
+    QHBoxLayout *topLay = new QHBoxLayout;
     scrollerW = new QWidget;
 
     speedLab = new QLabel("50 instr/sec");
@@ -71,13 +72,22 @@ mainBar::mainBar(QWidget *parent) :
     speedLab->setAlignment(Qt::AlignRight);
     speedLab->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
+    statusLab = new QLabel("HALTED");
+    statusLab->setFrameStyle(QFrame::StyledPanel);
+    statusLab->setAlignment(Qt::AlignRight);
+    statusLab->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
+
     speedSl = new QSlider();
     speedSl->setOrientation(Qt::Horizontal);
     speedSl->setMinimum(IPSMIN);
     speedSl->setMaximum(IPSMAX);
 
-    scrollerL->addWidget(speedLab);
+    scrollerL->addLayout(topLay);
     scrollerL->addWidget(speedSl);
+
+    topLay->addWidget(speedLab);
+    topLay->addSpacerItem(new QSpacerItem(1,1,QSizePolicy::Expanding, QSizePolicy::Minimum));
+    topLay->addWidget(statusLab);
 
     scrollerW->setLayout(scrollerL);
 
@@ -89,7 +99,7 @@ mainBar::mainBar(QWidget *parent) :
 
     addWidget(openB);
     addWidget(playB);
-    addWidget(stopB);
+    addWidget(resetB);
     addWidget(stepB);
     addWidget(plusMinusW);
     addWidget(scrollerW);
@@ -98,7 +108,7 @@ mainBar::mainBar(QWidget *parent) :
     connect(this, SIGNAL(speedChanged(int)), this, SLOT(setSpeedLab(int)));
     connect(speedSl, SIGNAL(valueChanged(int)), this, SIGNAL(speedChanged(int)));
     connect(playB, SIGNAL(toggled(bool)), this, SLOT(playToggled(bool)));
-    connect(stopB, SIGNAL(clicked()), this, SLOT(stopPressed()));
+    connect(resetB, SIGNAL(clicked()), this, SLOT(resetPressed()));
     connect(stepB, SIGNAL(clicked()), this, SIGNAL(step()));
     connect(openB, SIGNAL(clicked()), this, SLOT(openPressed()));
     connect(ramB, SIGNAL(clicked()), this, SIGNAL(showRam()));
@@ -117,10 +127,10 @@ void mainBar::playToggled(bool checked){
     }
 }
 
-void mainBar::stopPressed(){
+void mainBar::resetPressed(){
     if(playB->isChecked())
         playB->toggle();
-    emit stop();
+    emit reset();
 }
 
 void mainBar::setSpeedLab(int spV){
@@ -149,6 +159,10 @@ void mainBar::minus(){
        speedSl->setValue(IPSTRESH);
     else
         speedSl->setValue(val-IPSSTEP);
+}
+
+void mainBar::updateStatus(QString state){
+    statusLab->setText(state);
 }
 
 void mainBar::openPressed(){

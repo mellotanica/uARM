@@ -25,6 +25,7 @@
 #include <QToolBar>
 #include <QToolButton>
 #include <QVBoxLayout>
+#include <QHBoxLayout>
 #include <QLabel>
 #include <QIcon>
 #include <QSlider>
@@ -39,7 +40,7 @@ public:
 
 signals:
     void play(int speedVal);
-    void stop();
+    void reset();
     void pause();
     void step();
     void speedChanged(int speedVal);
@@ -49,18 +50,19 @@ signals:
 private slots:
     void setSpeedLab(int speedVal);
     void playToggled(bool checked);
-    void stopPressed();
+    void resetPressed();
     void plus();
     void minus();
     void openPressed();
+    void updateStatus(QString state);
 
 private:
-    styledButton *playB, *stopB, *stepB, *openB, *ramB, *plusB, *minusB;   //interactions
+    styledButton *playB, *resetB, *stepB, *openB, *ramB, *plusB, *minusB;   //interactions
     QVBoxLayout *plusMinusL, *scrollerL;
     QWidget *plusMinusW, *scrollerW;
     const QIcon *playIco, *stopIco, *pauseIco, *stepIco;
     QSlider *speedSl;
-    QLabel *speedLab;
+    QLabel *speedLab, *statusLab;
 };
 
 class styledButton : public QToolButton{

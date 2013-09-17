@@ -38,7 +38,7 @@ public:
 	
 	bool branchHappened;
 private:
-    ramMemory *ram;
+    ramMemory *ram = NULL;
 };
 
 #endif //UARM_SYSTEMBUS_H

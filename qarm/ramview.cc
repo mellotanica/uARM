@@ -19,23 +19,19 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef UARM_CP15_CC
-#define UARM_CP15_CC
+#include "ramview.h"
 
-#include "cp15.h"
+ramView::ramView(QWidget *parent) :
+    QWidget(parent)
+{
+    setWindowFlags(Qt::Window);
+    QVBoxLayout *mainLayout = new QVBoxLayout;
 
-cp15::cp15(): coprocessor() {
-	ram = bus->getRam();
-    for(int i = 0; i < CP15_REGISTERS_NUM; i++)
-        cp15_registers[i] = 0;
+    ramViewer = new QTableView;
+
+
+
+    mainLayout->addWidget(ramViewer);
+    setLayout(mainLayout);
+    hide();
 }
-
-void cp15::executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info){
-	cp15_registers[4] = 0x44556644;
-}
-
-void cp15::registerTransfer(Byte opcode, Byte operand, Byte srcDest, Byte info){
-	
-}
-
-#endif //UARM_CP15_CC

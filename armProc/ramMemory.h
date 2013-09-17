@@ -27,8 +27,8 @@
 #define UARM_MEMORY_H
 
 #include "const.h"
-#include "services/lang.h"
-#include <boost/format.hpp>
+/*#include "services/lang.h"
+#include <boost/format.hpp>*/
 
 class ramMemory{
 public:
@@ -148,7 +148,7 @@ public:
 	
 private:
 	//scoped_array<Byte> memVector;
-	Byte *memVector;
+    Byte *memVector = NULL;
     Word ramSize = 0;
 	
 	bool LOCK_sig = false;

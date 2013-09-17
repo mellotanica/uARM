@@ -59,17 +59,34 @@ void machine::reset(unsigned long memSize){
     delete cpu;
     initMac();
     sysbus->getRam()->init(memSize);
+    emit updateStatus("HALTED");
 }
 
 void machine::step(){
-	if(sysbus->branchHappened){
-		cpu->prefetch();
-		sysbus->branchHappened = false;
-	} else
-		cpu->nextCycle();
-	cpu->cycle();
+    if(cpu->getStatus() != PS_HALTED){
+        if(sysbus->branchHappened){
+            cpu->prefetch();
+            sysbus->branchHappened = false;
+        } else
+            cpu->nextCycle();
+        cpu->cycle();
+        refreshData();
+    }
+}
+
+void machine::refreshData(){
+    emit updateStatus(status2QString());
     QString mnem = QString::fromStdString(cpu->mnemonicOPcode) + (cpu->isOPcodeARM ? "(ARM)" : "(Thumb)" );
     emit dataReady(cpu->getRegList(), cpu->getCopInt()->getCoprocessor(15)->getRegList() , sysbus->pipeline, mnem);
+
+}
+
+QString machine::status2QString(){
+    switch(cpu->getStatus()){
+        case PS_HALTED: return "HALTED"; break;
+        case PS_IDLE: return "IDLE"; break;
+        case PS_RUNNING: return "RUNNING"; break;
+    }
 }
 
 void machine::run(){

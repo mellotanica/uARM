@@ -291,10 +291,11 @@ void processor::nextCycle() {
 		*getPC() += 4;
 	if(*getPC() % 4 == 0)	//in ARM state or after second halfword in Thumb state, fetch new word
 		bus->fetch(getPC());
-};
+}
 
 void processor::prefetch() {
 	bus->fetch(getPC());
+    nextCycle();
 	nextCycle();
 }
 

@@ -31,6 +31,7 @@
 #include "armProc/machine.h"
 #include "mainbar.h"
 #include "guiConst.h"
+#include "ramview.h"
 #include "procdisplay.h"
 #include "QLine.h"
 
@@ -47,19 +48,21 @@ signals:
 private slots:
     void start(int speed);
     void step();
-    void stop();
+    void speedChanged(int speed);
+    void reset();
     void open(QString fname);
     void showRam();
 
 private:
-    bool resetFlag;
     machine *mac;
     unsigned long ramSize;
+    bool dataLoaded = false;
 
     QWidget *mainWidget;
     procDisplay *display;
-    QVBoxLayout *layout;
+    QVBoxLayout *centralLayout;
     mainBar *toolbar;
+    ramView *ramViewer;
     QTimer *clock;
 
     void fillMemory(ramMemory *ram, QDataStream *in);

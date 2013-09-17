@@ -2,10 +2,20 @@
 
 FNAME=`echo "$1" | sed -e 's/\..*//'`
 
-arm-linux-gnueabi-as -o "$FNAME".o "$1"
-arm-linux-gnueabi-ld -o "$FNAME".elf "$FNAME".o
-arm-linux-gnueabi-objcopy -O binary "$FNAME".elf "$FNAME".bin
+exitV=`arm-linux-gnueabi-as -o "$FNAME".o "$1"`
+if [ $exitV -eq 0 ]; then
+  exitV=`arm-linux-gnueabi-ld -o "$FNAME".elf "$FNAME".o`
+  if [ $exitV -eq 0 ]; then
+    exitV=`arm-linux-gnueabi-objcopy -O binary "$FNAME".elf "$FNAME".bin`
+  fi
+fi
 
 rm "$FNAME".o "$FNAME".elf
 
-echo "assembled $1 in $FNAME.bin"
+if [ $exitV -eq 0 ]; then
+  echo "assembled $1 in $FNAME.bin"
+  exit 0
+else
+  exit $exitV
+fi
+

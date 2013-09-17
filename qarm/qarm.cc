@@ -23,41 +23,62 @@
 
 qarm::qarm(){
     mainWidget = new QWidget;
-    toolbar = new mainBar(mainWidget);
-    display = new procDisplay(mainWidget);
+    toolbar = new mainBar;
+    display = new procDisplay(this);
+    ramViewer = new ramView;
 
-    resetFlag = true;
+    centralLayout = new QVBoxLayout;
 
-    layout = new QVBoxLayout;
-    layout->addWidget(new QFLine(false));
-    layout->addWidget(toolbar);
-    layout->addWidget(new QFLine(false));
-    layout->addWidget(display);
+    centralLayout->addWidget(new QFLine(false));
+    centralLayout->addWidget(toolbar);
+    centralLayout->addWidget(new QFLine(false));
+    centralLayout->addWidget(display);
 
-    mainWidget->setLayout(layout);
+    mainWidget->setLayout(centralLayout);
 
     clock = new QTimer(this);
 
+    ramSize = MEM_SIZE_W;
+
+    mac = new machine;
+
     connect(toolbar, SIGNAL(play(int)), this, SLOT(start(int)));
-    connect(toolbar, SIGNAL(speedChanged(int)), this, SLOT(start(int)));
+    connect(toolbar, SIGNAL(speedChanged(int)), this, SLOT(speedChanged(int)));
     connect(toolbar, SIGNAL(pause()), clock, SLOT(stop()));
-    connect(toolbar, SIGNAL(stop()), this, SLOT(stop()));
+    connect(toolbar, SIGNAL(reset()), this, SLOT(reset()));
     connect(toolbar, SIGNAL(open(QString)), this, SLOT(open(QString)));
     connect(toolbar, SIGNAL(showRam()), this, SLOT(showRam()));
     connect(toolbar, SIGNAL(step()), this, SLOT(step()));
 
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
 
-    ramSize = MEM_SIZE_W;
-
-    mac = new machine();
-
     connect(this, SIGNAL(resetMachine(ulong)), this, SIGNAL(resetDisplay()));
     connect(this, SIGNAL(resetMachine(ulong)), mac, SLOT(reset(ulong)));
     connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,QString)), display, SLOT(updateVals(Word*,Word*,Word*,QString)));
     connect(this, SIGNAL(resetDisplay()), display, SLOT(reset()));
 
+    connect(mac, SIGNAL(updateStatus(QString)), toolbar, SLOT(updateStatus(QString)));
+
+    reset();
+
     setCentralWidget(mainWidget);
+}
+
+void qarm::step(){
+    if(!dataLoaded){
+        QMessageBox::StandardButton reply = QMessageBox::question(this,
+                                                                  "Caution",
+                                                                  "No program has been loaded.\nDo you want to start emulation anyways?",
+                                                                  QMessageBox::Yes|QMessageBox::No);
+        if(reply == QMessageBox::No){
+            if(clock->isActive())
+                clock->stop();
+            return;
+        } else {
+            dataLoaded = true;
+        }
+    }
+    mac->step();
 }
 
 void qarm::start(int speed){
@@ -69,15 +90,17 @@ void qarm::start(int speed){
     clock->start(time);
 }
 
-void qarm::step(){
-    if(resetFlag)
-        emit resetMachine(ramSize);
-    mac->step();
+void qarm::speedChanged(int speed){
+    if(clock->isActive()){
+        clock->stop();
+        start(speed);
+    }
 }
 
-void qarm::stop(){
-    resetFlag = true;
+void qarm::reset(){
     clock->stop();
+    dataLoaded = false;
+    emit resetMachine(ramSize);
 }
 
 void qarm::open(QString fname){
@@ -91,15 +114,18 @@ void qarm::open(QString fname){
     if(ram != NULL)
         fillMemory(ram, &in);
     f.close();
+    dataLoaded = true;
+    mac->refreshData();
 }
 
 void qarm::fillMemory(ramMemory *ram, QDataStream *in){
-    Word tmp;
+    Word tmp = 0, add;
     char read;
     Word address = PROG_START;
     int c = 0;
     while((in->readRawData(&read, 1)) == 1){
-        tmp |= read << (c*8);
+        add = (read & 0xFF) << (c*8);
+        tmp |= add;
             if(c == 3){
                 ram->writeW(&address, tmp, false);
                 address += 4;
@@ -112,5 +138,8 @@ void qarm::fillMemory(ramMemory *ram, QDataStream *in){
 }
 
 void qarm::showRam(){
-
+    if(ramViewer->isHidden())
+        ramViewer->show();
+    else
+        ramViewer->hide();
 }
