@@ -25,6 +25,7 @@
 int main(int argn, char **argv){
     QApplication app(argn, argv);
     qarm *wid = new qarm();
+    wid->setMinimumSize(640, 480);
     wid->show();
     return app.exec();
 }

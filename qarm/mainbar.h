@@ -54,11 +54,9 @@ private slots:
     void openPressed();
 
 private:
-    const int sliderStep = 1;
-
     styledButton *playB, *stopB, *stepB, *openB, *ramB, *plusB, *minusB;   //interactions
-    QVBoxLayout *plusMinusL;
-    QWidget *plusMinusW;
+    QVBoxLayout *plusMinusL, *scrollerL;
+    QWidget *plusMinusW, *scrollerW;
     const QIcon *playIco, *stopIco, *pauseIco, *stepIco;
     QSlider *speedSl;
     QLabel *speedLab;

@@ -21,8 +21,190 @@
 
 #include "procdisplay.h"
 
+/*#include <iostream>
+using namespace std;*/
+
 procDisplay::procDisplay(QWidget *parent) :
     QWidget(parent)
 {
+    mainLayout = new QVBoxLayout;
+    pipeL = new QGridLayout;
+    cpuL = new QGridLayout;
+    cp15L = new QGridLayout;
+    mainLayout->addLayout(pipeL);
+    mainLayout->addWidget(new QFLine(false));
+    mainLayout->addLayout(cpuL);
+    mainLayout->addWidget(new QFLine(false));
+    mainLayout->addLayout(cp15L);
 
+    pipeline = new monoLabel*[PIPECOLS];
+    cpuReg = new monoLabel**[CPUROWS];
+    cp15Reg = new monoLabel**[CP15ROWS];
+
+    for(int i = 0; i < PIPECOLS; i++)
+        pipeline[i] = new monoLabel("");
+
+    for(int i = 0; i < CPUROWS; i++){
+        cpuReg[i] = new monoLabel*[CPUCOLS];
+        for(int j = 0; j < CPUCOLS; j++)
+            cpuReg[i][j] = new monoLabel("");
+    }
+
+    for(int i = 0; i < CP15ROWS; i++){
+        cp15Reg[i] = new monoLabel*[CP15COLS];
+        for(int j = 0; j < CP15COLS; j++)
+            cp15Reg[i][j] = new monoLabel("");
+    }
+
+    pipeline[0]->setText("Pipeline (E D F):");
+    pipeline[4]->setText("Executing:");
+    pipeline[5]->setAlignment(Qt::AlignLeft);
+
+    cpuReg[0][0]->setText("CPU registers: ");
+    cpuReg[1][0]->setText("r0");
+    cpuReg[2][0]->setText("r1");
+    cpuReg[3][0]->setText("r2");
+    cpuReg[4][0]->setText("r3");
+    cpuReg[5][0]->setText("r4");
+    cpuReg[6][0]->setText("r5");
+    cpuReg[7][0]->setText("r6");
+    cpuReg[8][0]->setText("r7");
+    cpuReg[9][0]->setText("r8");
+    cpuReg[10][0]->setText("r9");
+    cpuReg[11][0]->setText("r10");
+    cpuReg[12][0]->setText("r11");
+    cpuReg[13][0]->setText("r12");
+    cpuReg[14][0]->setText("r13(SP)");
+    cpuReg[15][0]->setText("r14(LR)");
+    cpuReg[16][0]->setText("r15(PC)");
+    cpuReg[17][0]->setText("CPSR");
+    cpuReg[18][0]->setText("SPSR");
+
+    for(int i = 0; i < CPUROWS; i++)
+        cpuReg[i][0]->setAlignment(Qt::AlignRight);
+
+    cpuReg[9][CPUCOLS-1]->setText("r8");
+    cpuReg[10][CPUCOLS-1]->setText("r9");
+    cpuReg[11][CPUCOLS-1]->setText("r10");
+    cpuReg[12][CPUCOLS-1]->setText("r11");
+    cpuReg[13][CPUCOLS-1]->setText("r12");
+    cpuReg[14][CPUCOLS-1]->setText("r13");
+    cpuReg[15][CPUCOLS-1]->setText("r14");
+    cpuReg[18][CPUCOLS-1]->setText("SPSR");
+
+    cpuReg[0][1]->setText("Usr/Sys");
+    cpuReg[0][2]->setText("Svc");
+    cpuReg[0][3]->setText("Abt");
+    cpuReg[0][4]->setText("Undef");
+    cpuReg[0][5]->setText("IRQ");
+    cpuReg[0][6]->setText("FIQ");
+
+    cp15Reg[0][0]->setText("CP15 registers:");
+    for(int i = 1; i < CP15_REGISTERS_NUM+1; i++){
+        cp15Reg[i%CP15ROWS][(i/CP15ROWS)*2]->setText("r"+QString::number(i-1));
+        cp15Reg[i%CP15ROWS][(i/CP15ROWS)*2]->setAlignment(Qt::AlignRight);
+    }
+
+    reset();
+
+    for(int i = 0; i < PIPECOLS; i++)
+        pipeL->addWidget(pipeline[i],0,i);
+
+    for(int i = 0; i < CPUROWS; i++)
+        for(int j = 0; j < CPUCOLS; j++)
+            cpuL->addWidget(cpuReg[i][j], i, j);
+
+    for(int i = 0; i < CP15ROWS; i++)
+        for(int j = 0; j < CP15COLS; j++)
+            cp15L->addWidget(cp15Reg[i][j], i, j);
+
+    this->setLayout(mainLayout);
+}
+
+void procDisplay::reset(){
+    pipeline[1]->setText(convertHex(0));
+    pipeline[2]->setText(convertHex(0));
+    pipeline[3]->setText(convertHex(0));
+    pipeline[5]->setText("NOP");
+
+    for(int i = 0; i < 17; i++)
+        cpuReg[i+1][1]->setText(convertHex(0));
+    for(int i = 0; i < 7; i++)
+        cpuReg[i+9][6]->setText(convertHex(0));
+    cpuReg[18][6]->setText(convertHex(0));
+    cpuReg[14][2]->setText(convertHex(0));
+    cpuReg[15][2]->setText(convertHex(0));
+    cpuReg[18][2]->setText(convertHex(0));
+    cpuReg[14][3]->setText(convertHex(0));
+    cpuReg[15][3]->setText(convertHex(0));
+    cpuReg[18][3]->setText(convertHex(0));
+    cpuReg[14][5]->setText(convertHex(0));
+    cpuReg[15][5]->setText(convertHex(0));
+    cpuReg[18][5]->setText(convertHex(0));
+    cpuReg[14][4]->setText(convertHex(0));
+    cpuReg[15][4]->setText(convertHex(0));
+    cpuReg[18][4]->setText(convertHex(0));
+
+    for(int i = 1; i < CP15_REGISTERS_NUM+1; i++)
+        cp15Reg[i%CP15ROWS][(i/CP15ROWS)*2+1]->setText(convertHex(0));
+}
+
+void procDisplay::updateVals(Word *cpu, Word *cp15, Word *ppln, QString ass){
+    pipeline[1]->setText(convertHex(ppln[2]));
+    pipeline[2]->setText(convertHex(ppln[1]));
+    pipeline[3]->setText(convertHex(ppln[0]));
+    pipeline[5]->setText(ass);
+
+    for(int i = 0; i < 17; i++)
+        cpuReg[i+1][1]->setText(convertHex(cpu[i]));
+    for(int i = 0; i < 7; i++)
+        cpuReg[i+9][6]->setText(convertHex(cpu[i+17]));
+    cpuReg[18][6]->setText(convertHex(cpu[24]));
+    cpuReg[14][2]->setText(convertHex(cpu[25]));
+    cpuReg[15][2]->setText(convertHex(cpu[26]));
+    cpuReg[18][2]->setText(convertHex(cpu[27]));
+    cpuReg[14][3]->setText(convertHex(cpu[28]));
+    cpuReg[15][3]->setText(convertHex(cpu[29]));
+    cpuReg[18][3]->setText(convertHex(cpu[30]));
+    cpuReg[14][5]->setText(convertHex(cpu[31]));
+    cpuReg[15][5]->setText(convertHex(cpu[32]));
+    cpuReg[18][5]->setText(convertHex(cpu[33]));
+    cpuReg[14][4]->setText(convertHex(cpu[34]));
+    cpuReg[15][4]->setText(convertHex(cpu[35]));
+    cpuReg[18][4]->setText(convertHex(cpu[36]));
+
+    for(int i = 1; i < CP15_REGISTERS_NUM+1; i++)
+        cp15Reg[i%CP15ROWS][(i/CP15ROWS)*2+1]->setText(convertHex(cp15[i-1]));
+
+}
+
+QString procDisplay::convertHex(Word val){
+    QString ret = "0x";
+    Word mask = 0xF0000000;
+    int count = 28;
+    int ref = (val & mask) >> count;
+    while(mask > 0){
+        switch(ref){
+        case 0: ret += "0"; break;
+        case 1: ret += "1"; break;
+        case 2: ret += "2"; break;
+        case 3: ret += "3"; break;
+        case 4: ret += "4"; break;
+        case 5: ret += "5"; break;
+        case 6: ret += "6"; break;
+        case 7: ret += "7"; break;
+        case 8: ret += "8"; break;
+        case 9: ret += "9"; break;
+        case 10: ret += "A"; break;
+        case 11: ret += "B"; break;
+        case 12: ret += "C"; break;
+        case 13: ret += "D"; break;
+        case 14: ret += "E"; break;
+        case 15: ret += "F"; break;
+        }
+        mask >>= 4;
+        count -= 4;
+        ref = (val & mask) >> count;
+    }
+    return ret;
 }

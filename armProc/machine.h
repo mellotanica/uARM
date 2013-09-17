@@ -26,6 +26,7 @@
 #ifndef UARM_MACHINE_H
 #define UARM_MACHINE_H
 
+#include <QObject>
 #include "services/util.h"
 #include "const.h"
 #include "bus.h"
@@ -34,19 +35,29 @@
 #include "coprocessor_interface.h"
 #include "processor.h"
 
-class machine{
+class machine : public QObject{
+    Q_OBJECT
 public:
-	machine(Word ramSize);
+    machine(QObject *parent = 0);
+    machine(Word ramSize, QObject *parent = 0);
 	~machine();
 	
-	processor *getCPU() {return cpu;};
-	systemBus *getBus() {return sysbus;};
-	
-	void init();
-	void step();
-	void run();
-	
+    processor *getCPU() {return cpu;}
+    systemBus *getBus() {return sysbus;}
+
+signals:
+    void dataReady(Word *cpu, Word *cp15, Word *pipeline, QString mnemonic);
+
+public slots:
+    void step();
+    void refreshRam(int size);
+
+private slots:
+    void run();
+
 private:
+    void initMac();
+
 	systemBus *sysbus;
 	processor *cpu;
 };

@@ -32,22 +32,32 @@
 systemBus *pu::bus;
 util *util::instance;
 
-machine::machine(Word ramSize){
-	cpu = new processor();
-	
-	sysbus = cpu->getBus();
-	
-	sysbus->getRam()->init(ramSize);
-	
-	*(cpu->getPC()) = PROG_START;
+machine::machine(QObject *parent) : QObject(parent){
+    initMac();
+}
+
+machine::machine(Word ramSize, QObject *parent) : QObject(parent){
+    initMac();
+    sysbus->getRam()->init(ramSize);
 }
 
 machine::~machine(){
 	delete sysbus;
 }
 
-void machine::init(){
-	cpu->prefetch();
+void machine::initMac(){
+    cpu = new processor();
+
+    sysbus = cpu->getBus();
+
+    *(cpu->getPC()) = PROG_START;
+
+    sysbus->branchHappened = true;
+}
+
+void machine::refreshRam(int size){
+    delete sysbus->getRam();
+    sysbus->resetRam(size);
 }
 
 void machine::step(){
@@ -57,6 +67,8 @@ void machine::step(){
 	} else
 		cpu->nextCycle();
 	cpu->cycle();
+    QString mnem = QString::fromStdString(cpu->mnemonicOPcode) + (cpu->isOPcodeARM ? "(ARM)" : "(Thumb)" );
+    emit dataReady(cpu->getRegList(), cpu->getCopInt()->getCoprocessor(15)->getRegList() , sysbus->pipeline, mnem);
 }
 
 void machine::run(){

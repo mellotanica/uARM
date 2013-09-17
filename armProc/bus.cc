@@ -25,12 +25,16 @@
 #include "bus.h"
 
 systemBus::systemBus(){
-	ram = new ramMemory();
-	cycles = 0;
+    ram = new ramMemory();
 }
 
 systemBus::~systemBus(){
 	delete ram;
+}
+
+void systemBus::resetRam(int size){
+    ram = new ramMemory();
+    ram->init(size);
 }
 
 void systemBus::fetch(Word *address){

@@ -34,12 +34,13 @@ public:
 	
 	void fetch(Word *address);
 	
-	ramMemory *getRam() {return ram;};
+    ramMemory *getRam() {return ram;}
+
+    void resetRam(int size);
 	
 	bool branchHappened;
 private:
-	ramMemory *ram;
-	long unsigned cycles;
+    ramMemory *ram;
 };
 
 #endif //UARM_SYSTEMBUS_H

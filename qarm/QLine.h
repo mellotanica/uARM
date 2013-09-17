@@ -19,28 +19,20 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef UARM_CP15_H
-#define UARM_CP15_H
+#ifndef QFLINE_H
+#define QFLINE_H
 
-#include "const.h"
-#include "pu.h"
+#include <QFrame>
 
-class cp15 : public coprocessor{
+class QFLine : public QFrame {
 public:
-	cp15();
-    ~cp15() {}
-	
-    Word *getRegister(Word i) {return &cp15_registers[i];}
-
-    Word *getRegList(){return cp15_registers;}
-	
-	void executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info);
-	void registerTransfer(Byte opcode, Byte operand, Byte srcDest, Byte info);
-	
-private:
-	ramMemory *ram;
-	
-	Word cp15_registers[CP15_REGISTERS_NUM];
+    QFLine(bool vertical, QWidget *parent = 0) : QFrame(parent){
+        if(vertical)
+            setFrameShape(QFrame::VLine);
+        else
+            setFrameShape(QFrame::HLine);
+        setFrameShadow(QFrame::Sunken);
+    }
 };
 
-#endif //UARM_CP15_CC
+#endif // QFLINE_H

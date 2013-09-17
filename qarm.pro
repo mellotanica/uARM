@@ -21,7 +21,8 @@ HEADERS += \
     services/lang.h \
     qarm/mainbar.h \
     qarm/guiConst.h \
-    qarm/procdisplay.h
+    qarm/procdisplay.h \
+    qarm/QLine.h
 
 SOURCES += \
     armProc/Thumbisa.cc \

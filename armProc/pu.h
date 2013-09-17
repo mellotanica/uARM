@@ -35,18 +35,22 @@ public:
 	pu() {
 		if(bus == NULL)
 			bus = new systemBus();
-	};
-	~pu() {};
+    }
+    ~pu() {}
 	
+    virtual Word *getRegList() = 0;
+
 protected:
 	static systemBus *bus;
 };
 
 class coprocessor : public pu{
 public:
-	coprocessor() : pu() {};
-	~coprocessor() {};
+    coprocessor() : pu() {}
+    ~coprocessor() {}
 	
+    virtual Word *getRegList() = 0;
+
 	virtual Word *getRegister(Word regNum) = 0;
 	
 	virtual void executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info) = 0;

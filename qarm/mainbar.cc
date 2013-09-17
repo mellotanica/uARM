@@ -63,10 +63,23 @@ mainBar::mainBar(QWidget *parent) :
 
     plusMinusW->setLayout(plusMinusL);
 
-    speedLab = new QLabel();
+    scrollerL = new QVBoxLayout;
+    scrollerW = new QWidget;
+
+    speedLab = new QLabel("50 instr/sec");
+    speedLab->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
+    speedLab->setAlignment(Qt::AlignRight);
+    speedLab->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     speedSl = new QSlider();
     speedSl->setOrientation(Qt::Horizontal);
+    speedSl->setMinimum(IPSMIN);
+    speedSl->setMaximum(IPSMAX);
+
+    scrollerL->addWidget(speedLab);
+    scrollerL->addWidget(speedSl);
+
+    scrollerW->setLayout(scrollerL);
 
     setSpeedLab(speedSl->value());
 
@@ -79,8 +92,7 @@ mainBar::mainBar(QWidget *parent) :
     addWidget(stopB);
     addWidget(stepB);
     addWidget(plusMinusW);
-    addWidget(speedLab);
-    addWidget(speedSl);
+    addWidget(scrollerW);
     addWidget(ramB);
 
     connect(this, SIGNAL(speedChanged(int)), this, SLOT(setSpeedLab(int)));
@@ -106,17 +118,31 @@ void mainBar::playToggled(bool checked){
 }
 
 void mainBar::setSpeedLab(int spV){
-    //stabilire a quanto corrisponde spV e impostare text
-    QString text = QString::number(spV);
+    QString text;
+    if(spV <= IPSTRESH){
+        if(spV < 10)
+            text = "  " + QString::number(spV) + " instr/sec";
+        else
+            text = QString::number(spV) + " instr/sec";
+    } else
+            text = "        MAX Mz";
     speedLab->setText(text);
 }
 
 void mainBar::plus(){
-    speedSl->setValue(speedSl->value()+sliderStep);
+    int val = speedSl->value();
+    if(val < IPSTRESH)
+        speedSl->setValue(val+IPSSTEP);
+    else
+        speedSl->setValue(speedSl->maximum());
 }
 
 void mainBar::minus(){
-    speedSl->setValue(speedSl->value()-sliderStep);
+    int val = speedSl->value();
+    if(val > IPSTRESH)
+       speedSl->setValue(IPSTRESH);
+    else
+        speedSl->setValue(val-IPSSTEP);
 }
 
 void mainBar::openPressed(){

@@ -22,17 +22,63 @@
 #include "qarm.h"
 
 qarm::qarm(){
-    mainWidget = new QWidget(this);
+    mainWidget = new QWidget;
     toolbar = new mainBar(mainWidget);
     display = new procDisplay(mainWidget);
 
+    resetFlag = true;
+
     layout = new QVBoxLayout;
+    layout->addWidget(new QFLine(false));
     layout->addWidget(toolbar);
+    layout->addWidget(new QFLine(false));
     layout->addWidget(display);
 
     mainWidget->setLayout(layout);
 
-    setCentralWidget(mainWidget);
+    clock = new QTimer(this);
 
-    // connect various signals...
+    connect(toolbar, SIGNAL(play(int)), this, SLOT(start(int)));
+    connect(toolbar, SIGNAL(speedChanged(int)), this, SLOT(start(int)));
+    connect(toolbar, SIGNAL(pause()), clock, SLOT(stop()));
+    connect(toolbar, SIGNAL(stop()), this, SLOT(stop()));
+    connect(toolbar, SIGNAL(open(QString)), this, SLOT(open(QString)));
+    connect(toolbar, SIGNAL(showRam()), this, SLOT(showRam()));
+    connect(toolbar, SIGNAL(step()), this, SLOT(step()));
+
+    connect(clock, SIGNAL(timeout()), this, SLOT(step()));
+
+    connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,QString)), display, SLOT(updateVals(Word*,Word*,Word*,QString)));
+    connect(this, SIGNAL(resetDisplay()), display, SLOT(reset()));
+
+    ramSize = MEM_SIZE_W;
+
+    setCentralWidget(mainWidget);
+}
+
+void qarm::start(int speed){
+
+}
+
+void qarm::step(){
+    if(resetFlag){
+        emit resetDisplay();
+        if(mac != NULL)
+            delete mac;
+        mac = new machine(ramSize);
+    }
+    mac->step();
+
+}
+
+void qarm::stop(){
+    resetFlag = true;
+}
+
+void qarm::open(QString fname){
+
+}
+
+void qarm::showRam(){
+
 }

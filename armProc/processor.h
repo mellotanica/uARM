@@ -38,7 +38,7 @@ enum ProcessorMode {	//new modes MUST be added to switch in setStatusRegister im
 	MODE_SUPERVISOR = 0x13,
 	MODE_ABORT = 0x17,
 	MODE_UNDEFINED = 0x1B,
-	MODE_SYSTEM = 0x1F,
+    MODE_SYSTEM = 0x1F
 };
 
 enum ExceptionMode {	//values correspond to fixed low exception vector addresses
@@ -48,7 +48,7 @@ enum ExceptionMode {	//values correspond to fixed low exception vector addresses
 	EXC_PREFABT = 0x0000000C,
 	EXC_DATAABT = 0x00000010,
 	EXC_IRQ		= 0x00000018,
-	EXC_FIQ		= 0x0000001C,
+    EXC_FIQ		= 0x0000001C
 };
 
 class ARMisa;
@@ -57,24 +57,26 @@ class Thumbisa;
 class processor : public pu{
 public:
 	processor();
-	~processor() {delete cpint;};
+    ~processor() {delete cpint;}
 	
-	Word *getPC() {return &cpu_registers[REG_PC];};
+    Word *getPC() {return &cpu_registers[REG_PC];}
 	void nextCycle();
 	
 	void prefetch();
 	
-	coprocessor_interface *getCopInt() {return cpint;};
+    coprocessor_interface *getCopInt() {return cpint;}
 	
-	void setEndianess(bool bigEndian) {BIGEND_sig = bigEndian;};	//system is set little endian by default, use this method to change the setting
-	ProcessorStatus getStatus() {return status;};
-	Word *getRegister(Byte reg) {return &cpu_registers[reg];};
+    void setEndianess(bool bigEndian) {BIGEND_sig = bigEndian;}	//system is set little endian by default, use this method to change the setting
+    ProcessorStatus getStatus() {return status;}
+    Word *getRegister(Byte reg) {return &cpu_registers[reg];}
 	
-	Word *getVisibleRegister(Byte reg);
+    Word *getRegList(){return cpu_registers;}
+
+    Word *getVisibleRegister(Byte reg);
 	
-	Word *getPipeline(unsigned int i) {return &pipeline[i];};
+    Word *getPipeline(unsigned int i) {return &pipeline[i];}
 	
-	systemBus *getBus() {return bus;};
+    systemBus *getBus() {return bus;}
 	
 	/* processor could abort the execution cycle of coprocessors in case of interrupts or traps
 	 * also, the first two cycles only do fetches to load the pipeline
@@ -84,13 +86,13 @@ public:
 		decode();
 		setOP("Unknown", true);
 		execute();
-	};
+    }
 	
 	Word OPcode;
 	bool isOPcodeARM = true;
 	string mnemonicOPcode;
 	friend class ARMisa;
-	friend class Thumbisa;
+    friend class Thumbisa;
 private:
 	coprocessor_interface *cpint;
 	ProcessorStatus status;
@@ -103,7 +105,7 @@ private:
 	ARMisa *execARM;
 	Thumbisa *execThumb;
 	
-	ProcessorMode getMode() {uint16_t mode = cpu_registers[REG_CPSR] & MODE_MASK; return (ProcessorMode) mode;};
+    ProcessorMode getMode() {uint16_t mode = cpu_registers[REG_CPSR] & MODE_MASK; return (ProcessorMode) mode;}
 	void debugARM(string mnemonic);
 	void debugThumb(string mnemonic);
 	bool condCheck();
@@ -117,13 +119,13 @@ private:
 	void interruptTrap();
 	void fastInterruptTrap();
 	void execTrap(ExceptionMode exception);
-	void NOP() {debugARM("NOP");};
+    void NOP() {debugARM("NOP");}
 	void unpredictable();
 	Word get_unpredictable();
 	bool get_unpredictableB();
 	
-	void fetch() {pipeline[PIPELINE_EXECUTE] = bus->pipeline[PIPELINE_EXECUTE]; pipeline[PIPELINE_DECODE] = bus->pipeline[PIPELINE_DECODE]; pipeline[PIPELINE_FETCH] = bus->pipeline[PIPELINE_FETCH];};
-	void decode() {};
+    void fetch() {pipeline[PIPELINE_EXECUTE] = bus->pipeline[PIPELINE_EXECUTE]; pipeline[PIPELINE_DECODE] = bus->pipeline[PIPELINE_DECODE]; pipeline[PIPELINE_FETCH] = bus->pipeline[PIPELINE_FETCH];}
+    void decode() {}
 	void execute();
 	
 	void multiply(bool accumulate, bool lngWord);
@@ -152,7 +154,7 @@ private:
 		}
 		isOPcodeARM = isARM;
 		mnemonicOPcode = mnemonic;
-	};
+    }
 };
 
 #endif //UARM_PROCESSOR_CC

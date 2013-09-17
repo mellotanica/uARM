@@ -23,19 +23,47 @@
 #define PROCDISPLAY_H
 
 #include <QWidget>
+#include <QGridLayout>
+#include <QLabel>
+#include <sstream>
+#include <iomanip>
+#include "QLine.h"
+#include "armProc/const.h"
+#include "guiConst.h"
+
+class monoLabel;
 
 class procDisplay : public QWidget
 {
     Q_OBJECT
 public:
     explicit procDisplay(QWidget *parent = 0);
-    
-signals:
-    
+        
 public slots:
-    
-private:
+    void updateVals(Word *cpu, Word *cp15, Word *pipeline, QString ass);
+    void reset();
 
+private:
+    QVBoxLayout *mainLayout;
+    QGridLayout *pipeL, *cpuL, *cp15L;
+    monoLabel **pipeline;
+    monoLabel ***cpuReg, ***cp15Reg;
+
+    QString convertHex(Word val);
+};
+
+class monoLabel : public QLabel{
+public:
+    monoLabel(QWidget *parent = 0, Qt::WindowFlags f = 0) : QLabel(parent, f){
+        QFont *font = new QFont("Monospace");
+        font->setStyleHint(QFont::TypeWriter);
+        setFont(*font);
+    }
+
+    monoLabel(QString text, QWidget *parent = 0, Qt::WindowFlags f = 0) : QLabel(parent, f){
+        monoLabel();
+        setText(text);
+    }
 };
 
 #endif // PROCDISPLAY_H

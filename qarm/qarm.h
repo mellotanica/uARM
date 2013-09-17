@@ -24,8 +24,12 @@
 
 #include <QMainWindow>
 #include <QVBoxLayout>
+#include <QTimer>
+#include "armProc/machine.h"
 #include "mainbar.h"
 #include "guiConst.h"
+#include "procdisplay.h"
+#include "QLine.h"
 
 class qarm : public QMainWindow{
     Q_OBJECT
@@ -33,13 +37,26 @@ public:
 
     qarm();
 
+signals:
+    void resetDisplay();
+
 private slots:
+    void start(int speed);
+    void step();
+    void stop();
+    void open(QString fname);
+    void showRam();
 
 private:
+    bool resetFlag;
+    machine *mac;
+    unsigned long ramSize;
+
     QWidget *mainWidget;
     procDisplay *display;
     QVBoxLayout *layout;
     mainBar *toolbar;
+    QTimer *clock;
 };
 
 #endif // QARM_H
