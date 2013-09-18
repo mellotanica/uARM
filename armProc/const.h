@@ -93,6 +93,11 @@
 #define PIPELINE_DECODE 1
 #define PIPELINE_EXECUTE 2
 
+#define SHIFT_LSL 0
+#define SHIFT_LSR 1
+#define SHIFT_ASR 2
+#define SHIFT_ROR 3
+
 #define INVERT_W(b)	((b)^0xFFFFFFFF)
 #define INVERT_B(b) ((b)^1)
 

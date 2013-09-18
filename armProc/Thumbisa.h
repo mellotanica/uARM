@@ -33,65 +33,68 @@ public:
     Thumbisa(processor *father){p = father;}
     ~Thumbisa(){}
 	
-	void execute(Byte hi, Byte low);
+    void execute(Byte hi, Byte low, HalfWord instr);
 	
 private:
 	
 	processor *p;
 	
-	typedef void(Thumbisa::*InstrPointer)();
+    Word shift(Word src, Word amount, Byte type);
+
+    typedef void(Thumbisa::*InstrPointer)(HalfWord instr);
+    typedef void(Thumbisa::*AluPointer)(Word *rd, Word *rs);
 	
-	void ADD();
-	void ADDH();
-	void ADDPC();
-	void ADDSP();
-	void ASR();
-	void B();
-	void Bcond();
-	void BL();
-	void BX();
-	void CMP();
-	void CMPH();
-	void DP();
-	void LDMIA();
-	void LDR();
-	void LDRB();
-	void LDRH();
-	void LDRPC();
-	void LDRSB();
-	void LDRSH();
-	void LDRSP();
-	void LSL();
-	void LSR();
-	void MOV();
-	void MOVH();
-	void POP();
-	void PUSH();
-	void STMIA();
-	void STR();
-	void STRB();
-	void STRH();
-	void STRSP();
-	void SUB();
-	void SWI();
-	void UND();
+    void ADD(HalfWord instr);
+    void ADDH(HalfWord instr);
+    void ADDPC(HalfWord instr);
+    void ADDSP(HalfWord instr);
+    void ASR(HalfWord instr);
+    void B(HalfWord instr);
+    void Bcond(HalfWord instr);
+    void BL(HalfWord instr);
+    void BX(HalfWord instr);
+    void CMP(HalfWord instr);
+    void CMPH(HalfWord instr);
+    void DP(HalfWord instr);
+    void LDMIA(HalfWord instr);
+    void LDR(HalfWord instr);
+    void LDRB(HalfWord instr);
+    void LDRH(HalfWord instr);
+    void LDRPC(HalfWord instr);
+    void LDRSB(HalfWord instr);
+    void LDRSH(HalfWord instr);
+    void LDRSP(HalfWord instr);
+    void LSL(HalfWord instr);
+    void LSR(HalfWord instr);
+    void MOV(HalfWord instr);
+    void MOVH(HalfWord instr);
+    void POP(HalfWord instr);
+    void PUSH(HalfWord instr);
+    void STMIA(HalfWord instr);
+    void STR(HalfWord instr);
+    void STRB(HalfWord instr);
+    void STRH(HalfWord instr);
+    void STRSP(HalfWord instr);
+    void SUB(HalfWord instr);
+    void SWI(HalfWord instr);
+    void UND(HalfWord instr);
 	
-	void ADD_ALU();
-	void AND_ALU();
-	void ASR_ALU();
-	void BIC_ALU();
-	void CMN_ALU();
-	void CMP_ALU();
-	void EOR_ALU();
-	void LSL_ALU();
-	void LSR_ALU();
-	void MUL_ALU();
-	void MVN_ALU();
-	void NEG_ALU();
-	void ORR_ALU();
-	void ROR_ALU();
-	void SUB_ALU();
-	void TST_ALU();
+    void ADC_ALU(Word *rd, Word *rs);
+    void AND_ALU(Word *rd, Word *rs);
+    void ASR_ALU(Word *rd, Word *rs);
+    void BIC_ALU(Word *rd, Word *rs);
+    void CMN_ALU(Word *rd, Word *rs);
+    void CMP_ALU(Word *rd, Word *rs);
+    void EOR_ALU(Word *rd, Word *rs);
+    void LSL_ALU(Word *rd, Word *rs);
+    void LSR_ALU(Word *rd, Word *rs);
+    void MUL_ALU(Word *rd, Word *rs);
+    void MVN_ALU(Word *rd, Word *rs);
+    void NEG_ALU(Word *rd, Word *rs);
+    void ORR_ALU(Word *rd, Word *rs);
+    void ROR_ALU(Word *rd, Word *rs);
+    void SBC_ALU(Word *rd, Word *rs);
+    void TST_ALU(Word *rd, Word *rs);
 	
 	const InstrPointer main_table[16][16] = {
 		{&Thumbisa::LSL, &Thumbisa::LSL, &Thumbisa::LSL, &Thumbisa::LSL, &Thumbisa::LSL, &Thumbisa::LSL, &Thumbisa::LSL, &Thumbisa::LSL, &Thumbisa::LSR, &Thumbisa::LSR, &Thumbisa::LSR, &Thumbisa::LSR, &Thumbisa::LSR, &Thumbisa::LSR, &Thumbisa::LSR, &Thumbisa::LSR},
@@ -112,9 +115,9 @@ private:
 		{&Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL}
 	};
 	
-	const InstrPointer ALU_table[4][4] = {
+    const AluPointer ALU_table[4][4] = {
 		{&Thumbisa::AND_ALU, &Thumbisa::EOR_ALU, &Thumbisa::LSL_ALU, &Thumbisa::LSR_ALU},
-		{&Thumbisa::ASR_ALU, &Thumbisa::ADD_ALU, &Thumbisa::SUB_ALU, &Thumbisa::ROR_ALU},
+        {&Thumbisa::ASR_ALU, &Thumbisa::ADC_ALU, &Thumbisa::SBC_ALU, &Thumbisa::ROR_ALU},
 		{&Thumbisa::TST_ALU, &Thumbisa::NEG_ALU, &Thumbisa::CMP_ALU, &Thumbisa::CMN_ALU},
 		{&Thumbisa::ORR_ALU, &Thumbisa::MUL_ALU, &Thumbisa::BIC_ALU, &Thumbisa::MVN_ALU}
 	};

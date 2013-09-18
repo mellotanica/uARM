@@ -175,7 +175,11 @@ void processor::barrelShifter(bool immediate, Byte byte, Byte half){
 }
 
 bool processor::condCheck(){
-	Byte cond = pipeline[PIPELINE_EXECUTE] >> 28;
+    Byte cond = pipeline[PIPELINE_EXECUTE] >> 28;
+    return condCheck(cond);
+}
+
+bool processor::condCheck(Byte cond){
 	switch(cond){
 		case 0:	//EQ
 			if(util::getInstance()->checkBit(&cpu_registers[REG_CPSR], Z_POS))
@@ -348,7 +352,7 @@ void processor::execTrap(ExceptionMode exception){
 	switch(exception){	//set the right return registers
 		case EXC_SWI:
 			if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
-				cpu_registers[REG_LR_SVC] = *getPC() - 6;
+                cpu_registers[REG_LR_SVC] = *getPC() - 6;
 			else 									//ARM state
 				cpu_registers[REG_LR_SVC] = *getPC() - 4;
 			spsr = REG_SPSR_SVC;
@@ -459,14 +463,17 @@ void processor::execute(){
 	Byte codeLow;
 	
 	if(cpu_registers[REG_CPSR] & T_MASK){	// processor in Thumb state
+        HalfWord instr;
 		if(*getPC() & 2){	//read second halfword
 			codeHi = (Byte) (pipeline[PIPELINE_EXECUTE] >> 28) & 0xF;
 			codeLow = (Byte) (pipeline[PIPELINE_EXECUTE] >> 24) & 0xF;
+            instr = (HalfWord) (pipeline[PIPELINE_EXECUTE] >> 16) & 0xFFFF;
 		} else {
 			codeHi = (Byte) (pipeline[PIPELINE_EXECUTE] >> 12) & 0xF;
 			codeLow = (Byte) (pipeline[PIPELINE_EXECUTE] >> 8) & 0xF;
+            instr = (HalfWord) pipeline[PIPELINE_EXECUTE] & 0xFFFF;
 		}
-		execThumb->execute(codeHi, codeLow);
+        execThumb->execute(codeHi, codeLow, instr);
 	}
 	else{									// processor in ARM state
 		codeHi = (Byte) (pipeline[PIPELINE_EXECUTE] >> 20) & 0xFF;
@@ -575,17 +582,23 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
 	}
 }
 
-void processor::multiply(bool accumulate, bool lngWord){ //without booth algorythm
-	bool S = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 20);	// set condition flags
-	Word *rm, *rs;
-	rm = getVisibleRegister(pipeline[PIPELINE_EXECUTE] & 0xF);
-	rs = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 8) & 0xF);
-		
+
+void processor::multiply(bool accumulate, bool lngWord){
+    bool S = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 20);	// set condition flags
+    Word *rm, *rs, *rd, *rn;
+    rm = getVisibleRegister(pipeline[PIPELINE_EXECUTE] & 0xF);
+    rs = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 8) & 0xF);
+    rn = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
+    rd = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
+    multiply(rd, rm, rs, rn, accumulate, lngWord, S);
+}
+
+void processor::multiply(Word *rd, Word *rm, Word *rs, Word *rn , bool accumulate, bool lngWord, bool S){ //without booth algorythm
 	if(lngWord){	//multiply (and accumulate) doublewords
 		bool U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);	// unsigned operation
 		Word *destHi, *destLo;
-		destLo = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
-		destHi = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
+        destLo = rn;
+        destHi = rd;
 		
 		if(	getPC() == rm || getPC() == rs || getPC() == destHi || getPC() == destLo ||	// r15 can't be used
 			rm == destHi || rm == destLo || destHi == destLo){	//destination registers and rm must be all different registers
@@ -621,18 +634,14 @@ void processor::multiply(bool accumulate, bool lngWord){ //without booth algoryt
 		}
 	}
 	else{			//multiply (and accumulate) words
-		Word *add, *dest;
-		add = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
-		dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
-		
-		if(rm == dest || getPC() == rm || getPC() == rs || getPC() == dest || getPC() == add){	// r15 can't be used, destination and first operand can't be the same register
+        if(rm == rd || getPC() == rm || getPC() == rs || getPC() == rd || getPC() == rn){	// r15 can't be used, destination and first operand can't be the same register
 			unpredictable();
 			return;
 		}
-		*dest = (*rm) * (*rs) + (accumulate ? *add : 0);
-		if(S){
-			util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, dest, 31);
-			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], Z_POS, (*dest == 0 ? 1 : 0));
+        *rd = (*rm) * (*rs) + (accumulate ? *rn : 0);
+        if(S){
+            util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, rd, 31);
+            util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], Z_POS, (*rd == 0 ? 1 : 0));
 			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], C_POS, (get_unpredictableB() ? 1 : 0));	// C bit is set to a meaningless value
 		}
 	}
@@ -660,24 +669,30 @@ void processor::singleDataSwap(){
 }
 
 void processor::blockDataTransfer(bool load){
-	Word *base = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
-	if(base == getPC()){	//using r15 as base register gives unpredictable results
+    Word *base = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
+    HalfWord list = pipeline[PIPELINE_EXECUTE] & 0xFFFF;
+    bool P, U, S, W;
+    P = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 24);	// pre/post indexing
+    U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 23);	// up/down
+    S = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);	// PSR & force user
+    W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);	// Write-back
+
+    blockDataTransfer(base, list, load, P, U, S, W);
+}
+
+void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bool U, bool S, bool W){
+
+    if(rn == getPC()){	//using r15 as base register gives unpredictable results
 		unpredictable();
 		return;
 	}
-	HalfWord list = pipeline[PIPELINE_EXECUTE] & 0xFFFF;
-	bool P, U, S, W;
-	P = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 24);	// pre/post indexing
-	U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 23);	// up/down
-	S = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);	// PSR & force user
-	W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);	// Write-back
-	
+
 	Byte regn;
     for(unsigned i = 0; i < sizeof(HalfWord) * 8; i++)
 		if(list & (1<<i))
 			regn++;
 	
-	Word address = *base + ((U ? 1 : -1) * (P ? 4 : 0)) - (U ? 0 : (regn * 4));
+    Word address = *rn + ((U ? 1 : -1) * (P ? 4 : 0)) - (U ? 0 : (regn * 4));
 	if(load){		//LDM
 		if(S){	//user bank transfer / mode change
 			if(getMode() == MODE_USER){	// S bit should be set only in privileged mode
@@ -694,7 +709,7 @@ void processor::blockDataTransfer(bool load){
 				*getPC() = bus->getRam()->readW(&address);
 				cpu_registers[REG_CPSR] = *getVisibleRegister(REG_SPSR);
 				if(W)
-					*base += (U ? 1 : -1) * (regn * 4);
+                    *rn += (U ? 1 : -1) * (regn * 4);
 			}
 			else{
 				if(W){					// base writeback should not be used in this case
@@ -734,7 +749,7 @@ void processor::blockDataTransfer(bool load){
 						firstChecked = true;
 						bus->getRam()->writeW(&address, *getVisibleRegister(i));	// store the initial value before writing back return address
 						if(W)
-							*base += (U ? 1 : -1) * (regn * 4);
+                            *rn += (U ? 1 : -1) * (regn * 4);
 					}
 					else
 						bus->getRam()->writeW(&address, *getVisibleRegister(i));
@@ -804,43 +819,55 @@ void processor::accessPSR(bool load){
 }
 
 void processor::branch(bool link, bool exchange){
+    Word *dest = getVisibleRegister(pipeline[PIPELINE_EXECUTE] & 0xF);
+    Word offset = (pipeline[PIPELINE_EXECUTE] & 0xFFFFFF) << 2;
+    branch(dest, offset, link, exchange);
+}
+
+void processor::branch(Word *rd, Word offset, bool link, bool exchange){
 	Word *pc = getVisibleRegister(REG_PC);
 	if(exchange){
-		Word *dest = getVisibleRegister(pipeline[PIPELINE_EXECUTE] & 0xF);
-		util::getInstance()->copyBitReg(getVisibleRegister(REG_CPSR), T_POS, (*dest & 1));
-		*pc = *dest & 0xFFFFFFFE;
+        util::getInstance()->copyBitReg(getVisibleRegister(REG_CPSR), T_POS, (*rd & 1));
+        *pc = *rd & 0xFFFFFFFE;
 	} else {
 		if(link){
 			Word *lr = getVisibleRegister(REG_LR);
 			*lr = *pc-4;
 			*lr &= 0xFFFFFFFC;
 		}
-		Word offset = (pipeline[PIPELINE_EXECUTE] & 0xFFFFFF) << 2;
 		if(offset >> 24 != 0)
-			for(int i = 25; i < 32; i++)	//magic numbers, this operation is strictly based on 32bit words..
-				offset |= 1<<i;
+            for(unsigned i = 25; i < (sizeof(Word) * 8); i++)	//magic numbers, this operation is strictly based on 32bit words..
+                offset |= (1<<i);
 		*pc += (SWord) offset;
 	}
 	bus->branchHappened = true;
 }
 
+
 void processor::halfwordDataTransfer(bool sign, bool load_halfwd){
-	bool P, U, I, W;
-	P = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 24);
-	U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 23);
-	I = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);
-	W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);
-	
-	Word *src = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
-	Word *dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
-	Word offset, address = *src;
-	if(src == getVisibleRegister(REG_PC))	//if source is r15 the address must be instruction addr+12
+    bool P, U, I, W;
+    P = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 24);
+    U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 23);
+    I = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);
+    W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);
+
+    Word *src = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
+    Word *dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
+    Word offset = (pipeline[PIPELINE_EXECUTE] & 0xF) + ((pipeline[PIPELINE_EXECUTE] >> 8) & 0xF);
+    Word *rm = getVisibleRegister(pipeline[PIPELINE_EXECUTE] & 0xF);
+
+    halfwordDataTransfer(dest, src, rm, offset, P, U, I, W, sign, load_halfwd);
+}
+void processor::halfwordDataTransfer(Word *rd, Word *rn, Word *rm, Word offs, bool P, bool U, bool I, bool W, bool sign, bool load_halfwd){
+    Word address = *rn;
+    Word offset;
+    if(rn == getVisibleRegister(REG_PC))	//if source is r15 the address must be instruction addr+12
 		address += 12;
 	
 	if(I)	//immediate offset
-		offset = (pipeline[PIPELINE_EXECUTE] & 0xF) + ((pipeline[PIPELINE_EXECUTE] >> 8) & 0xF);
+        offset = offs;
 	else
-		offset = *(getVisibleRegister(pipeline[PIPELINE_EXECUTE] & 0xF));
+        offset = *rm;
 	
 	if(P){	//preindexing
 		if(U)
@@ -850,7 +877,7 @@ void processor::halfwordDataTransfer(bool sign, bool load_halfwd){
 	}
 	
 	if(!(sign && !load_halfwd) && ((address & 1) > 0)) {	//if address is not halfword aligned return unpredictable value
-		*dest = get_unpredictable();
+        *rd = get_unpredictable();
 	} else {	//address is ok
 		if(sign){ //it's a signed load
 			Word ret = 0;
@@ -867,24 +894,24 @@ void processor::halfwordDataTransfer(bool sign, bool load_halfwd){
                     for(unsigned i = sizeof(Byte)*8; i < sizeof(Word)*8; i ++)
 						ret |= 1<<i;
 			}
-			*dest = ret;
+            *rd = ret;
 		} else {	//it's a halfword transfer
 			if(load_halfwd) {	//load val
-				*dest = bus->getRam()->readH(&address, BIGEND_sig);
+                *rd = bus->getRam()->readH(&address, BIGEND_sig);
 			} else {	//store val
-				bus->getRam()->writeH(&address, (HalfWord) (*dest & 0xFFFF), BIGEND_sig);
+                bus->getRam()->writeH(&address, (HalfWord) (*rd & 0xFFFF), BIGEND_sig);
 			}
 		}
 	}
 	
 	if(P) {	//preindexing
 		if(W)	//Writeback
-			*src = address;
+            *rn = address;
 	} else { //postindexing always writes back
 		if(U)
-			*src = address + offset;
+            *rn = address + offset;
 		else
-			*src = address - offset;
+            *rn = address - offset;
 	}
 }
 

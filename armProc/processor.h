@@ -109,6 +109,7 @@ private:
 	void debugARM(string mnemonic);
 	void debugThumb(string mnemonic);
 	bool condCheck();
+    bool condCheck(Byte cond);
 	void barrelShifter(bool immediate, Byte byte, Byte half);
 	
 	void undefinedTrap();
@@ -128,14 +129,18 @@ private:
     void decode() {}
 	void execute();
 	
-	void multiply(bool accumulate, bool lngWord);
+    void multiply(bool accumulate, bool lngWord);
+    void multiply(Word *rd, Word *rm, Word *rs, Word *rn , bool accumulate, bool lngWord, bool S);
 	void coprocessorTransfer(bool memAcc, bool toCoproc);
 	void coprocessorOperation();
 	void singleDataSwap();
+    void blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bool U, bool S, bool W);
 	void blockDataTransfer(bool load);
 	void accessPSR(bool load);
+    void branch(Word *rd, Word offset, bool link, bool exchange);
 	void branch(bool link, bool exchange);
 	void dataProcessing(Byte opcode);
+    void halfwordDataTransfer(Word *rd, Word *rn, Word *rm, Word offs, bool P, bool U, bool I, bool W, bool sign, bool load_halfwd);
 	void halfwordDataTransfer(bool sign, bool load_halfwd);
 	void singleMemoryAccess(bool L);
 	void dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest, bool S);

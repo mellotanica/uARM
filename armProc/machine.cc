@@ -87,6 +87,7 @@ QString machine::status2QString(){
         case PS_IDLE: return "IDLE"; break;
         case PS_RUNNING: return "RUNNING"; break;
     }
+    return "UNKNOWN";
 }
 
 void machine::run(){
