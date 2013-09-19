@@ -22,7 +22,9 @@ HEADERS += \
     qarm/guiConst.h \
     qarm/procdisplay.h \
     qarm/QLine.h \
-    qarm/ramview.h
+    qarm/ramview.h \
+    qarm/hex_view_priv.h \
+    qarm/hex_view.h
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -36,7 +38,8 @@ SOURCES += \
     qarm/main.cc \
     qarm/mainbar.cc \
     qarm/procdisplay.cc \
-    qarm/ramview.cc
+    qarm/ramview.cc \
+    qarm/hex_view.cc
 
 OTHER_FILES += \
     test/testProgBehavior \

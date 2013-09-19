@@ -23,22 +23,34 @@
 #define RAMVIEW_H
 
 #include <QWidget>
+#include <QPushButton>
 #include <QVBoxLayout>
-#include <QTableView>
-#include "QLine.h"
+#include <QLineEdit>
+#include "armProc/machine.h"
+#include "qarm/hex_view.h"
+#include "qarm/QLine.h"
 
 class ramView : public QWidget
 {
     Q_OBJECT
 public:
-    explicit ramView(QWidget *parent = 0);
+    explicit ramView(machine *mac, QWidget *parent = 0);
     
 signals:
     
+
 public slots:
-    
+    void visualize();
+    void update();
+
 private:
-    QTableView *ramViewer;
+    machine *mac;
+    Word startAddr = 0, endAddr = 0;
+
+    HexView *ramViewer = NULL;
+    QVBoxLayout *mainLayout;
+    QLineEdit *startEd, *endEd;
+    QPushButton *visualizeB;
 };
 
 #endif // RAMVIEW_H

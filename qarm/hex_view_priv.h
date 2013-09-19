@@ -1,8 +1,8 @@
 /* -*- mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 /*
- * uARM
+ * uMPS - A general purpose computer system simulator
  *
- * Copyright (C) 2013 Marco Melletti
+ * Copyright (C) 2010 Tomislav Jonjic
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,26 +19,30 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef GUICONST_H
-#define GUICONST_H
+#ifndef QMPS_HEX_VIEW_PRIV_H
+#define QMPS_HEX_VIEW_PRIV_H
 
-#define PLAYICON "icons/play.png"
-#define PAUSEICON "icons/pause.png"
-#define RESETICON "icons/reset.png"
-#define STEPICON "icons/step.png"
+#include <QWidget>
 
-#define IPSMAX      60
-#define IPSTRESH    50
-#define IPSMIN      1
-#define IPSSTEP     1
+class HexView;
 
-#define PIPECOLS    6
-#define CPUCOLS     8
-#define CPUROWS     19
-#define CP15COLS    8
-#define CP15ROWS    5
+class HexViewMargin : public QWidget {
+    Q_OBJECT
 
-#define WS  (sizeof(Word))
-#define UNUSED_ARG(x) ((void) x)
+public:
+    static const int kLeftPadding = 3;
+    static const int kRightPadding = 5;
 
-#endif // GUICONST_H
+    HexViewMargin(HexView* hexView);
+
+    virtual QSize sizeHint() const;
+
+protected:
+    void paintEvent(QPaintEvent* event);
+    void wheelEvent(QWheelEvent* event);
+
+private:
+    HexView* const hexView;
+};
+
+#endif // QMPS_HEX_VIEW_PRIV_H

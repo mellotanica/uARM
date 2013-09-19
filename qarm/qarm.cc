@@ -22,10 +22,12 @@
 #include "qarm.h"
 
 qarm::qarm(){
+    ramSize = MEM_SIZE_W;
+    mac = new machine;
+
     mainWidget = new QWidget;
     toolbar = new mainBar;
     display = new procDisplay(this);
-    ramViewer = new ramView;
 
     centralLayout = new QVBoxLayout;
 
@@ -37,10 +39,6 @@ qarm::qarm(){
     mainWidget->setLayout(centralLayout);
 
     clock = new QTimer(this);
-
-    ramSize = MEM_SIZE_W;
-
-    mac = new machine;
 
     connect(toolbar, SIGNAL(play(int)), this, SLOT(start(int)));
     connect(toolbar, SIGNAL(speedChanged(int)), this, SLOT(speedChanged(int)));
@@ -141,8 +139,7 @@ void qarm::fillMemory(ramMemory *ram, QDataStream *in){
 }
 
 void qarm::showRam(){
-    if(ramViewer->isHidden())
-        ramViewer->show();
-    else
-        ramViewer->hide();
+    ramView *ramWindow = new ramView(mac, this);
+    connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,QString)), ramWindow, SLOT(update()));
+    ramWindow->show();
 }

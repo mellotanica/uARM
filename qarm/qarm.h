@@ -63,7 +63,6 @@ private:
     procDisplay *display;
     QVBoxLayout *centralLayout;
     mainBar *toolbar;
-    ramView *ramViewer;
     QTimer *clock;
 
     void fillMemory(ramMemory *ram, QDataStream *in);

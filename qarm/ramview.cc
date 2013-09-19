@@ -20,18 +20,72 @@
  */
 
 #include "ramview.h"
+#include <QHBoxLayout>
+#include <QLabel>
 
-ramView::ramView(QWidget *parent) :
+ramView::ramView(machine *mac, QWidget *parent) :
+    mac(mac),
     QWidget(parent)
 {
     setWindowFlags(Qt::Window);
-    QVBoxLayout *mainLayout = new QVBoxLayout;
+    mainLayout = new QVBoxLayout;
+    QHBoxLayout *topPanel = new QHBoxLayout;
+    mainLayout->addLayout(topPanel);
 
-    ramViewer = new QTableView;
+    startEd = new QLineEdit;
+    startEd->setToolTip("Start Address");
+    startEd->setInputMask("HHHHHHHH");
+    startEd->setMaxLength(8);
 
+    endEd = new QLineEdit;
+    endEd->setToolTip("End Address");
+    endEd->setInputMask("HHHHHHHH");
+    startEd->setMaxLength(8);
 
+    visualizeB = new QPushButton("Display Portion");
 
-    mainLayout->addWidget(ramViewer);
+    topPanel->addWidget(new QLabel("0x"));
+    topPanel->addWidget(startEd);
+    topPanel->addWidget(new QLabel("0x"));
+    topPanel->addWidget(endEd);
+    topPanel->addWidget(visualizeB);
+
     setLayout(mainLayout);
     hide();
+
+    connect(visualizeB, SIGNAL(clicked()), this, SLOT(visualize()));
+}
+
+void ramView::update(){
+    if(ramViewer != NULL)
+        ramViewer->Refresh();
+}
+
+void ramView::visualize(){
+    bool conv = true, res;
+    Word start = startEd->text().toUInt(&res,16);
+    conv &= res;
+    Word end = endEd->text().toUInt(&res,16);
+    conv &= res;
+
+    if(conv && (start != startAddr || end != endAddr)){
+
+        if(start & 3){
+            start &= 0xFFFFFFFC;
+            startEd->setText(QString::number(start, 16));
+        }
+        if(end & 3){
+            end &= 0xFFFFFFFC;
+            endEd->setText(QString::number(end, 16));
+        }
+        startAddr = start;
+        endAddr = end;
+
+        if(ramViewer != NULL){
+            mainLayout->removeWidget(ramViewer);
+            delete ramViewer;
+        }
+        ramViewer = new HexView(start, end, mac);
+        mainLayout->addWidget(ramViewer);
+    }
 }
