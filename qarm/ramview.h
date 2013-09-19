@@ -26,6 +26,7 @@
 #include <QPushButton>
 #include <QVBoxLayout>
 #include <QLineEdit>
+#include <QValidator>
 #include "armProc/machine.h"
 #include "qarm/hex_view.h"
 #include "qarm/QLine.h"

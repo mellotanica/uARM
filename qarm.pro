@@ -48,4 +48,6 @@ OTHER_FILES += \
     icons/step.png \
     icons/reset.png \
     icons/play.png \
-    icons/pause.png
+    icons/pause.png \
+    test/sample.s \
+    README.txt

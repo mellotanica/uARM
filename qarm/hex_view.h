@@ -73,7 +73,7 @@ private:
         N_COLS_PER_BYTE
     };
 
-    static const unsigned int kWordsPerRow = 2;
+    static const unsigned int kWordsPerRow = 1;
     static const unsigned int kCharsPerWord = WS * N_COLS_PER_BYTE;
     static const unsigned int kCharsPerRow = kWordsPerRow * kCharsPerWord;
     static const unsigned int kHorizontalSpacing = 1;

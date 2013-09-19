@@ -28,25 +28,29 @@ ramView::ramView(machine *mac, QWidget *parent) :
     QWidget(parent)
 {
     setWindowFlags(Qt::Window);
+    setWindowTitle("Ram Inspector");
     mainLayout = new QVBoxLayout;
     QHBoxLayout *topPanel = new QHBoxLayout;
     mainLayout->addLayout(topPanel);
 
+    QRegExp rx("[0-9,a-f]{1,8}", Qt::CaseInsensitive);
+    QRegExpValidator *hexValidator = new QRegExpValidator(rx);
+
     startEd = new QLineEdit;
     startEd->setToolTip("Start Address");
-    startEd->setInputMask("HHHHHHHH");
+    startEd->setValidator(hexValidator);
     startEd->setMaxLength(8);
 
     endEd = new QLineEdit;
     endEd->setToolTip("End Address");
-    endEd->setInputMask("HHHHHHHH");
-    startEd->setMaxLength(8);
+    endEd->setValidator(hexValidator);
+    endEd->setMaxLength(8);
 
     visualizeB = new QPushButton("Display Portion");
 
     topPanel->addWidget(new QLabel("0x"));
     topPanel->addWidget(startEd);
-    topPanel->addWidget(new QLabel("0x"));
+    topPanel->addWidget(new QLabel("-> 0x"));
     topPanel->addWidget(endEd);
     topPanel->addWidget(visualizeB);
 

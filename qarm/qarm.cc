@@ -140,6 +140,7 @@ void qarm::fillMemory(ramMemory *ram, QDataStream *in){
 
 void qarm::showRam(){
     ramView *ramWindow = new ramView(mac, this);
+    connect(this, SIGNAL(resetMachine(ulong)), ramWindow, SLOT(update()));
     connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,QString)), ramWindow, SLOT(update()));
     ramWindow->show();
 }
