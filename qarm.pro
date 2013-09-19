@@ -41,4 +41,8 @@ SOURCES += \
 OTHER_FILES += \
     test/testProgBehavior \
     compile \
-    assemble
+    assemble \
+    icons/step.png \
+    icons/reset.png \
+    icons/play.png \
+    icons/pause.png

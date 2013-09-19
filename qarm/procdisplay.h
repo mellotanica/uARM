@@ -55,14 +55,20 @@ private:
 class monoLabel : public QLabel{
 public:
     monoLabel(QWidget *parent = 0, Qt::WindowFlags f = 0) : QLabel(parent, f){
-        QFont *font = new QFont("Monospace");
-        font->setStyleHint(QFont::TypeWriter);
-        setFont(*font);
+        setFont(getMonospaceFont());
     }
 
     monoLabel(QString text, QWidget *parent = 0, Qt::WindowFlags f = 0) : QLabel(parent, f){
         monoLabel();
         setText(text);
+    }
+
+    static const QFont getMonospaceFont()
+    {
+        QFont monospaceFont("monospace");
+        monospaceFont.setStyleHint(QFont::TypeWriter);
+        monospaceFont.setPointSize(10);
+        return monospaceFont;
     }
 };
 

@@ -61,36 +61,36 @@ procDisplay::procDisplay(QWidget *parent) :
     pipeline[5]->setAlignment(Qt::AlignLeft);
 
     cpuReg[0][0]->setText("CPU registers: ");
-    cpuReg[1][0]->setText("r0");
-    cpuReg[2][0]->setText("r1");
-    cpuReg[3][0]->setText("r2");
-    cpuReg[4][0]->setText("r3");
-    cpuReg[5][0]->setText("r4");
-    cpuReg[6][0]->setText("r5");
-    cpuReg[7][0]->setText("r6");
-    cpuReg[8][0]->setText("r7");
-    cpuReg[9][0]->setText("r8");
-    cpuReg[10][0]->setText("r9");
-    cpuReg[11][0]->setText("r10");
-    cpuReg[12][0]->setText("r11");
-    cpuReg[13][0]->setText("r12");
-    cpuReg[14][0]->setText("r13(SP)");
-    cpuReg[15][0]->setText("r14(LR)");
-    cpuReg[16][0]->setText("r15(PC)");
-    cpuReg[17][0]->setText("CPSR");
-    cpuReg[18][0]->setText("SPSR");
+    cpuReg[1][0]->setText("r0:");
+    cpuReg[2][0]->setText("r1:");
+    cpuReg[3][0]->setText("r2:");
+    cpuReg[4][0]->setText("r3:");
+    cpuReg[5][0]->setText("r4:");
+    cpuReg[6][0]->setText("r5:");
+    cpuReg[7][0]->setText("r6:");
+    cpuReg[8][0]->setText("r7:");
+    cpuReg[9][0]->setText("r8:");
+    cpuReg[10][0]->setText("r9:");
+    cpuReg[11][0]->setText("r10:");
+    cpuReg[12][0]->setText("r11:");
+    cpuReg[13][0]->setText("r12:");
+    cpuReg[14][0]->setText("r13(SP):");
+    cpuReg[15][0]->setText("r14(LR):");
+    cpuReg[16][0]->setText("r15(PC):");
+    cpuReg[17][0]->setText("CPSR:");
+    cpuReg[18][0]->setText("SPSR:");
 
     for(int i = 0; i < CPUROWS; i++)
         cpuReg[i][0]->setAlignment(Qt::AlignRight);
 
-    cpuReg[9][CPUCOLS-1]->setText("r8");
-    cpuReg[10][CPUCOLS-1]->setText("r9");
-    cpuReg[11][CPUCOLS-1]->setText("r10");
-    cpuReg[12][CPUCOLS-1]->setText("r11");
-    cpuReg[13][CPUCOLS-1]->setText("r12");
-    cpuReg[14][CPUCOLS-1]->setText("r13");
-    cpuReg[15][CPUCOLS-1]->setText("r14");
-    cpuReg[18][CPUCOLS-1]->setText("SPSR");
+    cpuReg[9][CPUCOLS-1]->setText(":r8");
+    cpuReg[10][CPUCOLS-1]->setText(":r9");
+    cpuReg[11][CPUCOLS-1]->setText(":r10");
+    cpuReg[12][CPUCOLS-1]->setText(":r11");
+    cpuReg[13][CPUCOLS-1]->setText(":r12");
+    cpuReg[14][CPUCOLS-1]->setText(":r13");
+    cpuReg[15][CPUCOLS-1]->setText(":r14");
+    cpuReg[18][CPUCOLS-1]->setText(":SPSR");
 
     cpuReg[0][1]->setText("Usr/Sys");
     cpuReg[0][2]->setText("Svc");
@@ -101,7 +101,7 @@ procDisplay::procDisplay(QWidget *parent) :
 
     cp15Reg[0][0]->setText("CP15 registers:");
     for(int i = 1; i < CP15_REGISTERS_NUM+1; i++){
-        cp15Reg[i%CP15ROWS][(i/CP15ROWS)*2]->setText("r"+QString::number(i-1));
+        cp15Reg[i%CP15ROWS][(i/CP15ROWS)*2]->setText("r"+QString::number(i-1)+":");
         cp15Reg[i%CP15ROWS][(i/CP15ROWS)*2]->setAlignment(Qt::AlignRight);
     }
 

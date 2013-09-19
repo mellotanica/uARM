@@ -57,6 +57,9 @@ qarm::qarm(){
     connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,QString)), display, SLOT(updateVals(Word*,Word*,Word*,QString)));
     connect(this, SIGNAL(resetDisplay()), display, SLOT(reset()));
 
+    connect(this, SIGNAL(stop()), clock, SLOT(stop()));
+    connect(this, SIGNAL(stop()), toolbar, SLOT(stop()));
+
     connect(mac, SIGNAL(updateStatus(QString)), toolbar, SLOT(updateStatus(QString)));
 
     reset();
@@ -71,8 +74,7 @@ void qarm::step(){
                                                                   "No program has been loaded.\nDo you want to start emulation anyways?",
                                                                   QMessageBox::Yes|QMessageBox::No);
         if(reply == QMessageBox::No){
-            if(clock->isActive())
-                clock->stop();
+            emit stop();
             return;
         } else {
             dataLoaded = true;
@@ -109,6 +111,7 @@ void qarm::open(QString fname){
         QMessageBox::critical(this, "Error", "Could not open file");
         return;
     }
+    reset();
     QDataStream in(&f);
     ramMemory *ram = mac->getBus()->getRam();
     if(ram != NULL)

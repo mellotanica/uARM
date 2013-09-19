@@ -51,6 +51,7 @@ private slots:
     void setSpeedLab(int speedVal);
     void playToggled(bool checked);
     void resetPressed();
+    void stop();
     void plus();
     void minus();
     void openPressed();
@@ -60,7 +61,7 @@ private:
     styledButton *playB, *resetB, *stepB, *openB, *ramB, *plusB, *minusB;   //interactions
     QVBoxLayout *plusMinusL, *scrollerL;
     QWidget *plusMinusW, *scrollerW;
-    const QIcon *playIco, *stopIco, *pauseIco, *stepIco;
+    const QIcon *playIco, *resetIco, *pauseIco, *stepIco;
     QSlider *speedSl;
     QLabel *speedLab, *statusLab;
 };

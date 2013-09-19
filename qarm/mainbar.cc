@@ -31,7 +31,7 @@ mainBar::mainBar(QWidget *parent) :
     setOrientation(Qt::Horizontal);
 
     playIco = new QIcon(PLAYICON);
-    stopIco = new QIcon(STOPICON);
+    resetIco = new QIcon(RESETICON);
     pauseIco = new QIcon(PAUSEICON);
     stepIco = new QIcon(STEPICON);
 
@@ -40,13 +40,16 @@ mainBar::mainBar(QWidget *parent) :
     openB->setText("Open");
 
     playB = new styledButton();
+    playB->setToolTip("Play");
     playB->setCheckable(true);
     playB->setIcon(*playIco);
 
     resetB = new styledButton();
-    resetB->setIcon(*stopIco);
+    resetB->setToolTip("Reset");
+    resetB->setIcon(*resetIco);
 
     stepB = new styledButton();
+    stepB->setToolTip("Step");
     stepB->setIcon(*stepIco);
 
     plusMinusW = new QWidget;
@@ -110,6 +113,7 @@ mainBar::mainBar(QWidget *parent) :
     connect(playB, SIGNAL(toggled(bool)), this, SLOT(playToggled(bool)));
     connect(resetB, SIGNAL(clicked()), this, SLOT(resetPressed()));
     connect(stepB, SIGNAL(clicked()), this, SIGNAL(step()));
+    connect(stepB, SIGNAL(clicked()), this, SLOT(stop()));
     connect(openB, SIGNAL(clicked()), this, SLOT(openPressed()));
     connect(ramB, SIGNAL(clicked()), this, SIGNAL(showRam()));
     connect(plusB, SIGNAL(clicked()), this, SLOT(plus()));
@@ -119,10 +123,12 @@ mainBar::mainBar(QWidget *parent) :
 void mainBar::playToggled(bool checked){
     if(checked){
         playB->setIcon(*pauseIco);
+        playB->setToolTip("Pause");
         int spV = speedSl->value();
         emit play(spV);
     } else {
         playB->setIcon(*playIco);
+        playB->setToolTip("Play");
         emit pause();
     }
 }
@@ -143,6 +149,11 @@ void mainBar::setSpeedLab(int spV){
     } else
             text = "        MAX Mz";
     speedLab->setText(text);
+}
+
+void mainBar::stop(){
+    if(playB->isChecked())
+        playB->toggle();
 }
 
 void mainBar::plus(){

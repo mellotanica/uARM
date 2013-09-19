@@ -24,7 +24,7 @@
 
 #define PLAYICON "icons/play.png"
 #define PAUSEICON "icons/pause.png"
-#define STOPICON "icons/stop.png"
+#define RESETICON "icons/reset.png"
 #define STEPICON "icons/step.png"
 
 #define IPSMAX      60

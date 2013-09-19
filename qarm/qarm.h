@@ -44,6 +44,7 @@ public:
 signals:
     void resetDisplay();
     void resetMachine(unsigned long memSize);
+    void stop();
 
 private slots:
     void start(int speed);
