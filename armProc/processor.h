@@ -122,9 +122,7 @@ private:
 	void execTrap(ExceptionMode exception);
     void NOP() {debugARM("NOP");}
 	void unpredictable();
-	Word get_unpredictable();
-	bool get_unpredictableB();
-	
+
     void fetch() {pipeline[PIPELINE_EXECUTE] = bus->pipeline[PIPELINE_EXECUTE]; pipeline[PIPELINE_DECODE] = bus->pipeline[PIPELINE_DECODE]; pipeline[PIPELINE_FETCH] = bus->pipeline[PIPELINE_FETCH];}
     void decode() {}
 	void execute();

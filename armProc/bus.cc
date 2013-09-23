@@ -36,10 +36,34 @@ systemBus::~systemBus(){
     }
 }
 
-void systemBus::fetch(Word *address){
-	pipeline[PIPELINE_EXECUTE] = pipeline[PIPELINE_DECODE];
-	pipeline[PIPELINE_DECODE] = pipeline[PIPELINE_FETCH];
-	pipeline[PIPELINE_FETCH] = ram->readW(address);
+bool systemBus::fetch(Word pc, bool armMode){
+    Word addr = pc - (armMode ? 8 : 4);
+    ram->readW(&addr, &pipeline[PIPELINE_EXECUTE]);
+    addr += 4;
+    if(!armMode){
+        if(!ram->readW(&addr, &pipeline[PIPELINE_DECODE]))
+            return false;
+        pipeline[PIPELINE_FETCH] = 0;
+        return true;
+    }
+    ram->readW(&addr, &pipeline[PIPELINE_DECODE]);
+    addr += 4;
+    if(!ram->readW(&addr, &pipeline[PIPELINE_FETCH]))
+        return false;
+    return true;
 }
+
+
+Word systemBus::get_unpredictable(){
+    Word ret;
+    for(unsigned i = 0; i < sizeof(Word) * 8; i++)
+        ret |= (rand() % 1 ? 1 : 0) << i;
+    return ret;
+}
+
+bool systemBus::get_unpredictableB(){
+    return rand() % 1;
+}
+
 
 #endif //UARM_SYSTEMBUS_CC

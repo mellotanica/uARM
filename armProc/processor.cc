@@ -289,16 +289,25 @@ bool processor::condCheck(Byte cond){
 
 void processor::nextCycle() {
 	status = PS_RUNNING;
-	if(cpu_registers[REG_CPSR] & T_MASK)	//Thumb state
+    bool armMode;
+    if(cpu_registers[REG_CPSR] & T_MASK){	//Thumb state
 		*getPC() += 2;
-	else 									//ARM state
+        armMode = false;
+    }
+    else{ 									//ARM state
 		*getPC() += 4;
+        armMode = true;
+    }
 	if(*getPC() % 4 == 0)	//in ARM state or after second halfword in Thumb state, fetch new word
-		bus->fetch(getPC());
+        if(!bus->fetch(*getPC(), armMode)){
+            execTrap(EXC_PREFABT);
+            return;
+        }
 }
 
 void processor::prefetch() {
-	bus->fetch(getPC());
+    Word pc = *getPC();
+    bus->fetch(pc+8, true);
     nextCycle();
 	nextCycle();
 }
@@ -352,40 +361,46 @@ void processor::execTrap(ExceptionMode exception){
 	switch(exception){	//set the right return registers
 		case EXC_SWI:
 			if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
-                cpu_registers[REG_LR_SVC] = *getPC() - 6;
+                cpu_registers[REG_LR_SVC] = *getPC() - 2;
 			else 									//ARM state
 				cpu_registers[REG_LR_SVC] = *getPC() - 4;
 			spsr = REG_SPSR_SVC;
 			break;
 		case EXC_UNDEF:
 			if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
-				cpu_registers[REG_LR_UND] = *getPC() - 6;
+                cpu_registers[REG_LR_UND] = *getPC() - 2;
 			else 									//ARM state
 				cpu_registers[REG_LR_UND] = *getPC() - 4;
 			spsr = REG_SPSR_UND;
 			break;
-		case EXC_DATAABT:
-			cpu_registers[REG_LR_ABT] = *getPC();
-			spsr = REG_SPSR_ABT;
+        case EXC_DATAABT:   // !! check return address
+            if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
+                cpu_registers[REG_LR_UND] = *getPC() + 4;
+            else 									//ARM state
+                cpu_registers[REG_LR_UND] = *getPC();
+            spsr = REG_SPSR_ABT;
 			break;
 		case EXC_RESET:
-			cpu_registers[REG_LR_SVC] = get_unpredictable();
-			cpu_registers[REG_SPSR_SVC] = get_unpredictable();
+            cpu_registers[REG_LR_SVC] = bus->get_unpredictable();
+            cpu_registers[REG_SPSR_SVC] = bus->get_unpredictable();
 			break;
-		case EXC_PREFABT:
-			cpu_registers[REG_LR_ABT] = *getPC() + 4;
-			spsr = REG_SPSR_ABT;
+        case EXC_PREFABT:   // !! check return address
+            if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
+                cpu_registers[REG_LR_UND] = *getPC();
+            else 									//ARM state
+                cpu_registers[REG_LR_UND] = *getPC() - 4;
+            spsr = REG_SPSR_ABT;
 			break;
-		case EXC_IRQ:
+        case EXC_IRQ:   // !! check return address
 			if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
-				cpu_registers[REG_LR_IRQ] = *getPC() - 2;
+                cpu_registers[REG_LR_IRQ] = *getPC() + 2;
 			else 									//ARM state
 				cpu_registers[REG_LR_IRQ] = *getPC();
 			spsr = REG_SPSR_IRQ;
 			break;
-		case EXC_FIQ:
+        case EXC_FIQ:   // !! check return address
 			if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
-				cpu_registers[REG_LR_FIQ] = *getPC() - 2;
+                cpu_registers[REG_LR_FIQ] = *getPC() + 2;
 			else 									//ARM state
 				cpu_registers[REG_LR_FIQ] = *getPC();
 			spsr = REG_SPSR_FIQ;
@@ -434,18 +449,7 @@ void processor::unpredictable(){
 	Word regmask = rand() % 0x1FFF;
 	for(int i = 0; i < 13; i++)
 		if(regmask & (1 << i))
-			*getVisibleRegister(i) = get_unpredictable();
-}
-
-Word processor::get_unpredictable(){
-	Word ret;
-    for(unsigned i = 0; i < sizeof(Word) * 8; i++)
-		ret |= (rand() % 1 ? 1 : 0) << i;
-	return ret;
-}
-
-bool processor::get_unpredictableB(){
-	return rand() % 1;
+            *getVisibleRegister(i) = bus->get_unpredictable();
 }
 
 /* ******************** *
@@ -522,16 +526,22 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
 		U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 23);	// up/down
 		W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);	// Write-back
 		N = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);	// single/multiple transfer
-        Word address = (base == getPC() ? (*base - 4) : *base); 	//if PC is specified as base the value should be the index of current instruction + 8 (== PC - 4)
+        Word address = *base; //(base == getPC() ? (*base - 4) : *base); 	//if PC is specified as base the value should be the index of current instruction + 8 (== PC - 4)
         if(P)
             address += ((U ? 1 : -1) * (offset << 2));
 		if(N){	//multiple transfer
 			while((cpReg = cp->getRegister(cpRegNum)) != NULL){	// load all registers starting from cpRegNum
 				if(toCoproc){	//load
-					*cpReg = bus->getRam()->readW(&address, BIGEND_sig);
+                    if(!bus->getRam()->readW(&address, cpReg, BIGEND_sig)){
+                        execTrap(EXC_DATAABT);
+                        return;
+                    }
 				}
 				else{			//store
-					bus->getRam()->writeW(&address, *cpReg, BIGEND_sig);
+                    if(!bus->getRam()->writeW(&address, *cpReg, BIGEND_sig)){
+                        execTrap(EXC_DATAABT);
+                        return;
+                    }
 				}
 				cpRegNum++;
 				address += 4;
@@ -541,10 +551,16 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
 			cpReg = cp->getRegister(cpRegNum);
 			if(cpReg != NULL){
 				if(toCoproc){	//load
-					*cpReg = bus->getRam()->read(&address, BIGEND_sig);
+                    if(!bus->getRam()->readW(&address, cpReg, BIGEND_sig)){
+                        execTrap(EXC_DATAABT);
+                        return;
+                    }
 				}
 				else{			//store
-					bus->getRam()->writeW(&address, *cpReg, BIGEND_sig);
+                    if(!bus->getRam()->writeW(&address, *cpReg, BIGEND_sig)){
+                        execTrap(EXC_DATAABT);
+                        return;
+                    }
 				}
 			}
 		}
@@ -558,25 +574,25 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
 		Byte info = (pipeline[PIPELINE_EXECUTE] >> 5) & 7;
 		Byte rm = pipeline[PIPELINE_EXECUTE] & 0xF;
 		Byte rn = (pipeline[PIPELINE_EXECUTE] >> 16) & 0xF;
-		Word *srcDest = cp->getRegister(rn);
-		Word *rd = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
+        Word *rd = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
 		if(toCoproc){	//MCR
-			*srcDest = *rd + (rd == getPC() ? 8 : 0);	//if pc is source register, stores PC+12
-			cp->registerTransfer(opcode, rm, rn, info);
+            Word send = *rd;
+            if(rd == getPC())   //if pc is source register, stores PC+12 (or PC+4???)
+                send += 12;
+            cp->registerTransfer(&send, opcode, rm, rn, info, toCoproc);
 		}
 		else{			//MRC
-		
-			//va comunque eseguito il codice del coprocessore??
-			//cp->registerTransfer(opcode, rm, rn, info);
+            Word rec;
+            cp->registerTransfer(&rec, opcode, rm, rn, info, toCoproc);
 		
 			if(rd == getPC()){
-				util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, srcDest);
-				util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], Z_POS, srcDest);
-				util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], C_POS, srcDest);
-				util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], V_POS, srcDest);
+                util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, &rec);
+                util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], Z_POS, &rec);
+                util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], C_POS, &rec);
+                util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], V_POS, &rec);
 			}
 			else{
-				*rd = *srcDest;
+                *rd = rec;
 			}
 		}
 	}
@@ -629,8 +645,8 @@ void processor::multiply(Word *rd, Word *rm, Word *rs, Word *rn , bool accumulat
 		if(S){
 			util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, destHi, 31);
 			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], Z_POS, ((*destHi == 0 && *destLo == 0) ? 1 : 0));
-			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], C_POS, (get_unpredictableB() ? 1 : 0));	// C and V bit is set to a meaningless value
-			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], V_POS, (get_unpredictableB() ? 1 : 0));
+            util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], C_POS, (bus->get_unpredictableB() ? 1 : 0));	// C and V bit is set to a meaningless value
+            util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], V_POS, (bus->get_unpredictableB() ? 1 : 0));
 		}
 	}
 	else{			//multiply (and accumulate) words
@@ -642,7 +658,7 @@ void processor::multiply(Word *rd, Word *rm, Word *rs, Word *rn , bool accumulat
         if(S){
             util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, rd, 31);
             util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], Z_POS, (*rd == 0 ? 1 : 0));
-			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], C_POS, (get_unpredictableB() ? 1 : 0));	// C bit is set to a meaningless value
+            util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], C_POS, (bus->get_unpredictableB() ? 1 : 0));	// C bit is set to a meaningless value
 		}
 	}
 }
@@ -701,12 +717,18 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 			}
             for(unsigned i = 0; i < (sizeof(HalfWord) * 8)-1; i++){
 				if(list & (1<<i)){		// if register i is marked load it
-					cpu_registers[i] = bus->getRam()->readW(&address);
+                    if(!bus->getRam()->readW(&address, &cpu_registers[i])){
+                        execTrap(EXC_DATAABT);
+                        return;
+                    }
 					address += 4;
 				}
 			}
 			if(list & 0x8000){			// if r15 is required for loading restore also CPSR
-				*getPC() = bus->getRam()->readW(&address);
+                if(!bus->getRam()->readW(&address, getPC())){
+                    execTrap(EXC_DATAABT);
+                    return;
+                }
 				cpu_registers[REG_CPSR] = *getVisibleRegister(REG_SPSR);
 				if(W)
                     *rn += (U ? 1 : -1) * (regn * 4);
@@ -720,8 +742,11 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 		}
 		else{	// regular multiple load
             for(unsigned i = 0; i < (sizeof(HalfWord) * 8); i++){
-				if(list & (1<<i)){		// if register i is marked load it
-					*getVisibleRegister(i) = bus->getRam()->readW(&address);
+                if(list & (1<<i)){		// if register i is marked load it
+                    if(!bus->getRam()->readW(&address, getVisibleRegister(i))){
+                        execTrap(EXC_DATAABT);
+                        return;
+                    }
 					address += 4;
 				}
 			}
@@ -736,7 +761,10 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 			}
             for(unsigned i = 0; i < (sizeof(HalfWord) * 8); i++){
 				if(list & (1<<i)){		// if register i is marked store it
-					bus->getRam()->writeW(&address, cpu_registers[i]);
+                    if(!bus->getRam()->writeW(&address, cpu_registers[i])){
+                        execTrap(EXC_DATAABT);
+                        return;
+                    }
 					address += 4;
 				}
 			}
@@ -747,12 +775,18 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 				if(list & (1<<i)){		// if register i is marked store it
 					if(!firstChecked){	// if first register to be stored is base address register
 						firstChecked = true;
-						bus->getRam()->writeW(&address, *getVisibleRegister(i));	// store the initial value before writing back return address
+                        if(!bus->getRam()->writeW(&address, *getVisibleRegister(i))){   // store the initial value before writing back return address
+                            execTrap(EXC_DATAABT);
+                            return;
+                        }
 						if(W)
                             *rn += (U ? 1 : -1) * (regn * 4);
 					}
 					else
-						bus->getRam()->writeW(&address, *getVisibleRegister(i));
+                        if(!bus->getRam()->writeW(&address, *getVisibleRegister(i))){
+                            execTrap(EXC_DATAABT);
+                            return;
+                        }
 					address += 4;
 				}
 			}
@@ -877,18 +911,26 @@ void processor::halfwordDataTransfer(Word *rd, Word *rn, Word *rm, Word offs, bo
 	}
 	
 	if(!(sign && !load_halfwd) && ((address & 1) > 0)) {	//if address is not halfword aligned return unpredictable value
-        *rd = get_unpredictable();
+        *rd = bus->get_unpredictable();
 	} else {	//address is ok
 		if(sign){ //it's a signed load
 			Word ret = 0;
 			if(load_halfwd){ //load halfword and sign extend
-				HalfWord readwd = bus->getRam()->readH(&address, BIGEND_sig);
+                HalfWord readwd;
+                if(!bus->getRam()->readH(&address, &readwd, BIGEND_sig)){
+                    execTrap(EXC_DATAABT);
+                    return;
+                }
 				ret = readwd;
 				if(readwd >> ((sizeof(HalfWord)*8)-1) != 0)
                     for(unsigned i = sizeof(HalfWord)*8; i < sizeof(Word)*8; i ++)
 						ret |= 1<<i;
 			} else {	//load byte and sign extend
-				Byte readwd = bus->getRam()->read(&address, BIGEND_sig);
+                Byte readwd;
+                if(!bus->getRam()->read(&address, &readwd, BIGEND_sig)){
+                    execTrap(EXC_DATAABT);
+                    return;
+                }
 				ret = readwd;
 				if(readwd >> ((sizeof(Byte)*8)-1) != 0)
                     for(unsigned i = sizeof(Byte)*8; i < sizeof(Word)*8; i ++)
@@ -897,9 +939,17 @@ void processor::halfwordDataTransfer(Word *rd, Word *rn, Word *rm, Word offs, bo
             *rd = ret;
 		} else {	//it's a halfword transfer
 			if(load_halfwd) {	//load val
-                *rd = bus->getRam()->readH(&address, BIGEND_sig);
+                HalfWord readwd;
+                if(!bus->getRam()->readH(&address, &readwd, BIGEND_sig)){
+                    execTrap(EXC_DATAABT);
+                    return;
+                }
+                *rd = readwd;
 			} else {	//store val
-                bus->getRam()->writeH(&address, (HalfWord) (*rd & 0xFFFF), BIGEND_sig);
+                if(!bus->getRam()->writeH(&address, (HalfWord) (*rd & 0xFFFF), BIGEND_sig)){
+                    execTrap(EXC_DATAABT);
+                    return;
+                }
 			}
 		}
 	}
@@ -944,15 +994,30 @@ void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, 
 		address += ((U ? 1 : -1) * offset);
 			
 		if(B){
-			if(L)
-				*srcDst = bus->getRam()->read(&address, BIGEND_sig);
+            if(L){
+                Byte read;
+                if(!bus->getRam()->read(&address, &read, BIGEND_sig)){
+                    execTrap(EXC_DATAABT);
+                    return;
+                }
+                *srcDst = read;
+            }
 			else
-				bus->getRam()->write(&address, ((Byte) *srcDst & 0xFF), BIGEND_sig);
+                if(!bus->getRam()->write(&address, ((Byte) *srcDst & 0xFF), BIGEND_sig)){
+                    execTrap(EXC_DATAABT);
+                    return;
+                }
 		} else
 			if(L)
-				*srcDst = bus->getRam()->readW(&address, BIGEND_sig);
+                if(!bus->getRam()->readW(&address, srcDst, BIGEND_sig)){
+                    execTrap(EXC_DATAABT);
+                    return;
+                }
 			else
-				bus->getRam()->writeW(&address, *srcDst, BIGEND_sig);
+                if(!bus->getRam()->writeW(&address, *srcDst, BIGEND_sig)){
+                    execTrap(EXC_DATAABT);
+                    return;
+                }
 		if(W)
 			*base = address;
 	}
@@ -960,15 +1025,30 @@ void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, 
 		if(W)	//user-mode forced transfer (only available in privileged mode): use user mode registers
 			srcDst = getRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
 		if(B){
-			if(L)
-				*srcDst = bus->getRam()->read(base, BIGEND_sig);
+            if(L){
+                Byte read;
+                if(!bus->getRam()->read(base, &read, BIGEND_sig)){
+                    execTrap(EXC_DATAABT);
+                    return;
+                }
+                *srcDst = read;
+            }
 			else
-				bus->getRam()->write(base, ((Byte) *srcDst & 0xFF), BIGEND_sig);
+                if(!bus->getRam()->write(base, ((Byte) *srcDst & 0xFF), BIGEND_sig)){
+                    execTrap(EXC_DATAABT);
+                    return;
+                }
 		} else {
 			if(L)
-				*srcDst = bus->getRam()->readW(&address, BIGEND_sig);
+                if(!bus->getRam()->readW(&address, srcDst, BIGEND_sig)){
+                    execTrap(EXC_DATAABT);
+                    return;
+                }
 			else
-				bus->getRam()->writeW(&address, *srcDst, BIGEND_sig);
+                if(!bus->getRam()->writeW(&address, *srcDst, BIGEND_sig)){
+                    execTrap(EXC_DATAABT);
+                    return;
+                }
 		}
 		*base = address + ((U ? 1 : -1) * offset);
 	}

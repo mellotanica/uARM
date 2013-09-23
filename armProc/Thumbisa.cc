@@ -274,8 +274,8 @@ void Thumbisa::CMPH(HalfWord instr){
 void Thumbisa::DP(HalfWord instr){	//data processing, triggers an ALU operation
 	p->debugThumb(__FUNCTION__);
 	
-	Byte hi = (p->pipeline[PIPELINE_EXECUTE] >> 8) & 3;
-	Byte low = (p->pipeline[PIPELINE_EXECUTE] >> 6) & 3;
+    Byte hi = (instr >> 8) & 3;
+    Byte low = (instr >> 6) & 3;
     Word *rd = p->getVisibleRegister((Byte)instr&7);
     Word *rs = p->getVisibleRegister((Byte)(instr >> 3) & 7);
 

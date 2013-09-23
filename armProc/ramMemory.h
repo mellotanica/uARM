@@ -61,89 +61,110 @@ public:
         //std::cout<<"RAM SIZE: "<<(ramSize * 4)<<"B";
     }
 	
-    Byte read(Word *address) {return read(address, false);}
-    void write(Word *address, Byte data) {write(address, data, false);}
+    bool read(Word *address, Byte *dest) {return read(address, dest, false);}
+    bool write(Word *address, Byte data) {write(address, data, false);}
 	
-    HalfWord readH(Word *address) {return readH(address, false);}
-    void writeH(Word *address, HalfWord data) {writeH(address, data, false);}
+    bool readH(Word *address, HalfWord *dest) {return readH(address, dest, false);}
+    bool writeH(Word *address, HalfWord data) {writeH(address, data, false);}
 	
-    Word readW(Word *address) {return readW(address, false);}
-    void writeW(Word *address, Word data) {writeW(address, data, false);}
+    bool readW(Word *address, Word *dest) {return readW(address, dest, false);}
+    bool writeW(Word *address, Word data) {writeW(address, data, false);}
 	
-	Byte read(Word *address, bool bigEndian) {
+    bool read(Word *address, Byte *dest, bool bigEndian) {
         if(!LOCK_sig && ready){
 			if(!bigEndian)
-				return memVector[*address];
+                *dest = memVector[*address];
 			else
-				return memVector[(*address + 3 - 2 * (*address % 4))];
+                *dest = memVector[(*address + 3 - 2 * (*address % 4))];
+            return true;
 		}
-		return 0;
+        return false;
     }
-	void write(Word *address, Byte data, bool bigEndian) {
+    bool write(Word *address, Byte data, bool bigEndian) {
         if(!LOCK_sig && ready){
 			if(!bigEndian)
 				memVector[*address] = data;
 			else
 				memVector[(*address + 3 - 2 * (*address % 4))] = data;
+            return true;
 		}
+        return false;
     }
 	
-	HalfWord readH(Word *address, bool bigEndian) {
+    bool readH(Word *address, HalfWord *dest, bool bigEndian) {
         if(!LOCK_sig && ready){
 			HalfWord ret;
 			Word addr = *address;
 			Byte readb;
-			readb = read(&addr, bigEndian);
-			ret = readb;
+            if(!read(&addr, &readb, bigEndian))
+                return false;
+            ret = readb;
 			addr++;
-			readb = read(&addr, bigEndian);
-			ret |= readb << 8;
-			return ret;
+            if(!read(&addr, &readb, bigEndian))
+                return false;
+            ret |= readb << 8;
+            *dest = ret;
+            return true;
 		}
-		return 0;
+        return false;
     }
-	void writeH(Word *address, HalfWord data, bool bigEndian) {
+    bool writeH(Word *address, HalfWord data, bool bigEndian) {
         if(!LOCK_sig && ready){
 			Word addr = *address;
-			write(&addr, (Byte) data & 0xFF, bigEndian);
+            if(!write(&addr, (Byte) data & 0xFF, bigEndian))
+                return false;
 			addr ++;
-			write(&addr, (Byte) (data >> 8) & 0xFF, bigEndian);
+            if(!write(&addr, (Byte) (data >> 8) & 0xFF, bigEndian))
+                return false;
+            return true;
 		}
+        return false;
     }
 	
-	Word readW(Word *address, bool bigEndian) {
+    bool readW(Word *address, Word *dest, bool bigEndian) {
         if(!LOCK_sig && ready){
 			Word addr = *address - (*address % 4);
 			Word ret;
 			Byte readb;
-			readb = read(&addr, bigEndian);
+            if(!read(&addr, &readb, bigEndian))
+                return false;
 			ret = readb;
 			addr++;
-			readb = read(&addr, bigEndian);
+            if(!read(&addr, &readb, bigEndian))
+                return false;
 			ret |= readb << 8;
 			addr++;
-			readb = read(&addr, bigEndian);
+            if(!read(&addr, &readb, bigEndian))
+                return false;
 			ret |= readb << 16;
 			addr++;
-			readb = read(&addr, bigEndian);
+            if(!read(&addr, &readb, bigEndian))
+                return false;
 			ret |= readb << 24;
 			if((*address % 4) != 0)
 				ret = (ret >> 8*(*address%4)) | (ret << (sizeof(Word)*8 - (8*(*address%4))));
-			return ret;
+            *dest = ret;
+            return true;
 		}
-		return 0;
+        return false;
     }
-	void writeW(Word *address, Word data, bool bigEndian) {
+    bool writeW(Word *address, Word data, bool bigEndian) {
         if(!LOCK_sig && ready){
 			Word addr = *address;
-			write(&addr, (Byte) data & 0xFF, bigEndian);
+            if(!write(&addr, (Byte) data & 0xFF, bigEndian))
+                return false;
 			addr ++;
-			write(&addr, (Byte) (data >> 8) & 0xFF, bigEndian);
+            if(!write(&addr, (Byte) (data >> 8) & 0xFF, bigEndian))
+                return false;
 			addr ++;
-			write(&addr, (Byte) (data >> 16) & 0xFF, bigEndian);
+            if(!write(&addr, (Byte) (data >> 16) & 0xFF, bigEndian))
+                return false;
 			addr ++;
-			write(&addr, (Byte) (data >> 24) & 0xFF, bigEndian);
+            if(!write(&addr, (Byte) (data >> 24) & 0xFF, bigEndian))
+                return false;
+            return true;
 		}
+        return false;
     }
 	
 private:

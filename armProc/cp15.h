@@ -35,11 +35,23 @@ public:
     Word *getRegList(){return cp15_registers;}
 	
 	void executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info);
-	void registerTransfer(Byte opcode, Byte operand, Byte srcDest, Byte info);
+    void registerTransfer(Word *cpuReg, Byte opcode, Byte operand, Byte srcDest, Byte info, bool toCoproc);
 	
 private:
+    enum ID_Codes{
+        MAIN_ID = 0x41807767,
+        CACHE_TYPE = 0,
+        TCM_TYPE = 0,    //tightly coupled memory
+        TLB_TYPE = 0,
+        MPU_TYPE = 0
+    };
+
+    void register0(Word *cpureg, Byte opcode, Byte operand, Byte info, bool toCoproc);
+    void register1(Word *cpureg, Byte opcode, Byte operand, Byte info, bool toCoproc);
+
 	ramMemory *ram;
 	
+    Word reg1CPmask;
 	Word cp15_registers[CP15_REGISTERS_NUM];
 };
 

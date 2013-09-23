@@ -112,9 +112,42 @@
  * CP15 registers
  */
  
-#define CP15_REGISTERS_NUM 17
+#define CP15_REGISTERS_NUM 13
 
-#define REG_READ 0
-#define REG_WRITE 1
+#define CP15_REG0_IDC    0   // ID codes (processor, cache, tightly coupled memory and TLB)
+#define CP15_REG1_SCB    1   // System Configuration Bits
+#define CP15_REG1_CCB    2   // System Configuration Bits
+#define CP15_REG2_PTC    3   // Page Table Control
+#define CP15_REG3_DAC    4   // Domain Access Control
+#define CP15_REG5_FS     5   // Fault Status
+#define CP15_REG6_FA     6   // Fault Address
+#define CP15_REG7_CWBC   7   // Cache/Write Buffer Control
+#define CP15_REG8_TLBC   8   // TLB Control
+#define CP15_REG9_CL     9   // Cache Lockdown
+#define CP15_REG10_TLBL  10  // TLB Lockdown
+#define CP15_REG11_DMAC  11  // DMA Control
+#define CP15_REG13_PID   12  // Process ID
+
+#define CP15_REG1_MPOS  0   // enable MMU or protection unit (read 0)
+#define CP15_REG1_APOS  1   // enable memory alignement fault check (read 0 if arch checks memory alignement)
+#define CP15_REG1_CPOS  2   // enable L1 unified/data cache (read 0 if no L1 cache, 1 if L1 cannot be disabled)
+#define CP15_REG1_WPOS  3   // enable write buffer (read 0 if no WB, 1 if WB cannot be disabled)
+#define CP15_REG1_BPOS  7   // set Big endian mode (must be set after reset)
+#define CP15_REG1_SPOS  8   // enable System protection
+#define CP15_REG1_RPOS  9   // enable ROM protection
+#define CP15_REG1_FPOS  10  // Implementation defined
+#define CP15_REG1_ZPOS  11  // enable program flow prediction (read 0 if no branch prediction, 1 if BP cannot be disabled)
+#define CP15_REG1_IPOS  12  // enable L1 instruction cache (read as C bit)
+#define CP15_REG1_VPOS  13  // set hi exception vectors (must be set after reset)
+#define CP15_REG1_RRPOS 14  // enable cache predictable replacement strategy (read 0)
+#define CP15_REG1_L4POS 15  // inhibits thumb (bit[0] doesn't update the T bit in CPSR) see LDM, LDR, POP
+#define CP15_REG1_FIPOS 21  // disable implementation defined performance feats for FIQ
+#define CP15_REG1_UPOS  22  // enables unaligned and mixed-edned data loading (should be 0)
+#define CP15_REG1_XPPOS 23  // disables subpage AP bits for page table
+#define CP15_REG1_VEPOS 24  // enable vectored interrupts (custom interrupt vectors)
+
+#define CP15_REG1_SBO_MASK ((7<<4)|(1<<16)|(1<<18))
+#define CP15_REG1_SBZ_MASK ((1<<17)|(3<<19)|(0x3F<<25))
+
 
 #endif //UARM_REGISTERS_H

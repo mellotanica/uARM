@@ -94,14 +94,13 @@ void HexView::Refresh()
             buf += '\n';
 
         Word data;
-        /*if (m->ReadMemory(addr, &data)) {
+        if (!mac->getBus()->getRam()->readW(&addr, &data)) {
             for (unsigned int bi = 0; bi < WS; bi++) {
                 if (bi > 0 || wi % kWordsPerRow)
                     buf += ' ';
                 buf += invalidByteRepr;
             }
-        } else */{
-        data = mac->getBus()->getRam()->readW(&addr);
+        } else {
             for (unsigned int bi = 0; bi < WS; bi++) {
                 if (bi > 0 || wi % kWordsPerRow)
                     buf += ' ';

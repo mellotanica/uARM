@@ -32,11 +32,15 @@ public:
 	
 	Word pipeline[PIPELINE_STAGES];
 	
-	void fetch(Word *address);
+    bool fetch(Word pc, bool armMode);
 	
     ramMemory *getRam() {return ram;}
 	
 	bool branchHappened;
+
+    Word get_unpredictable();
+    bool get_unpredictableB();
+
 private:
     ramMemory *ram = NULL;
 };
