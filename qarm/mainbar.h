@@ -29,6 +29,8 @@
 #include <QLabel>
 #include <QIcon>
 #include <QSlider>
+#include <QMenu>
+#include <QMenuBar>
 
 class styledButton;
 
@@ -44,7 +46,8 @@ signals:
     void pause();
     void step();
     void speedChanged(int speedVal);
-    void open(QString file);
+    void openRAM();
+    void openBIOS();
     void showRam();
 
 private slots:
@@ -54,16 +57,17 @@ private slots:
     void stop();
     void plus();
     void minus();
-    void openPressed();
     void updateStatus(QString state);
 
 private:
-    styledButton *playB, *resetB, *stepB, *openB, *ramB, *plusB, *minusB;   //interactions
+    styledButton *playB, *resetB, *stepB, *ramB, *plusB, *minusB;   //interactions
     QVBoxLayout *plusMinusL, *scrollerL;
     QWidget *plusMinusW, *scrollerW;
     const QIcon *playIco, *resetIco, *pauseIco, *stepIco;
     QSlider *speedSl;
     QLabel *speedLab, *statusLab;
+    QMenu *openMenu;
+    QMenuBar *openDropDown;
 };
 
 class styledButton : public QToolButton{

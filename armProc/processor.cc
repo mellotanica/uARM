@@ -28,16 +28,19 @@
 #include "Thumbisa.h"
 
 processor::processor() : pu() {
-	status = PS_IDLE;
+    status = PS_RESET;
 	BIGEND_sig = ENDIANESS_BIGENDIAN;
-	cpint = new coprocessor_interface();
-	for(int i = 0; i < PIPELINE_STAGES; i++)
-		pipeline[i] = 0;
+    cpint = new coprocessor_interface();
     for(int i = 0; i < CPU_REGISTERS_NUM; i++)
         cpu_registers[i] = 0;
-	cpu_registers[REG_CPSR] = MODE_USER;
+    cpu_registers[REG_CPSR] = MODE_SUPERVISOR;
 	execARM = new ARMisa(this);
 	execThumb = new Thumbisa(this);
+
+    pipeline = bus->pipeline;
+
+    Word address = 0;
+    bus->writeW(&address, INITIAL_BRANCH);
 }
 
 processor::~processor(){
@@ -288,7 +291,10 @@ bool processor::condCheck(Byte cond){
 }
 
 void processor::nextCycle() {
-	status = PS_RUNNING;
+    if(status == PS_RESET){     //if this is the first life cycle, enter reset state
+        resetTrap();
+        return;
+    }                           //else run normally
     bool armMode;
     if(cpu_registers[REG_CPSR] & T_MASK){	//Thumb state
 		*getPC() += 2;
@@ -300,16 +306,26 @@ void processor::nextCycle() {
     }
 	if(*getPC() % 4 == 0)	//in ARM state or after second halfword in Thumb state, fetch new word
         if(!bus->fetch(*getPC(), armMode)){
-            execTrap(EXC_PREFABT);
+            prefetchAbortTrap();
             return;
         }
 }
 
 void processor::prefetch() {
-    Word pc = *getPC();
-    bus->fetch(pc+8, true);
-    nextCycle();
-	nextCycle();
+    if(!bus->prefetch(*getPC())){
+        prefetchAbortTrap();
+        return;
+    }
+    *getPC() += 4;
+    if(!bus->prefetch(*getPC())){
+        prefetchAbortTrap();
+        return;
+    }
+    *getPC() += 4;
+    if(!bus->prefetch(*getPC())){
+        prefetchAbortTrap();
+        return;
+    }
 }
 
 void processor::debugARM(string mnemonic){
@@ -337,7 +353,7 @@ void processor::softwareInterruptTrap(){
 }
 
 void processor::dataAbortTrap(){
-	execTrap(EXC_DATAABT);
+    execTrap(EXC_DATAABT);
 }
 
 void processor::resetTrap(){
@@ -381,14 +397,14 @@ void processor::execTrap(ExceptionMode exception){
             spsr = REG_SPSR_ABT;
 			break;
 		case EXC_RESET:
-            cpu_registers[REG_LR_SVC] = bus->get_unpredictable();
+            cpu_registers[REG_LR_SVC] = BIOSBASEADDR;
             cpu_registers[REG_SPSR_SVC] = bus->get_unpredictable();
 			break;
         case EXC_PREFABT:   // !! check return address
             if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
-                cpu_registers[REG_LR_UND] = *getPC();
+                cpu_registers[REG_LR_UND] = *getPC() + 4;
             else 									//ARM state
-                cpu_registers[REG_LR_UND] = *getPC() - 4;
+                cpu_registers[REG_LR_UND] = *getPC() + 4;
             spsr = REG_SPSR_ABT;
 			break;
         case EXC_IRQ:   // !! check return address
@@ -426,7 +442,8 @@ void processor::execTrap(ExceptionMode exception){
 			break;
 		case EXC_RESET:
 			*cpsr |= MODE_SUPERVISOR | I_MASK | F_MASK;
-			*cpsr &= INVERT_W(T_MASK);
+            *cpsr &= INVERT_W(T_MASK);
+            status = PS_RUNNING;
 			break;
 		case EXC_PREFABT:
 			*cpsr |= MODE_ABORT;
@@ -450,6 +467,33 @@ void processor::unpredictable(){
 	for(int i = 0; i < 13; i++)
 		if(regmask & (1 << i))
             *getVisibleRegister(i) = bus->get_unpredictable();
+}
+
+bool processor::checkAbort(AbortType memSig){
+    switch(memSig){
+        case ABT_NOABT: return true;
+        case ABT_MEMERR:
+            //memory error, something fishy is going on..
+
+            break;
+        case ABT_ADDRERR:
+            //user attempted to access reserved address
+
+            break;
+        case ABT_BUSERR:
+            //no memory here
+
+            break;
+        case ABT_PAGEERR:
+            //missing page, load it
+
+            break;
+        case ABT_SEGERR:
+            //segfault (probably the same as address error)
+
+            break;
+    }
+    return false;
 }
 
 /* ******************** *
@@ -532,14 +576,14 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
 		if(N){	//multiple transfer
 			while((cpReg = cp->getRegister(cpRegNum)) != NULL){	// load all registers starting from cpRegNum
 				if(toCoproc){	//load
-                    if(!bus->getRam()->readW(&address, cpReg, BIGEND_sig)){
-                        execTrap(EXC_DATAABT);
+                    if(!checkAbort(bus->readW(&address, cpReg))){
+                        dataAbortTrap();
                         return;
                     }
 				}
 				else{			//store
-                    if(!bus->getRam()->writeW(&address, *cpReg, BIGEND_sig)){
-                        execTrap(EXC_DATAABT);
+                    if(!checkAbort(bus->writeW(&address, *cpReg))){
+                        dataAbortTrap();
                         return;
                     }
 				}
@@ -551,14 +595,14 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
 			cpReg = cp->getRegister(cpRegNum);
 			if(cpReg != NULL){
 				if(toCoproc){	//load
-                    if(!bus->getRam()->readW(&address, cpReg, BIGEND_sig)){
-                        execTrap(EXC_DATAABT);
+                    if(!checkAbort(bus->readW(&address, cpReg))){
+                        dataAbortTrap();
                         return;
                     }
 				}
 				else{			//store
-                    if(!bus->getRam()->writeW(&address, *cpReg, BIGEND_sig)){
-                        execTrap(EXC_DATAABT);
+                    if(!checkAbort(bus->writeW(&address, *cpReg))){
+                        dataAbortTrap();
                         return;
                     }
 				}
@@ -717,16 +761,16 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 			}
             for(unsigned i = 0; i < (sizeof(HalfWord) * 8)-1; i++){
 				if(list & (1<<i)){		// if register i is marked load it
-                    if(!bus->getRam()->readW(&address, &cpu_registers[i])){
-                        execTrap(EXC_DATAABT);
+                    if(!checkAbort(bus->readW(&address, &cpu_registers[i]))){
+                        dataAbortTrap();
                         return;
                     }
 					address += 4;
 				}
 			}
 			if(list & 0x8000){			// if r15 is required for loading restore also CPSR
-                if(!bus->getRam()->readW(&address, getPC())){
-                    execTrap(EXC_DATAABT);
+                if(!checkAbort(bus->readW(&address, getPC()))){
+                    dataAbortTrap();
                     return;
                 }
 				cpu_registers[REG_CPSR] = *getVisibleRegister(REG_SPSR);
@@ -743,8 +787,8 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 		else{	// regular multiple load
             for(unsigned i = 0; i < (sizeof(HalfWord) * 8); i++){
                 if(list & (1<<i)){		// if register i is marked load it
-                    if(!bus->getRam()->readW(&address, getVisibleRegister(i))){
-                        execTrap(EXC_DATAABT);
+                    if(!checkAbort(bus->readW(&address, getVisibleRegister(i)))){
+                        dataAbortTrap();
                         return;
                     }
 					address += 4;
@@ -761,8 +805,8 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 			}
             for(unsigned i = 0; i < (sizeof(HalfWord) * 8); i++){
 				if(list & (1<<i)){		// if register i is marked store it
-                    if(!bus->getRam()->writeW(&address, cpu_registers[i])){
-                        execTrap(EXC_DATAABT);
+                    if(!checkAbort(bus->writeW(&address, cpu_registers[i]))){
+                        dataAbortTrap();
                         return;
                     }
 					address += 4;
@@ -775,16 +819,16 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 				if(list & (1<<i)){		// if register i is marked store it
 					if(!firstChecked){	// if first register to be stored is base address register
 						firstChecked = true;
-                        if(!bus->getRam()->writeW(&address, *getVisibleRegister(i))){   // store the initial value before writing back return address
-                            execTrap(EXC_DATAABT);
+                        if(!checkAbort(bus->writeW(&address, *getVisibleRegister(i)))){   // store the initial value before writing back return address
+                            dataAbortTrap();
                             return;
                         }
 						if(W)
                             *rn += (U ? 1 : -1) * (regn * 4);
 					}
 					else
-                        if(!bus->getRam()->writeW(&address, *getVisibleRegister(i))){
-                            execTrap(EXC_DATAABT);
+                        if(!checkAbort(bus->writeW(&address, *getVisibleRegister(i)))){
+                            dataAbortTrap();
                             return;
                         }
 					address += 4;
@@ -917,8 +961,8 @@ void processor::halfwordDataTransfer(Word *rd, Word *rn, Word *rm, Word offs, bo
 			Word ret = 0;
 			if(load_halfwd){ //load halfword and sign extend
                 HalfWord readwd;
-                if(!bus->getRam()->readH(&address, &readwd, BIGEND_sig)){
-                    execTrap(EXC_DATAABT);
+                if(!checkAbort(bus->readH(&address, &readwd))){
+                    dataAbortTrap();
                     return;
                 }
 				ret = readwd;
@@ -927,8 +971,8 @@ void processor::halfwordDataTransfer(Word *rd, Word *rn, Word *rm, Word offs, bo
 						ret |= 1<<i;
 			} else {	//load byte and sign extend
                 Byte readwd;
-                if(!bus->getRam()->read(&address, &readwd, BIGEND_sig)){
-                    execTrap(EXC_DATAABT);
+                if(!checkAbort(bus->readB(&address, &readwd))){
+                    dataAbortTrap();
                     return;
                 }
 				ret = readwd;
@@ -940,14 +984,14 @@ void processor::halfwordDataTransfer(Word *rd, Word *rn, Word *rm, Word offs, bo
 		} else {	//it's a halfword transfer
 			if(load_halfwd) {	//load val
                 HalfWord readwd;
-                if(!bus->getRam()->readH(&address, &readwd, BIGEND_sig)){
-                    execTrap(EXC_DATAABT);
+                if(!checkAbort(bus->readH(&address, &readwd))){
+                    dataAbortTrap();
                     return;
                 }
                 *rd = readwd;
 			} else {	//store val
-                if(!bus->getRam()->writeH(&address, (HalfWord) (*rd & 0xFFFF), BIGEND_sig)){
-                    execTrap(EXC_DATAABT);
+                if(!checkAbort(bus->writeH(&address, (HalfWord) (*rd & 0xFFFF)))){
+                    dataAbortTrap();
                     return;
                 }
 			}
@@ -983,10 +1027,6 @@ void processor::singleMemoryAccess(bool L){
 	loadStore(L, P, U, B, W, srcDst, base, offset);
 }
 
-/*
- * accesso alla memoria di rifare, tutte le funzioni devono ritornare un bool che, 
- * se falso, segnala un abort, e in quel caso si lancia la trap!!!!
- */ 
 
 void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, Word* base, Word offset){
 	Word address = *base;
@@ -996,29 +1036,29 @@ void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, 
 		if(B){
             if(L){
                 Byte read;
-                if(!bus->getRam()->read(&address, &read, BIGEND_sig)){
-                    execTrap(EXC_DATAABT);
+                if(!checkAbort(bus->readB(&address, &read))){
+                    dataAbortTrap();
                     return;
                 }
                 *srcDst = read;
             }
 			else
-                if(!bus->getRam()->write(&address, ((Byte) *srcDst & 0xFF), BIGEND_sig)){
-                    execTrap(EXC_DATAABT);
+                if(!checkAbort(bus->writeB(&address, ((Byte) *srcDst & 0xFF)))){
+                    dataAbortTrap();
                     return;
                 }
 		} else
 			if(L)
-                if(!bus->getRam()->readW(&address, srcDst, BIGEND_sig)){
-                    execTrap(EXC_DATAABT);
+                if(!checkAbort(bus->readW(&address, srcDst))){
+                    dataAbortTrap();
                     return;
                 }
 			else
-                if(!bus->getRam()->writeW(&address, *srcDst, BIGEND_sig)){
-                    execTrap(EXC_DATAABT);
+                if(!checkAbort(bus->writeW(&address, *srcDst))){
+                    dataAbortTrap();
                     return;
                 }
-		if(W)
+        if(W && base != getPC())
 			*base = address;
 	}
 	else{
@@ -1027,30 +1067,31 @@ void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, 
 		if(B){
             if(L){
                 Byte read;
-                if(!bus->getRam()->read(base, &read, BIGEND_sig)){
-                    execTrap(EXC_DATAABT);
+                if(!checkAbort(bus->readB(base, &read))){
+                    dataAbortTrap();
                     return;
                 }
                 *srcDst = read;
             }
 			else
-                if(!bus->getRam()->write(base, ((Byte) *srcDst & 0xFF), BIGEND_sig)){
-                    execTrap(EXC_DATAABT);
+                if(!checkAbort(bus->writeB(base, ((Byte) *srcDst & 0xFF)))){
+                    dataAbortTrap();
                     return;
                 }
 		} else {
 			if(L)
-                if(!bus->getRam()->readW(&address, srcDst, BIGEND_sig)){
-                    execTrap(EXC_DATAABT);
+                if(!checkAbort(bus->readW(&address, srcDst))){
+                    dataAbortTrap();
                     return;
                 }
 			else
-                if(!bus->getRam()->writeW(&address, *srcDst, BIGEND_sig)){
-                    execTrap(EXC_DATAABT);
+                if(!checkAbort(bus->writeW(&address, *srcDst))){
+                    dataAbortTrap();
                     return;
                 }
 		}
-		*base = address + ((U ? 1 : -1) * offset);
+        if(base != getPC())
+            *base = address + ((U ? 1 : -1) * offset);
 	}
 }
 
@@ -1140,10 +1181,11 @@ void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest, b
 	if(S){	// S == 1
 		if(dest == getPC()){
 			Word *savedPSR = getVisibleRegister(REG_SPSR);
-			if(savedPSR != NULL)
+            if(savedPSR != NULL)
 				cpu_registers[REG_CPSR] = *savedPSR;
 			else
 				unpredictable();
+            bus->branchHappened = true;
 		} else {
 			util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, dest, 31);
 			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], Z_POS, (*dest == 0 ? 1 : 0));
@@ -1161,6 +1203,7 @@ void processor::bitwiseReturn(Word *dest, bool S){
 				cpu_registers[REG_CPSR] = *savedPSR;
 			else
 				unpredictable();
+            bus->branchHappened = true;
 		} else {
 			util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, dest, 31);
 			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], Z_POS, (*dest == 0 ? 1 : 0));

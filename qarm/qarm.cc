@@ -20,6 +20,7 @@
  */
 
 #include "qarm.h"
+#include <QFileDialog>
 
 qarm::qarm(){
     ramSize = MEM_SIZE_W;
@@ -44,9 +45,10 @@ qarm::qarm(){
     connect(toolbar, SIGNAL(speedChanged(int)), this, SLOT(speedChanged(int)));
     connect(toolbar, SIGNAL(pause()), clock, SLOT(stop()));
     connect(toolbar, SIGNAL(reset()), this, SLOT(reset()));
-    connect(toolbar, SIGNAL(open(QString)), this, SLOT(open(QString)));
     connect(toolbar, SIGNAL(showRam()), this, SLOT(showRam()));
     connect(toolbar, SIGNAL(step()), this, SLOT(step()));
+    connect(toolbar, SIGNAL(openRAM()), this, SLOT(openRAM()));
+    connect(toolbar, SIGNAL(openBIOS()), this, SLOT(openBIOS()));
 
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
 
@@ -66,16 +68,34 @@ qarm::qarm(){
 }
 
 void qarm::step(){
-    if(!dataLoaded){
-        QMessageBox::StandardButton reply = QMessageBox::question(this,
-                                                                  "Caution",
-                                                                  "No program has been loaded.\nDo you want to start emulation anyways?",
-                                                                  QMessageBox::Yes|QMessageBox::No);
+    if(!(dataLoaded && biosLoaded)){
+        QString msg = "";
+        int c = 0;
+        if(!biosLoaded){
+            if(c > 0)
+                msg += ", ";
+            msg += "BIOS ROM";
+            c++;
+        }
+        if(!dataLoaded){
+            if(c > 0)
+                msg += " and ";
+            msg += "Program File";
+            c++;
+        }
+        if(c > 1)
+            msg += " were";
+        else
+            msg += " was";
+        msg += " not loaded.\nDo you want to start emulation anyways?";
+
+        QMessageBox::StandardButton reply = QMessageBox::question(this,"Caution", msg, QMessageBox::Yes|QMessageBox::No);
+
         if(reply == QMessageBox::No){
             emit stop();
             return;
         } else {
-            dataLoaded = true;
+            dataLoaded = biosLoaded = true;
         }
     }
     mac->step();
@@ -99,43 +119,8 @@ void qarm::speedChanged(int speed){
 
 void qarm::reset(){
     clock->stop();
-    dataLoaded = false;
+    dataLoaded = biosLoaded = false;
     emit resetMachine(ramSize);
-}
-
-void qarm::open(QString fname){
-    QFile f (fname);
-    if(!f.open(QIODevice::ReadOnly)) {
-        QMessageBox::critical(this, "Error", "Could not open file");
-        return;
-    }
-    reset();
-    QDataStream in(&f);
-    ramMemory *ram = mac->getBus()->getRam();
-    if(ram != NULL)
-        fillMemory(ram, &in);
-    f.close();
-    dataLoaded = true;
-    mac->refreshData();
-}
-
-void qarm::fillMemory(ramMemory *ram, QDataStream *in){
-    Word tmp = 0, add;
-    char read;
-    Word address = PROG_START;
-    int c = 0;
-    while((in->readRawData(&read, 1)) == 1){
-        add = (read & 0xFF) << (c*8);
-        tmp |= add;
-            if(c == 3){
-                ram->writeW(&address, tmp, false);
-                address += 4;
-                tmp = 0;
-            }
-            c = (c+1)%4;
-    }
-    tmp = OP_HALT;
-    ram->writeW(&address, tmp, false);
 }
 
 void qarm::showRam(){
@@ -143,4 +128,70 @@ void qarm::showRam(){
     connect(this, SIGNAL(resetMachine(ulong)), ramWindow, SLOT(update()));
     connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,QString)), ramWindow, SLOT(update()));
     ramWindow->show();
+}
+
+void qarm::openRAM(){
+    if(dataLoaded){
+        QMessageBox::StandardButton reply = QMessageBox::question(this,"Caution",
+                                                                  "Program File already loaded..\nReset machine and load new Program?",
+                                                                  QMessageBox::Yes|QMessageBox::No);
+        if(reply == QMessageBox::No)
+            return;
+        else
+            reset();
+    }
+    QString fileName = QFileDialog::getOpenFileName(this, "Open Program File", "", "Binary Files (*.bin);;All Files (*.*)");
+    if(fileName != ""){
+        QFile f (fileName);
+        if(!f.open(QIODevice::ReadOnly)) {
+            QMessageBox::critical(this, "Error", "Could not open file");
+            return;
+        }
+        QDataStream in(&f);
+        ramMemory *ram = mac->getBus()->getRam();
+        if(ram != NULL){
+            Word len = (Word) f.size();
+            char *buffer = new char[len];
+            in.readRawData(buffer, len);
+            if(!mac->getBus()->loadRAM(buffer, len, true)){
+                QMessageBox::critical(this, "Error", "Problems while loading RAM");
+                return;
+            }
+            delete buffer;
+        }
+        f.close();
+        dataLoaded = true;
+        mac->refreshData();
+    }
+}
+
+void qarm::openBIOS(){
+    if(biosLoaded){
+        QMessageBox::StandardButton reply = QMessageBox::question(this,"Caution",
+                                                                  "BIOS ROM already loaded..\nReset machine and load new BIOS?",
+                                                                  QMessageBox::Yes|QMessageBox::No);
+        if(reply == QMessageBox::No)
+            return;
+        else
+            reset();
+    }
+    QString fileName = QFileDialog::getOpenFileName(this, "Open BIOS File", "", "Binary Files (*.bin);;All Files (*.*)");
+    if(fileName != ""){
+        QFile f (fileName);
+        if(!f.open(QIODevice::ReadOnly)) {
+            QMessageBox::critical(this, "Error", "Could not open file");
+            return;
+        }
+        QDataStream in(&f);
+        Word len = (Word) f.size();
+        char *buffer = new char[len];
+        in.readRawData(buffer, len);
+        if(!mac->getBus()->loadBIOS(buffer, len)){
+            QMessageBox::critical(this, "Error", "Problems while flashing BIOS ROM");
+            return;
+        }
+        delete buffer;
+        f.close();
+        biosLoaded = true;
+    }
 }

@@ -39,7 +39,6 @@ class machine : public QObject{
     Q_OBJECT
 public:
     machine(QObject *parent = 0);
-    machine(Word ramSize, QObject *parent = 0);
 	~machine();
 	
     processor *getCPU() {return cpu;}

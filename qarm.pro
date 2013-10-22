@@ -50,4 +50,5 @@ OTHER_FILES += \
     icons/play.png \
     icons/pause.png \
     test/sample.s \
-    README.txt
+    README.txt \
+    test/simpleBoot.s

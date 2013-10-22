@@ -25,24 +25,80 @@
 #include "const.h"
 #include "ramMemory.h"
 
+//change these values accordignly to linker behavior
+
+#define EXCVTOP      0x00000028     //2 words biggeer to avoid prefetch aborts while loading exception handlers
+#define DEVBASEADDR  0x00000040
+#define DEVTOP       0x000002C0
+#define INFOBASEADDR 0x000002D0
+#define INFOTOP      0x000002DC
+#define BIOSBASEADDR 0x00000300
+
+#define RAMBASEADDR  0x00008000
+
+
+enum AbortType {
+    ABT_NOABT   = 0,
+    ABT_MEMERR  = 1,
+    ABT_BUSERR  = 2,
+    ABT_ADDRERR = 3,
+    ABT_SEGERR  = 4,
+    ABT_PAGEERR = 5,
+    NOABT_ROM   = 0xFF
+};
+
 class systemBus{
 public:
 	systemBus();
     ~systemBus();
 	
 	Word pipeline[PIPELINE_STAGES];
-	
+
+    bool loadBIOS(char *buffer, Word size);
+    bool loadRAM(char *buffer, Word size, bool kernel);
+
+    bool prefetch(Word addr);
     bool fetch(Word pc, bool armMode);
 	
     ramMemory *getRam() {return ram;}
 	
-	bool branchHappened;
+    AbortType readB(Word *address, Byte *dest);
+    AbortType writeB(Word *address, Byte data);
+    AbortType readH(Word *address, HalfWord *dest);
+    AbortType writeH(Word *address, HalfWord data);
+    AbortType readW(Word *address, Word *dest);
+    AbortType writeW(Word *address, Word data);
+
+    bool branchHappened = false;
 
     Word get_unpredictable();
     bool get_unpredictableB();
 
 private:
     ramMemory *ram = NULL;
+
+    Word BIOSTOP;   //must be 2 words bigger than actual size, same as EXCVTOP
+    Word RAMTOP;
+
+    Byte* excVector;
+    Byte* devRegs;
+    Byte* bios;
+    Byte* info;
+
+    AbortType checkAddress(Word *address);
+
+    bool readRomB(Word *address, Byte *dest);
+    bool writeRomB(Word *address, Byte data);
+    bool readRomH(Word *address, HalfWord *dest);
+    bool writeRomH(Word *address, HalfWord data);
+    bool readRomW(Word *address, Word *dest);
+    bool writeRomW(Word *address, Word data);
+
+    bool getRomVector(Word *address, Byte **romptr);
+
+    void initInfo();
 };
+
+
 
 #endif //UARM_SYSTEMBUS_H

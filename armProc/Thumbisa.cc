@@ -206,14 +206,14 @@ void Thumbisa::BL(HalfWord instr){
     Word offset = instr & 0x7FE;
     if((instr >> 11) & 1){  //stage 2
         Word *lr = p->getVisibleRegister(REG_LR);
-        Word tmp = *lr + (offset << 1);
+        Word tmp = (*lr + (offset << 1)) & 0xFFFFFFFC;
         *lr = (*(p->getPC()) - 2) | 1;
 
         p->branch(&tmp, 0, false, true);
     } else {                //stage 1
         offset = offset << 12;
         Word *lr = p->getVisibleRegister(REG_LR);
-        *lr = *(p->getPC()) + offset;
+        *lr = (*(p->getPC()) + offset) | 1;
     }
 }
 

@@ -94,7 +94,7 @@ void HexView::Refresh()
             buf += '\n';
 
         Word data;
-        if (!mac->getBus()->getRam()->readW(&addr, &data)) {
+        if (mac->getBus()->readW(&addr, &data) != ABT_NOABT) {
             for (unsigned int bi = 0; bi < WS; bi++) {
                 if (bi > 0 || wi % kWordsPerRow)
                     buf += ' ';

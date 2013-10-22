@@ -21,7 +21,6 @@
 
 #include "mainbar.h"
 #include "guiConst.h"
-#include <QFileDialog>
 
 mainBar::mainBar(QWidget *parent) :
     QToolBar(parent)
@@ -35,9 +34,9 @@ mainBar::mainBar(QWidget *parent) :
     pauseIco = new QIcon(PAUSEICON);
     stepIco = new QIcon(STEPICON);
 
-    openB = new styledButton();
-    openB->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    openB->setText("Open");
+    openMenu = new QMenu("Open");
+    openMenu->addAction("BIOS ROM", this, SIGNAL(openBIOS()));
+    openMenu->addAction("Program Image", this, SIGNAL(openRAM()));
 
     playB = new styledButton();
     playB->setToolTip("Play");
@@ -100,7 +99,11 @@ mainBar::mainBar(QWidget *parent) :
     ramB->setToolButtonStyle(Qt::ToolButtonTextOnly);
     ramB->setText("View Ram");
 
-    addWidget(openB);
+    openDropDown = new QMenuBar();
+    openDropDown->addMenu(openMenu);
+    openDropDown->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
+
+    addWidget(openDropDown);
     addWidget(playB);
     addWidget(resetB);
     addWidget(stepB);
@@ -114,7 +117,6 @@ mainBar::mainBar(QWidget *parent) :
     connect(resetB, SIGNAL(clicked()), this, SLOT(resetPressed()));
     connect(stepB, SIGNAL(clicked()), this, SIGNAL(step()));
     connect(stepB, SIGNAL(clicked()), this, SLOT(stop()));
-    connect(openB, SIGNAL(clicked()), this, SLOT(openPressed()));
     connect(ramB, SIGNAL(clicked()), this, SIGNAL(showRam()));
     connect(plusB, SIGNAL(clicked()), this, SLOT(plus()));
     connect(minusB, SIGNAL(clicked()), this, SLOT(minus()));
@@ -174,10 +176,4 @@ void mainBar::minus(){
 
 void mainBar::updateStatus(QString state){
     statusLab->setText(state);
-}
-
-void mainBar::openPressed(){
-    QString fileName = QFileDialog::getOpenFileName(this, "Open Program File", "", "Binary Files (*.bin);;All Files (*.*)");
-    if(fileName != "")
-        emit open(fileName);
 }

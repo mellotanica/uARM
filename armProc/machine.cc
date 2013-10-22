@@ -33,12 +33,7 @@ systemBus *pu::bus;
 util *util::instance;
 
 machine::machine(QObject *parent) : QObject(parent){
-    initMac();
-}
-
-machine::machine(Word ramSize, QObject *parent) : QObject(parent){
-    initMac();
-    sysbus->getRam()->init(ramSize);
+    cpu = NULL;
 }
 
 machine::~machine(){
@@ -49,17 +44,14 @@ void machine::initMac(){
     cpu = new processor();
 
     sysbus = cpu->getBus();
-
-    *(cpu->getPC()) = PROG_START;
-
-    sysbus->branchHappened = true;
 }
 
 void machine::reset(unsigned long memSize){
-    delete cpu;
+    if(cpu != NULL)
+        delete cpu;
     initMac();
     sysbus->getRam()->init(memSize);
-    emit updateStatus("HALTED");
+    emit updateStatus(status2QString());
 }
 
 void machine::step(){
@@ -86,6 +78,7 @@ QString machine::status2QString(){
         case PS_HALTED: return "HALTED"; break;
         case PS_IDLE: return "IDLE"; break;
         case PS_RUNNING: return "RUNNING"; break;
+        case PS_RESET: return "RESET"; break;
     }
     return "UNKNOWN";
 }

@@ -51,21 +51,20 @@ private slots:
     void step();
     void speedChanged(int speed);
     void reset();
-    void open(QString fname);
+    void openRAM();
+    void openBIOS();
     void showRam();
 
 private:
     machine *mac;
     unsigned long ramSize;
-    bool dataLoaded = false;
+    bool dataLoaded = false, biosLoaded = false;
 
     QWidget *mainWidget;
     procDisplay *display;
     QVBoxLayout *centralLayout;
     mainBar *toolbar;
     QTimer *clock;
-
-    void fillMemory(ramMemory *ram, QDataStream *in);
 };
 
 #endif // QARM_H

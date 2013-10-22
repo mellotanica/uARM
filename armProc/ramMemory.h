@@ -60,15 +60,19 @@ public:
         }
         //std::cout<<"RAM SIZE: "<<(ramSize * 4)<<"B";
     }
+
+    Word getRamSize(){
+        return ramSize;
+    }
 	
-    bool read(Word *address, Byte *dest) {return read(address, dest, false);}
-    bool write(Word *address, Byte data) {write(address, data, false);}
+    bool read(Word *address, Byte *dest) {return read(address, dest, ENDIANESS_BIGENDIAN);}
+    bool write(Word *address, Byte data) {write(address, data, ENDIANESS_BIGENDIAN);}
 	
-    bool readH(Word *address, HalfWord *dest) {return readH(address, dest, false);}
-    bool writeH(Word *address, HalfWord data) {writeH(address, data, false);}
+    bool readH(Word *address, HalfWord *dest) {return readH(address, dest, ENDIANESS_BIGENDIAN);}
+    bool writeH(Word *address, HalfWord data) {writeH(address, data, ENDIANESS_BIGENDIAN);}
 	
-    bool readW(Word *address, Word *dest) {return readW(address, dest, false);}
-    bool writeW(Word *address, Word data) {writeW(address, data, false);}
+    bool readW(Word *address, Word *dest) {return readW(address, dest, ENDIANESS_BIGENDIAN);}
+    bool writeW(Word *address, Word data) {writeW(address, data, ENDIANESS_BIGENDIAN);}
 	
     bool read(Word *address, Byte *dest, bool bigEndian) {
         if(!LOCK_sig && ready){

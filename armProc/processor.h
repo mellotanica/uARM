@@ -28,20 +28,21 @@
 enum ProcessorStatus {
     PS_HALTED,
     PS_RUNNING,
-    PS_IDLE
+    PS_IDLE,
+    PS_RESET
 };
 
 enum ProcessorMode {	//new modes MUST be added to switch in setStatusRegister implementation
-	MODE_USER = 0x10,
+    MODE_USER           = 0x10,
 	MODE_FAST_INTERRUPT = 0x11,
-	MODE_INTERRUPT = 0x12,
-	MODE_SUPERVISOR = 0x13,
-	MODE_ABORT = 0x17,
-	MODE_UNDEFINED = 0x1B,
-    MODE_SYSTEM = 0x1F
+    MODE_INTERRUPT      = 0x12,
+    MODE_SUPERVISOR     = 0x13,
+    MODE_ABORT          = 0x17,
+    MODE_UNDEFINED      = 0x1B,
+    MODE_SYSTEM         = 0x1F
 };
 
-enum ExceptionMode {	//values correspond to fixed low exception vector addresses
+enum ExceptionMode {	//priority (hi -> low): Reset, Data Abort, FIQ, IRQ, Prefetch Abort, [Undef and SWI])
 	EXC_RESET	= 0x00000000,
 	EXC_UNDEF	= 0x00000004,
 	EXC_SWI		= 0x00000008,
@@ -61,7 +62,7 @@ public:
 	
     Word *getPC() {return &cpu_registers[REG_PC];}
 	void nextCycle();
-	
+
 	void prefetch();
 	
     coprocessor_interface *getCopInt() {return cpint;}
@@ -96,7 +97,7 @@ public:
 private:
 	coprocessor_interface *cpint;
 	ProcessorStatus status;
-	Word pipeline[PIPELINE_STAGES];
+    Word *pipeline;
 	Word cpu_registers[CPU_REGISTERS_NUM];
 	Word shifter_operand, alu_tmp;
 	bool shifter_carry_out;
@@ -122,8 +123,9 @@ private:
 	void execTrap(ExceptionMode exception);
     void NOP() {debugARM("NOP");}
 	void unpredictable();
+    bool checkAbort(AbortType memSig);
 
-    void fetch() {pipeline[PIPELINE_EXECUTE] = bus->pipeline[PIPELINE_EXECUTE]; pipeline[PIPELINE_DECODE] = bus->pipeline[PIPELINE_DECODE]; pipeline[PIPELINE_FETCH] = bus->pipeline[PIPELINE_FETCH];}
+    void fetch() {}
     void decode() {}
 	void execute();
 	
