@@ -48,3 +48,12 @@ LOOP_A:
     BXAL	r5
     MOV		r1, #40
     MOV		r1, #4
+    SWI		#0x15
+    MOV		r1, #8
+    MOV		r1, #0x80
+    MOV		r1, #0x30
+    LDR		r2, [r1, #0]
+    MOV		r1, #2
+    MOV		r1, #0x20
+    MOV		r1, #0x200
+    MOV		r1, #0x2000

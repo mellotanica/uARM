@@ -1042,22 +1042,25 @@ void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, 
                 }
                 *srcDst = read;
             }
-			else
+            else{
                 if(!checkAbort(bus->writeB(&address, ((Byte) *srcDst & 0xFF)))){
                     dataAbortTrap();
                     return;
                 }
+            }
 		} else
-			if(L)
+            if(L){
                 if(!checkAbort(bus->readW(&address, srcDst))){
                     dataAbortTrap();
                     return;
                 }
-			else
+            }
+            else{
                 if(!checkAbort(bus->writeW(&address, *srcDst))){
                     dataAbortTrap();
                     return;
                 }
+            }
         if(W && base != getPC())
 			*base = address;
 	}
@@ -1073,22 +1076,25 @@ void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, 
                 }
                 *srcDst = read;
             }
-			else
+            else{
                 if(!checkAbort(bus->writeB(base, ((Byte) *srcDst & 0xFF)))){
                     dataAbortTrap();
                     return;
                 }
+            }
 		} else {
-			if(L)
+            if(L){
                 if(!checkAbort(bus->readW(&address, srcDst))){
                     dataAbortTrap();
                     return;
                 }
-			else
+            }
+            else{
                 if(!checkAbort(bus->writeW(&address, *srcDst))){
                     dataAbortTrap();
                     return;
                 }
+            }
 		}
         if(base != getPC())
             *base = address + ((U ? 1 : -1) * offset);
@@ -1096,13 +1102,21 @@ void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, 
 }
 
 void processor::dataProcessing(Byte opcode){
-	if((pipeline[PIPELINE_EXECUTE] & (1 << 25)) > 0)
+    bool I = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 25);
+    Word op1 = *(getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF));
+    Word *dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
+    if(I)
 		barrelShifter(true, (pipeline[PIPELINE_EXECUTE] & 0xFF), ((pipeline[PIPELINE_EXECUTE] >> 8) & 0xF));
-	else
-		barrelShifter(false, ((pipeline[PIPELINE_EXECUTE] >> 4) & 0xFF), (pipeline[PIPELINE_EXECUTE] & 0xF));
-	Word op1 = *(getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF));
-	Word *dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
-	Word op2 = shifter_operand;
+    else{
+        barrelShifter(false, ((pipeline[PIPELINE_EXECUTE] >> 4) & 0xFF), (pipeline[PIPELINE_EXECUTE] & 0xF));
+        if(util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 4)){       //if shift amount is specified in a register
+            if(getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF))    //and PC is used it, should have value PC+4
+                op1 += 4;
+            else if(dest == getPC())
+                *dest += 4;
+        }
+    }
+    Word op2 = shifter_operand;
 	bool S = pipeline[PIPELINE_EXECUTE] & (1<<20);
 	switch(opcode){
 		case 8:		//TST
