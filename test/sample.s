@@ -13,6 +13,7 @@ _start:
     ADDs	r3, r1, r2
     CMPVS	r3, r1
     CMPCS	r2, r1
+    SWI		#0x23
     STR		r3, [sp, #4]
     MOV		r3, #0
     LDR		r4, [sp, #-4]!

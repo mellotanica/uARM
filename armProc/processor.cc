@@ -457,8 +457,8 @@ void processor::execTrap(ExceptionMode exception){
 	}
 	
 	*getPC() = exception;
-	
-	prefetch();
+
+    bus->branchHappened = true;
 }
 
 void processor::unpredictable(){
