@@ -64,6 +64,7 @@ public:
 	void nextCycle();
 
 	void prefetch();
+    bool branchHappened();
 	
     coprocessor_interface *getCopInt() {return cpint;}
 	
@@ -100,6 +101,7 @@ private:
     Word *pipeline;
 	Word cpu_registers[CPU_REGISTERS_NUM];
 	Word shifter_operand, alu_tmp;
+    Word old_pc;
 	bool shifter_carry_out;
 	bool BIGEND_sig;
 	

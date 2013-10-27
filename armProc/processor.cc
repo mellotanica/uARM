@@ -29,6 +29,7 @@
 
 processor::processor() : pu() {
     status = PS_RESET;
+    old_pc = 0;
 	BIGEND_sig = ENDIANESS_BIGENDIAN;
     cpint = new coprocessor_interface();
     for(int i = 0; i < CPU_REGISTERS_NUM; i++)
@@ -293,6 +294,7 @@ bool processor::condCheck(Byte cond){
 void processor::nextCycle() {
     if(status == PS_RESET){     //if this is the first life cycle, enter reset state
         resetTrap();
+        prefetch();
         return;
     }                           //else run normally
     bool armMode;
@@ -304,6 +306,7 @@ void processor::nextCycle() {
 		*getPC() += 4;
         armMode = true;
     }
+    old_pc = *getPC();
 	if(*getPC() % 4 == 0)	//in ARM state or after second halfword in Thumb state, fetch new word
         if(!bus->fetch(*getPC(), armMode)){
             prefetchAbortTrap();
@@ -322,10 +325,18 @@ void processor::prefetch() {
         return;
     }
     *getPC() += 4;
+    old_pc = *getPC();
     if(!bus->prefetch(*getPC())){
         prefetchAbortTrap();
         return;
     }
+}
+
+bool processor::branchHappened(){
+    if(old_pc != *getPC())
+        return true;
+    else
+        return false;
 }
 
 void processor::debugARM(string mnemonic){
@@ -456,9 +467,8 @@ void processor::execTrap(ExceptionMode exception){
 			break;
 	}
 	
-	*getPC() = exception;
-
-    bus->branchHappened = true;
+    *getPC() = exception;
+    old_pc = 0xFFFFFFFF;
 }
 
 void processor::unpredictable(){
@@ -470,29 +480,11 @@ void processor::unpredictable(){
 }
 
 bool processor::checkAbort(AbortType memSig){
-    switch(memSig){
-        case ABT_NOABT: return true;
-        case ABT_MEMERR:
-            //memory error, something fishy is going on..
+    if(memSig == ABT_NOABT)
+        return true;
 
-            break;
-        case ABT_ADDRERR:
-            //user attempted to access reserved address
+    cpu_registers[REG_LR_ABT - 1] = memSig; /* !!!to be moved in a cp15 register!!! */
 
-            break;
-        case ABT_BUSERR:
-            //no memory here
-
-            break;
-        case ABT_PAGEERR:
-            //missing page, load it
-
-            break;
-        case ABT_SEGERR:
-            //segfault (probably the same as address error)
-
-            break;
-    }
     return false;
 }
 
@@ -917,8 +909,7 @@ void processor::branch(Word *rd, Word offset, bool link, bool exchange){
             for(unsigned i = 25; i < (sizeof(Word) * 8); i++)	//magic numbers, this operation is strictly based on 32bit words..
                 offset |= (1<<i);
 		*pc += (SWord) offset;
-	}
-	bus->branchHappened = true;
+    }
 }
 
 
@@ -1198,8 +1189,7 @@ void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest, b
             if(savedPSR != NULL)
 				cpu_registers[REG_CPSR] = *savedPSR;
 			else
-				unpredictable();
-            bus->branchHappened = true;
+                unpredictable();
 		} else {
 			util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, dest, 31);
 			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], Z_POS, (*dest == 0 ? 1 : 0));
@@ -1216,8 +1206,7 @@ void processor::bitwiseReturn(Word *dest, bool S){
 			if(savedPSR != NULL)
 				cpu_registers[REG_CPSR] = *savedPSR;
 			else
-				unpredictable();
-            bus->branchHappened = true;
+                unpredictable();
 		} else {
 			util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, dest, 31);
 			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], Z_POS, (*dest == 0 ? 1 : 0));

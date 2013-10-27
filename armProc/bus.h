@@ -69,8 +69,6 @@ public:
     AbortType readW(Word *address, Word *dest);
     AbortType writeW(Word *address, Word data);
 
-    bool branchHappened = false;
-
     Word get_unpredictable();
     bool get_unpredictableB();
 

@@ -56,11 +56,11 @@ void machine::reset(unsigned long memSize){
 
 void machine::step(){
     if(cpu->getStatus() != PS_HALTED){
-        if(sysbus->branchHappened){
+        if(cpu->branchHappened()){
             cpu->prefetch();
-            sysbus->branchHappened = false;
-        } else
+        } else {
             cpu->nextCycle();
+        }
         cpu->cycle();
         refreshData();
     }
