@@ -106,7 +106,7 @@ bool systemBus::loadRAM(char *buffer, Word size, bool kernel){
         return true;
     }
     else{   //user program, placed somewhere else..
-
+        return false;
     }
 }
 
@@ -235,7 +235,7 @@ bool systemBus::readRomH(Word *address, HalfWord *dest){
     Byte *romptr;
     Word addr = *address;
     *dest = 0;
-    for(int i = 0; i < sizeof(HalfWord); i++, addr++){
+    for(uint i = 0; i < sizeof(HalfWord); i++, addr++){
         if(!getRomVector(&addr, &romptr))
             return false;
         *dest |= (*romptr << (i * 8));
@@ -246,7 +246,7 @@ bool systemBus::readRomH(Word *address, HalfWord *dest){
 bool systemBus::writeRomH(Word *address, HalfWord data){
     Byte *romptr;
     Word addr = *address;
-    for(int i = 0; i < sizeof(HalfWord); i++, addr++){
+    for(uint i = 0; i < sizeof(HalfWord); i++, addr++){
         if(!getRomVector(&addr, &romptr))
             return false;
         *romptr = (Byte) ((data >> (i * 8)) & 0xFF);
@@ -258,7 +258,7 @@ bool systemBus::readRomW(Word *address, Word *dest){
     Byte *romptr;
     Word addr = *address;
     *dest = 0;
-    for(int i = 0; i < sizeof(Word); i++, addr++){
+    for(uint i = 0; i < sizeof(Word); i++, addr++){
         if(!getRomVector(&addr, &romptr))
             return false;
         *dest |= (*romptr << (i * 8));
@@ -269,7 +269,7 @@ bool systemBus::readRomW(Word *address, Word *dest){
 bool systemBus::writeRomW(Word *address, Word data){
     Byte *romptr;
     Word addr = *address;
-    for(int i = 0; i < sizeof(Word); i++, addr++){
+    for(uint i = 0; i < sizeof(Word); i++, addr++){
         if(!getRomVector(&addr, &romptr))
             return false;
         Byte dataB = (Byte) ((data >> (i * 8)) & 0xFF);

@@ -47,7 +47,14 @@ private:
     };
 
     void register0(Word *cpureg, Byte opcode, Byte operand, Byte info, bool toCoproc);
-    void register1(Word *cpureg, Byte opcode, Byte operand, Byte info, bool toCoproc);
+    void register1(Word *cpureg, Byte info, bool toCoproc);
+    void register2(Word *cpureg, Byte opcode, Byte info, bool toCoproc);
+    void register15(Word *cpureg, Byte opcode, bool toCoproc);
+
+    void EntryHi(Word *cpureg, Byte opcode, bool toCoproc);
+    void EntryLo(Word *cpureg, bool toCoproc);
+
+    void getPFN();
 
 	ramMemory *ram;
 	

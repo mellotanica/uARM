@@ -92,10 +92,10 @@ SWI_H:
     STR lr, [r0], #4
     STR r4, [r0, #0]
 
-    /* recover interrupt cause */
+    /* recover interrupt cause and place it in cause register */
     LDR r0, [lr, #-4]
     BIC r0, r0, #0xFF000000
-    /* it should be moved to cp15 cause regiter.. */
+    MCR p15, #0, r0, c15, c15
 
     /* load new state */
     ADR sp, EXCV_SWI_NEW

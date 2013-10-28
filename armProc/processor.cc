@@ -542,9 +542,6 @@ void processor::coprocessorOperation(){
 	cp->executeOperation(opcode, rm, rn, rd, info);
 }
 
-
-// controllare gli addendi del pc sia in memAcc che no!!!
-
 void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
 	Byte cpNum = (pipeline[PIPELINE_EXECUTE] >> 8) & 0xF;
 	coprocessor *cp = cpint->getCoprocessor(cpNum);

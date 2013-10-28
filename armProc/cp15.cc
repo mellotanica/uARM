@@ -30,56 +30,66 @@ cp15::cp15(): coprocessor() {
         cp15_registers[i] = 0;
     reg1CPmask = 0;
     #ifdef COPROCESSOR_CP0
-        mask |= 3;
+        reg1CPmask |= 3;
     #endif
     #ifdef COPROCESSOR_CP1
-        mask |= 3 << 2;
+        reg1CPmask |= 3 << 2;
     #endif
     #ifdef COPROCESSOR_CP2
-        mask |= 3 << 4;
+        reg1CPmask |= 3 << 4;
     #endif
     #ifdef COPROCESSOR_CP3
-        mask |= 3 << 6;
+        reg1CPmask |= 3 << 6;
     #endif
     #ifdef COPROCESSOR_CP4
-        mask |= 3 << 8;
+        reg1CPmask |= 3 << 8;
     #endif
     #ifdef COPROCESSOR_CP5
-        mask |= 3 << 10;
+        reg1CPmask |= 3 << 10;
     #endif
     #ifdef COPROCESSOR_CP6
-        mask |= 3 << 12;
+        reg1CPmask |= 3 << 12;
     #endif
     #ifdef COPROCESSOR_CP7
-        mask |= 3 << 14;
+        reg1CPmask |= 3 << 14;
     #endif
     #ifdef COPROCESSOR_CP8
-        mask |= 3 << 16;
+        reg1CPmask |= 3 << 16;
     #endif
     #ifdef COPROCESSOR_CP9
-        mask |= 3 << 18;
+        reg1CPmask |= 3 << 18;
     #endif
     #ifdef COPROCESSOR_CP10
-        mask |= 3 << 20;
+        reg1CPmask |= 3 << 20;
     #endif
     #ifdef COPROCESSOR_CP11
-        mask |= 3 << 22;
+        reg1CPmask |= 3 << 22;
     #endif
     #ifdef COPROCESSOR_CP12
-        mask |= 3 << 24;
+        reg1CPmask |= 3 << 24;
     #endif
     #ifdef COPROCESSOR_CP13
-        mask |= 3 << 26;
+        reg1CPmask |= 3 << 26;
     #endif
+
+        cp15_registers[CP15_REG1_SCB] = INVERT_W(CP15_REG1_SBZ_MASK) & (CP15_REG1_SBO_MASK | (ENDIANESS_BIGENDIAN << CP15_REG1_BPOS));
 }
 
 void cp15::executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info){
-	cp15_registers[4] = 0x44556644;
+    switch(opcode){
+        case 0:
+            if(rd == 2) //Refresh PTE
+                getPFN();
+            break;
+    }
 }
 
 void cp15::registerTransfer(Word *cpuReg, Byte opcode, Byte operand, Byte srcDest, Byte info, bool toCoproc){
     switch(srcDest){
         case 0: register0(cpuReg, opcode, operand, info, toCoproc); break;
+        case 1: register1(cpuReg, info, toCoproc); break;
+        case 2: register2(cpuReg, opcode, info, toCoproc); break;
+        case 15: register15(cpuReg, opcode, toCoproc); break;
     }
 }
 
@@ -101,7 +111,7 @@ void cp15::register0(Word *cpureg, Byte opcode, Byte operand, Byte info, bool to
     }
 }
 
-void cp15::register1(Word *cpureg, Byte opcode, Byte operand, Byte info, bool toCoproc){
+void cp15::register1(Word *cpureg, Byte info, bool toCoproc){
     if(toCoproc){   //write
         switch(info){
             case 0b000: break;  //control register
@@ -117,6 +127,73 @@ void cp15::register1(Word *cpureg, Byte opcode, Byte operand, Byte info, bool to
             case 0b010: *cpureg = cp15_registers[CP15_REG1_CCB]; break;
         }
     }
+}
+
+void cp15::register2(Word *cpureg, Byte opcode, Byte info, bool toCoproc){
+    switch(opcode){
+        case 0: EntryHi(cpureg, info, toCoproc); break;
+        case 1: EntryLo(cpureg, toCoproc); break;
+    }
+}
+
+void cp15::register15(Word *cpureg, Byte opcode, bool toCoproc){
+    if(toCoproc){   //write
+        Word value = 0;
+        Word mask = 0;
+        switch(opcode){
+            case 0: //Cause.ExcpCase
+                mask = 0xFFFFFF;
+                value = *cpureg & mask;
+                break;
+            case 1: //Cause.IP
+                mask = 0xFF000000;
+                value = *cpureg & mask;
+                break;
+        }
+        cp15_registers[CP15_REG15_CAUSE] &= INVERT_W(mask);
+        cp15_registers[CP15_REG15_CAUSE] |= value;
+    } else {        //read
+        *cpureg = cp15_registers[CP15_REG15_CAUSE];
+    }
+}
+
+void cp15::EntryHi(Word *cpureg, Byte opcode, bool toCoproc){
+    if(toCoproc){   //write
+        bool changed = false;
+        Word value = *cpureg;
+        switch(opcode){
+            case 0: //EntryHi.ASID
+                value &= 0xFF0;
+                if(value ^ (cp15_registers[CP15_REG2_EntryHi] & 0xFF0)){
+                    cp15_registers[CP15_REG2_EntryHi] &= INVERT_W(0xFF0);
+                    changed = true;
+                }
+                break;
+            case 1: //EntryHi.VPN
+                value &= 0xFFFFF000;
+                if(value ^ (cp15_registers[CP15_REG2_EntryHi] & 0xFFFFF00)){
+                    cp15_registers[CP15_REG2_EntryHi] &= INVERT_W(0xFFFFF00);
+                    changed = true;
+                }
+                break;
+        }
+        if(changed){
+            cp15_registers[CP15_REG2_EntryHi] |= value;
+            getPFN();
+        }
+    } else {        //read
+        *cpureg = cp15_registers[CP15_REG2_EntryHi];
+    }
+}
+
+void cp15::EntryLo(Word *cpureg, bool toCoproc){
+    if(!toCoproc){   //read
+        *cpureg = cp15_registers[CP15_REG2_EntryLo];
+    }
+}
+
+void cp15::getPFN(){    //search Page Table for PTE and read EntryLo
+
 }
 
 #endif //UARM_CP15_CC
