@@ -51,4 +51,5 @@ OTHER_FILES += \
     icons/pause.png \
     test/sample.s \
     README.txt \
-    test/simpleBoot.s
+    test/simpleBoot.s \
+    test/BIOS_Base.bin

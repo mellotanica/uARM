@@ -40,6 +40,9 @@ processor::processor() : pu() {
 
     pipeline = bus->pipeline;
 
+    for(int i = 0; i < PIPELINE_STAGES; i ++)
+        prefetchFault[i] = false;
+
     Word address = 0;
     bus->writeW(&address, INITIAL_BRANCH);
 }
@@ -307,29 +310,19 @@ void processor::nextCycle() {
         armMode = true;
     }
     old_pc = *getPC();
+    prefetchFault[PIPELINE_EXECUTE] = prefetchFault[PIPELINE_DECODE];
+    prefetchFault[PIPELINE_DECODE] = prefetchFault[PIPELINE_FETCH];
 	if(*getPC() % 4 == 0)	//in ARM state or after second halfword in Thumb state, fetch new word
-        if(!bus->fetch(*getPC(), armMode)){
-            prefetchAbortTrap();
-            return;
-        }
+        prefetchFault[PIPELINE_FETCH] = !bus->fetch(*getPC(), armMode);
 }
 
 void processor::prefetch() {
-    if(!bus->prefetch(*getPC())){
-        prefetchAbortTrap();
-        return;
-    }
+    prefetchFault[PIPELINE_EXECUTE] = !bus->prefetch(*getPC());
     *getPC() += 4;
-    if(!bus->prefetch(*getPC())){
-        prefetchAbortTrap();
-        return;
-    }
+    prefetchFault[PIPELINE_DECODE] = !bus->prefetch(*getPC());
     *getPC() += 4;
     old_pc = *getPC();
-    if(!bus->prefetch(*getPC())){
-        prefetchAbortTrap();
-        return;
-    }
+    prefetchFault[PIPELINE_FETCH] = !bus->prefetch(*getPC());
 }
 
 bool processor::branchHappened(){
@@ -499,6 +492,12 @@ void processor::execute(){
 		status = PS_HALTED;
 		return;
 	}
+
+    if(prefetchFault[PIPELINE_EXECUTE]){
+        prefetchAbortTrap();
+        return;
+    }
+
 	Byte codeHi;
 	Byte codeLow;
 	

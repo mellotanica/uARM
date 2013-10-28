@@ -99,6 +99,7 @@ private:
 	coprocessor_interface *cpint;
 	ProcessorStatus status;
     Word *pipeline;
+    bool prefetchFault[PIPELINE_STAGES];
 	Word cpu_registers[CPU_REGISTERS_NUM];
 	Word shifter_operand, alu_tmp;
     Word old_pc;
