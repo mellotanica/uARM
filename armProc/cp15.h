@@ -34,7 +34,7 @@ public:
 
     Word *getRegList(){return cp15_registers;}
 	
-	void executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info);
+    void executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info);
     void registerTransfer(Word *cpuReg, Byte opcode, Byte operand, Byte srcDest, Byte info, bool toCoproc);
 	
 private:

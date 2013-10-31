@@ -52,4 +52,10 @@ OTHER_FILES += \
     test/sample.s \
     README.txt \
     test/simpleBoot.s \
+    test/dataP_MOV_MVN_BIC.s \
+    test/IsaCheck/dataP_MOV_MVN_BIC.s \
+    test/IsaCheck/dataP_AND_ORR_EOR.s \
+    test/IsaCheck/dataP_ADD_SUB_RSB.s \
+    test/IsaCheck/dataP_ADC_SBC_RSC.s \
+    test/IsaCheck/dataP_TST_TEQ_CMP_CMN.s \
     test/BIOS_Base.bin

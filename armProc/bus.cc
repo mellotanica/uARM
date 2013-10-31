@@ -103,6 +103,7 @@ bool systemBus::loadRAM(char *buffer, Word size, bool kernel){
         for(Word i = 0; i < size; i++, address++){
            writeB(&address, (Byte) buffer[i]);
         }
+        writeW(&address, OP_HALT);
         return true;
     }
     else{   //user program, placed somewhere else..
