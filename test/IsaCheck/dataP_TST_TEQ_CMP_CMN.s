@@ -1,3 +1,20 @@
+.macro ckcond
+    MOVEQ r11, #0x00000001
+    MOVNE r11, #0x00000010
+    MOVCS r11, #0x00000100
+    MOVCC r11, #0x00001000
+    MOVMI r11, #0x00010000
+    MOVPL r11, #0x00100000
+    MOVVS r11, #0x01000000
+    MOVVC r11, #0x10000000
+    MOVHI r12, #0x00000001
+    MOVLS r12, #0x00000010
+    MOVGE r12, #0x00000100
+    MOVLT r12, #0x00001000
+    MOVGT r12, #0x00010000
+    MOVLE r12, #0x00100000
+.endm
+
 .global _start
 _start:
 

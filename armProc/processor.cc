@@ -1162,7 +1162,7 @@ void processor::dataProcessing(Byte opcode){
 }
 
 void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest, bool S){
-	int64_t sres;
+    SDoubleWord sres;
 	bool overflow = false, borrow = false;
 	uint64_t c = (carry && util::getInstance()->checkBit(getVisibleRegister(REG_CPSR), C_POS) ? 1 : 0);
 	if(sum){
@@ -1176,7 +1176,7 @@ void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest, b
 		if(op1<(op2+c))
 			borrow = true;
 	}
-	if(sres > (SDoubleWord)0x7FFFFFFF || sres < (SDoubleWord)0xFFFFFFFF80000000)
+    if(sres > (SDoubleWord)0x7FFFFFFF || sres < (SDoubleWord)0xFFFFFFFF80000000)
 		overflow = true;
 	*dest = (Word) sres & 0xFFFFFFFF;
 	if(S){	// S == 1

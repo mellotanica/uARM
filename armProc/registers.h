@@ -93,9 +93,9 @@
 #define F_MASK (1<<F_POS)		//disable fast interrupts
 #define I_MASK (1<<I_POS)		//disable interrupts
 #define V_MASK (1<<V_POS)		//operation overflow
-#define C_MASK (1<<C_POS)		//operation carried out
+#define C_MASK (1<<C_POS)		//operation carried out (or borrow or extend)
 #define Z_MASK (1<<Z_POS)		//zero result
-#define N_MASK (1<<N_POS)		//negative result
+#define N_MASK (1<<N_POS)		//negative result (or less than)
 #define RESERVED_MASK 0x0FFFFF00
 #define PRIVILEGED_MASK ((MODE_MASK|T_MASK|F_MASK|I_MASK))
 
