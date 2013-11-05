@@ -27,12 +27,14 @@
 
 //change these values accordignly to linker behavior
 
-#define EXCVTOP      0x00000028     //2 words biggeer to avoid prefetch aborts while loading exception handlers
+#define EXCVTOP      0x00000020
 #define DEVBASEADDR  0x00000040
 #define DEVTOP       0x000002C0
 #define INFOBASEADDR 0x000002D0
 #define INFOTOP      0x000002DC
 #define BIOSBASEADDR 0x00000300
+#define ROMFRAMEBASE 0x00007000
+#define ROMFRAMETOP  0x00008000
 
 #define RAMBASEADDR  0x00008000
 
@@ -75,13 +77,16 @@ public:
 private:
     ramMemory *ram = NULL;
 
-    Word BIOSTOP;   //must be 2 words bigger than actual size, same as EXCVTOP
+    Word BIOSTOP;
     Word RAMTOP;
 
     Byte* excVector;
     Byte* devRegs;
     Byte* bios;
     Byte* info;
+    Byte* romStack;
+    Byte* segTable;
+    Byte* excvStates;
 
     AbortType checkAddress(Word *address);
 

@@ -54,7 +54,9 @@ private:
     void EntryHi(Word *cpureg, Byte opcode, bool toCoproc);
     void EntryLo(Word *cpureg, bool toCoproc);
 
-    void getPFN();
+    bool getPFN();
+
+    void writeCause(Word causeW);
 
 	ramMemory *ram;
 	

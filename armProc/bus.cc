@@ -35,6 +35,9 @@ systemBus::systemBus(){
     for(i = 0; i < (DEVTOP - DEVBASEADDR); i++)
         devRegs[i] = 0;
     info = new Byte[(INFOTOP - INFOBASEADDR)];
+    romStack = new Byte[(ROMF_STACKTOP - ROMF_STACKBASE)];
+    segTable = new Byte[(ROMF_SEGTTOP - ROMF_SEGTBASE)];
+    excvStates = new Byte[(ROMF_EXCVTOP - ROMF_EXCVBASE)];
     bios = NULL;
     initInfo();
 }
@@ -86,7 +89,7 @@ bool systemBus::get_unpredictableB(){
 }
 
 bool systemBus::loadBIOS(char *buffer, Word size){
-    BIOSTOP = size + BIOSBASEADDR + 8;
+    BIOSTOP = size + BIOSBASEADDR;
     if(bios != NULL)
         delete [] bios;
     bios = new Byte[size];
@@ -291,7 +294,16 @@ bool systemBus::getRomVector(Word *address, Byte **romptr){
         *romptr = bios + (offset - BIOSBASEADDR);
     else if(*address < INFOTOP && *address >= INFOBASEADDR)
         *romptr = info + (offset - INFOBASEADDR);
-    else
+    else if(*address < ROMFRAMETOP && *address >= ROMFRAMEBASE){
+        if(*address < ROMF_EXCVTOP && *address >= ROMF_EXCVBASE)
+            *romptr = excvStates + (offset - ROMF_EXCVBASE);
+        else if(*address < ROMF_SEGTTOP && *address >= ROMF_SEGTBASE)
+            *romptr = segTable + (offset - ROMF_SEGTBASE);
+        else if(*address < ROMF_STACKTOP && *address >= ROMF_STACKBASE)
+            *romptr = romStack + (offset - ROMF_STACKBASE);
+        else
+            return false;
+    } else
         return false;
     return true;
 }

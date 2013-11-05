@@ -192,8 +192,44 @@ void cp15::EntryLo(Word *cpureg, bool toCoproc){
     }
 }
 
-void cp15::getPFN(){    //search Page Table for PTE and read EntryLo
+bool cp15::getPFN(){    //search Page Table for PTE and read EntryLo
+    Word ASID = ((cp15_registers[CP15_REG2_EntryHi] >> 4) & 0xFF);
+    Word VPF = cp15_registers[CP15_REG2_EntryHi] >> 12;
+    bool shared = (cp15_registers[CP15_REG2_EntryHi] >= VM_SHSEG_START);
+    Word pgTblPtr, address = ((2 * ASID) + (shared ? 4 : 0));
+    AbortType abt = bus->readW(&address, &pgTblPtr);
+    if(abt != ABT_NOABT){
+        writeCause(abt);
+        return false;
+    }
+    abt = bus->readW(&pgTblPtr, &pgTblPtr);
+    if((pgTblPtr >> 24) != PAGE_TBL_MAGICNO){   // invalid page table header
+        writeCause(PAGE_TBL_INVALID_H);
+        return false;
+    }
+    Word pgTblSize = pgTblPtr & 0xFFFFF;
+    /* scan page table */
+    Word tmpHi;
+    for(Word i = 0; i < pgTblSize; i++){
+        address = pgTblPtr + (8 * (i+1));
+        abt = bus->readW(&address, &tmpHi);
+        if(abt != ABT_NOABT){
+            writeCause(abt);
+            return false;
+        }
+        if((tmpHi >> 12) == VPF){   // FOUND!
+            address -= 4;
+            bus->readW(&address, &cp15_registers[CP15_REG2_EntryLo]);
+            writeCause(ABT_NOABT);
+            return true;
+        }
+    }
+    writeCause(PAGE_TBL_NOT_FOUND);
+    return false;
+}
 
+void cp15::writeCause(Word causeW){
+    register15(&causeW, 0, true);
 }
 
 #endif //UARM_CP15_CC
