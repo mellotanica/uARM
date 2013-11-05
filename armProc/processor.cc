@@ -1162,9 +1162,11 @@ void processor::dataProcessing(Byte opcode){
 }
 
 void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest, bool S){
+    *dest = 0;
+    bool overflow = false, borrow = false;
+    /*
     SDoubleWord sres;
-	bool overflow = false, borrow = false;
-	uint64_t c = (carry && util::getInstance()->checkBit(getVisibleRegister(REG_CPSR), C_POS) ? 1 : 0);
+    uint64_t c = (carry && util::getInstance()->checkBit(getVisibleRegister(REG_CPSR), C_POS) ? 1 : 0);
 	if(sum){
 		uint64_t ures;
 		sres = (SDoubleWord)((SWord)op1)+(SDoubleWord)((SWord)op2)+c;
@@ -1177,8 +1179,55 @@ void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest, b
 			borrow = true;
 	}
     if(sres > (SDoubleWord)0x7FFFFFFF || sres < (SDoubleWord)0xFFFFFFFF80000000)
+        if(sres > (SDoubleWord)0x7FFFFFFF || sres < (SDoubleWord)0xFFFFFFFF80000000)
 		overflow = true;
-	*dest = (Word) sres & 0xFFFFFFFF;
+    *dest = (Word) sres & 0xFFFFFFFF;*/
+    /* signed sum is always necessary */
+    bool carryOut = carry && util::getInstance()->checkBit(getVisibleRegister(REG_CPSR), C_POS), carryIn = false;
+    Byte tmp;
+    Word sop2 = (sum ? op2 : 0-op2);
+    for(uint i = 0; i < sizeof(Word)*8; i++){
+        carryIn = carryOut;
+        tmp = (util::getInstance()->checkBit(op1, i) ? 1 : 0) + (util::getInstance()->checkBit(sop2, i) ? 1 : 0) + (carryIn ? 1 : 0);
+        switch(tmp){
+            case 1:
+                *dest |= (1 << i);
+            case 0:
+                carryOut = false;
+                break;
+            case 3:
+                *dest |= (1 << i);
+            case 2:
+                carryOut = true;
+                break;
+        }
+    }
+    overflow = (carryOut == carryIn ? false : true);
+    if(sum){
+        borrow = carryOut;
+    } else {    /* if it is a subtraction also unsigned subtraction is needed to check borrow output */
+        bool carryOut = carry && util::getInstance()->checkBit(getVisibleRegister(REG_CPSR), C_POS), carryIn = false;
+        bool iop1, iop2;
+        for(uint i = 0; i < sizeof(Word)*8; i++){
+            carryIn = carryOut;
+            iop1 = util::getInstance()->checkBit(op1, i);
+            iop2 = util::getInstance()->checkBit(op2, i);
+            if(iop1 == iop2){
+                if(carryIn){
+                    //sres |= (1 << i);
+                    carryOut = true;
+                } else {
+                    carryOut = false;
+                }
+            } else {
+                /*if(!carryIn){
+                    sres |= (1 << i);
+                }*/
+                carryOut = (iop1 ? false : true);
+            }
+        }
+        borrow = carryOut;
+    }
 	if(S){	// S == 1
 		if(dest == getPC()){
 			Word *savedPSR = getVisibleRegister(REG_SPSR);
