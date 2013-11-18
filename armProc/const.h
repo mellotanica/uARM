@@ -115,6 +115,12 @@
 #define NULL 0
 #endif
 
+/* Emulation speed */
+#define IPSMAX      60
+#define IPSTRESH    50
+#define IPSMIN      1
+#define IPSSTEP     1
+
 /* ROM ADDRESSES */
 #define ROMF_EXCVBASE   0x00007000
 #define ROMF_EXCVTOP    0x00007500

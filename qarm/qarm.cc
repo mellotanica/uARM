@@ -44,11 +44,11 @@ qarm::qarm(){
     connect(toolbar, SIGNAL(play(int)), this, SLOT(start(int)));
     connect(toolbar, SIGNAL(speedChanged(int)), this, SLOT(speedChanged(int)));
     connect(toolbar, SIGNAL(pause()), clock, SLOT(stop()));
-    connect(toolbar, SIGNAL(reset()), this, SLOT(reset()));
+    connect(toolbar, SIGNAL(reset()), this, SLOT(softReset()));
     connect(toolbar, SIGNAL(showRam()), this, SLOT(showRam()));
     connect(toolbar, SIGNAL(step()), this, SLOT(step()));
-    connect(toolbar, SIGNAL(openRAM()), this, SLOT(openRAM()));
-    connect(toolbar, SIGNAL(openBIOS()), this, SLOT(openBIOS()));
+    connect(toolbar, SIGNAL(openRAM()), this, SLOT(selectCore()));
+    connect(toolbar, SIGNAL(openBIOS()), this, SLOT(selectBios()));
 
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
 
@@ -87,7 +87,7 @@ void qarm::step(){
             msg += " were";
         else
             msg += " was";
-        msg += " not loaded.\nDo you want to start emulation anyways?";
+        msg += " not selected.\nDo you want to start emulation anyways?";
 
         QMessageBox::StandardButton reply = QMessageBox::question(this,"Caution", msg, QMessageBox::Yes|QMessageBox::No);
 
@@ -97,6 +97,9 @@ void qarm::step(){
         } else {
             dataLoaded = biosLoaded = true;
         }
+    }
+    if(!initialized){
+        initialize();
     }
     mac->step();
 }
@@ -117,9 +120,15 @@ void qarm::speedChanged(int speed){
     }
 }
 
+void qarm::softReset(){
+    reset();
+    if(dataLoaded && biosLoaded)
+        initialize();
+}
+
 void qarm::reset(){
     clock->stop();
-    dataLoaded = biosLoaded = false;
+    initialized = false;
     emit resetMachine(ramSize);
 }
 
@@ -130,7 +139,13 @@ void qarm::showRam(){
     ramWindow->show();
 }
 
-void qarm::openRAM(){
+void qarm::initialize(){
+    openBIOS();
+    openRAM();
+    initialized = true;
+}
+
+void qarm::selectCore(){
     if(dataLoaded){
         QMessageBox::StandardButton reply = QMessageBox::question(this,"Caution",
                                                                   "Program File already loaded..\nReset machine and load new Program?",
@@ -147,25 +162,13 @@ void qarm::openRAM(){
             QMessageBox::critical(this, "Error", "Could not open file");
             return;
         }
-        QDataStream in(&f);
-        ramMemory *ram = mac->getBus()->getRam();
-        if(ram != NULL){
-            Word len = (Word) f.size();
-            char *buffer = new char[len];
-            in.readRawData(buffer, len);
-            if(!mac->getBus()->loadRAM(buffer, len, true)){
-                QMessageBox::critical(this, "Error", "Problems while loading RAM");
-                return;
-            }
-            delete buffer;
-        }
         f.close();
+        coreF = fileName;
         dataLoaded = true;
-        mac->refreshData();
     }
 }
 
-void qarm::openBIOS(){
+void qarm::selectBios(){
     if(biosLoaded){
         QMessageBox::StandardButton reply = QMessageBox::question(this,"Caution",
                                                                   "BIOS ROM already loaded..\nReset machine and load new BIOS?",
@@ -182,16 +185,56 @@ void qarm::openBIOS(){
             QMessageBox::critical(this, "Error", "Could not open file");
             return;
         }
+        f.close();
+        biosF = fileName;
+        biosLoaded = true;
+    }
+}
+
+void qarm::openRAM(){
+    if(coreF != ""){
+        QFile f (coreF);
+        if(!f.open(QIODevice::ReadOnly)) {
+            QMessageBox::critical(this, "Error", "Could not open file");
+            dataLoaded = false;
+            return;
+        }
+        QDataStream in(&f);
+        ramMemory *ram = mac->getBus()->getRam();
+        if(ram != NULL){
+            Word len = (Word) f.size();
+            char *buffer = new char[len];
+            in.readRawData(buffer, len);
+            if(!mac->getBus()->loadRAM(buffer, len, true)){
+                QMessageBox::critical(this, "Error", "Problems while loading RAM");
+                dataLoaded = false;
+                return;
+            }
+            delete buffer;
+        }
+        f.close();
+        mac->refreshData();
+    }
+}
+
+void qarm::openBIOS(){
+    if(biosF != ""){
+        QFile f (biosF);
+        if(!f.open(QIODevice::ReadOnly)) {
+            QMessageBox::critical(this, "Error", "Could not open file");
+            biosLoaded = false;
+            return;
+        }
         QDataStream in(&f);
         Word len = (Word) f.size();
         char *buffer = new char[len];
         in.readRawData(buffer, len);
         if(!mac->getBus()->loadBIOS(buffer, len)){
             QMessageBox::critical(this, "Error", "Problems while flashing BIOS ROM");
+            biosLoaded = false;
             return;
         }
         delete buffer;
         f.close();
-        biosLoaded = true;
     }
 }

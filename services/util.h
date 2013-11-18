@@ -64,7 +64,12 @@ public:
 			copyBitReg(dest, dbit, 1); 
 		else 
 			copyBitReg(dest, dbit, 0);
-    }
+    }   
 };
+
+inline uint32_t SwapEndian32(uint32_t x)
+{
+    return (x << 24) | ((x << 8) & 0x00ff0000) | ((x >> 8) & 0x0000ff00) | (x >> 24);
+}
 
 #endif //UARM_UTIL_H

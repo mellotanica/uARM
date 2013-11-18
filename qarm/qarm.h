@@ -51,6 +51,9 @@ private slots:
     void step();
     void speedChanged(int speed);
     void reset();
+    void softReset();
+    void selectCore();
+    void selectBios();
     void openRAM();
     void openBIOS();
     void showRam();
@@ -58,13 +61,16 @@ private slots:
 private:
     machine *mac;
     unsigned long ramSize;
-    bool dataLoaded = false, biosLoaded = false;
+    bool dataLoaded = false, biosLoaded = false, initialized = false;
+    QString coreF, biosF;
 
     QWidget *mainWidget;
     procDisplay *display;
     QVBoxLayout *centralLayout;
     mainBar *toolbar;
     QTimer *clock;
+
+    void initialize();
 };
 
 #endif // QARM_H

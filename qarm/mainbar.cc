@@ -19,8 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "mainbar.h"
-#include "guiConst.h"
+#include "qarm/mainbar.h"
+#include "qarm/guiConst.h"
+#include "armProc/const.h"
 
 mainBar::mainBar(QWidget *parent) :
     QToolBar(parent)

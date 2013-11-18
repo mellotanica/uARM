@@ -28,12 +28,12 @@
 
 #include <QObject>
 #include "services/util.h"
-#include "const.h"
-#include "bus.h"
-#include "pu.h"
-#include "cp15.h"
-#include "coprocessor_interface.h"
-#include "processor.h"
+#include "armProc/const.h"
+#include "armProc/bus.h"
+#include "armProc/pu.h"
+#include "armProc/cp15.h"
+#include "armProc/coprocessor_interface.h"
+#include "armProc/processor.h"
 
 class machine : public QObject{
     Q_OBJECT

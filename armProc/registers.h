@@ -75,6 +75,7 @@
 #define T_POS 5
 #define F_POS 6
 #define I_POS 7
+#define VM_POS 18   //if 1 virtual memory is on
 #define V_POS 28
 #define C_POS 29
 #define Z_POS 30

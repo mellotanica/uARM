@@ -1,6 +1,8 @@
 QMAKE_CXXFLAGS += -std=c++11
+QMAKE_LFLAGS += -lelf
 CONFIG += qt debug
 TARGET = uarm
+#TARGET = elf2uarm
 
 HEADERS += \
     armProc/types.h \
@@ -24,7 +26,9 @@ HEADERS += \
     qarm/QLine.h \
     qarm/ramview.h \
     qarm/hex_view_priv.h \
-    qarm/hex_view.h
+    qarm/hex_view.h \
+    armProc/blockdev_params.h \
+    armProc/aout.h
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -40,6 +44,7 @@ SOURCES += \
     qarm/procdisplay.cc \
     qarm/ramview.cc \
     qarm/hex_view.cc
+#    services/elf2arm.cc
 
 OTHER_FILES += \
     test/testProgBehavior \

@@ -26,9 +26,9 @@
 #ifndef UARM_COPROCESSOR_INTERFACE_H
 #define UARM_COPROCESSOR_INTERFACE_H
 
-#include "const.h"
-#include "cp15.h"
-#include "pu.h"
+#include "armProc/const.h"
+#include "armProc/cp15.h"
+#include "armProc/pu.h"
 
 class coprocessor_interface{
 public:

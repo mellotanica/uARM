@@ -22,8 +22,8 @@
 #ifndef UARM_CP15_H
 #define UARM_CP15_H
 
-#include "const.h"
-#include "pu.h"
+#include "armProc/const.h"
+#include "armProc/pu.h"
 
 class cp15 : public coprocessor{
 public:

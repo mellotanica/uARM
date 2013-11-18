@@ -1163,48 +1163,26 @@ void processor::dataProcessing(Byte opcode){
 
 void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest, bool S){
     *dest = 0;
-    bool overflow = false, borrow = false;
-    bool carryOut = carry && util::getInstance()->checkBit(getVisibleRegister(REG_CPSR), C_POS), carryIn = false;
-    Byte tmp;
+    bool overflow = false;
+    bool borrow = carry && util::getInstance()->checkBit(getVisibleRegister(REG_CPSR), C_POS);
     Word sop2 = (sum ? op2 : 0-op2);
-    for(uint i = 0; i < sizeof(Word)*8; i++){   /* signed sum is always necessary */
-        carryIn = carryOut;
-        tmp = (util::getInstance()->checkBit(op1, i) ? 1 : 0) + (util::getInstance()->checkBit(sop2, i) ? 1 : 0) + (carryIn ? 1 : 0);
-        switch(tmp){
+    for(uint i = 0; i < sizeof(Word)*8; i++){
+        switch((util::getInstance()->checkBit(op1, i) ? 1 : 0) + (util::getInstance()->checkBit(sop2, i) ? 1 : 0) + (borrow ? 1 : 0)){
             case 1:
                 *dest |= (1 << i);
             case 0:
-                carryOut = false;
+                borrow = false;
                 break;
             case 3:
                 *dest |= (1 << i);
             case 2:
-                carryOut = true;
+                borrow = true;
                 break;
         }
     }
-    overflow = (carryOut == carryIn ? false : true);    /*http://chortle.ccsu.edu/AssemblyTutorial/Chapter-08/ass08_23.html*/
-    if(sum){
-        borrow = carryOut;
-    } else {    /* if it is a subtraction also unsigned subtraction is needed to check borrow output */
-        bool carryOut = carry && util::getInstance()->checkBit(getVisibleRegister(REG_CPSR), C_POS), carryIn = false;
-        bool iop1, iop2;
-        for(uint i = 0; i < sizeof(Word)*8; i++){
-            carryIn = carryOut;
-            iop1 = util::getInstance()->checkBit(op1, i);
-            iop2 = util::getInstance()->checkBit(op2, i);
-            if(iop1 == iop2){
-                if(carryIn){
-                    carryOut = true;
-                } else {
-                    carryOut = false;
-                }
-            } else {
-                carryOut = (iop1 ? false : true);
-            }
-        }
-        borrow = carryOut;
-    }
+    if((util::getInstance()->checkBit(op1, 31) == util::getInstance()->checkBit(sop2, 31))
+      && (util::getInstance()->checkBit(op1, (31)) != util::getInstance()->checkBit(op1, (31))))
+        overflow = true;
 	if(S){	// S == 1
 		if(dest == getPC()){
 			Word *savedPSR = getVisibleRegister(REG_SPSR);

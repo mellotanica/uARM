@@ -27,11 +27,6 @@
 #define RESETICON "icons/reset.png"
 #define STEPICON "icons/step.png"
 
-#define IPSMAX      60
-#define IPSTRESH    50
-#define IPSMIN      1
-#define IPSSTEP     1
-
 #define PIPECOLS    6
 #define CPUCOLS     8
 #define CPUROWS     19
