@@ -1165,7 +1165,11 @@ void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest, b
     *dest = 0;
     bool overflow = false;
     bool borrow = carry && util::getInstance()->checkBit(getVisibleRegister(REG_CPSR), C_POS);
-    Word sop2 = (sum ? op2 : 0-op2);
+    Word sop2 = op2;
+    if(!sum){
+        sop2 ^= 0xFFFFFFFF;
+        borrow = true;
+    }
     for(uint i = 0; i < sizeof(Word)*8; i++){
         switch((util::getInstance()->checkBit(op1, i) ? 1 : 0) + (util::getInstance()->checkBit(sop2, i) ? 1 : 0) + (borrow ? 1 : 0)){
             case 1:
