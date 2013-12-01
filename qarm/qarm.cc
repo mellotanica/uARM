@@ -54,8 +54,8 @@ qarm::qarm(){
 
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
 
-    connect(this, SIGNAL(resetMachine(ulong)), this, SIGNAL(resetDisplay()));
     connect(this, SIGNAL(resetMachine(ulong)), mac, SLOT(reset(ulong)));
+    connect(this, SIGNAL(resetMachine(ulong)), this, SIGNAL(resetDisplay()));
     connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,QString)), display, SLOT(updateVals(Word*,Word*,Word*,QString)));
     connect(this, SIGNAL(resetDisplay()), display, SLOT(reset()));
 

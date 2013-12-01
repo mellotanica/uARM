@@ -62,12 +62,6 @@ public:
     bool loadBIOS(char *buffer, Word size);
     bool loadRAM(char *buffer, Word size, bool kernel);
 
-
-    /*
-    bool loadBIOS(const char* fName);
-    bool loadRam(const char* fName);
-*/
-
     bool prefetch(Word addr);
     bool fetch(Word pc, bool armMode);
 	
@@ -93,9 +87,6 @@ private:
     Byte* devRegs;
     Byte* bios = NULL;
     Byte* info;
-    /*Byte* romStack;
-    Byte* segTable;
-    Byte* excvStates;*/
     Byte *romFrame;
 
     AbortType checkAddress(Word *address);

@@ -37,12 +37,6 @@ systemBus::systemBus(){
     memset(info, 0, (INFOTOP - INFOBASEADDR));
     romFrame = new Byte[(ROMFRAMETOP - ROMFRAMEBASE)];
     memset(romFrame, 0, (ROMFRAMETOP - ROMFRAMEBASE));
-    /*romStack = new Byte[(ROMF_STACKTOP - ROMF_STACKBASE)];
-    memset(romStack, 0, (ROMF_STACKTOP - ROMF_STACKBASE));
-    segTable = new Byte[(ROMF_SEGTTOP - ROMF_SEGTBASE)];
-    memset(segTable, 0, (ROMF_SEGTTOP - ROMF_SEGTBASE));
-    excvStates = new Byte[(ROMF_EXCVTOP - ROMF_EXCVBASE)];
-    memset(excvStates, 0, (ROMF_EXCVTOP - ROMF_EXCVBASE));*/
     reset();
 }
 
@@ -55,9 +49,6 @@ systemBus::~systemBus(){
     delete [] devRegs;
     delete [] info;
     delete [] romFrame;
-    /*delete [] romStack;
-    delete [] segTable;
-    delete [] excvStates;*/
     if(bios != NULL){
         delete [] bios;
         bios = NULL;
@@ -126,72 +117,6 @@ bool systemBus::get_unpredictableB(){
     return rand() % 1;
 }
 
-/*
-bool systemBus::loadBIOS(const char *fName){
-    if(fName != NULL && *fName){
-        FILE* file;
-
-        if ((file = fopen(fName, "r")) == NULL)
-            //throw FileError(fName);
-            return false;
-
-        Word tag,size;
-        if ((fread((void *) &tag, sizeof(Word), 1, file) != 1) ||
-            (tag != BIOSFILEID) ||
-                (fread((void *) &size, sizeof(Word), 1, file) != 1))
-        {
-            fclose(file);
-            //throw InvalidFileFormatError(fileName, "ROM file expected");
-            return false;
-        }
-
-        BIOSTOP = BIOSBASEADDR + size;
-
-        bios = new Byte[size*4];
-
-        //memPtr.reset(new Word[size]);
-        if (fread((void*) bios, sizeof(Byte), size*4, file) != size*4) {
-            fclose(file);
-            return false;
-        }
-
-        fclose(file);
-        return true;
-    }
-    return false;
-}
-
-bool systemBus::loadRam(const char *fName){
-    if (fName != NULL && *fName) {
-        FILE* cFile;
-        if ((cFile = fopen(fName, "r")) == NULL)
-            //throw FileError(fName);
-            return false;
-
-        // Check validity
-        Word tag;
-        if (fread((void *) &tag, sizeof(Word), 1, cFile) != 1 ||
-            tag != COREFILEID)
-        {
-            fclose(cFile);
-            //throw InvalidCoreFileError(fName, "Invalid core file");
-            return false;
-        }
-
-        fread((void *) ram, sizeof(Byte), ram->getRamSize(), cFile);
-        if (!feof(cFile)) {
-            fclose(cFile);
-            //throw CoreFileOverflow();
-            return false;
-        }
-
-        fclose(cFile);
-        return true;
-    }
-    return false;
-}
-*/
-
 bool systemBus::loadBIOS(char *buffer, Word size){
     BIOSTOP = size + BIOSBASEADDR;
     if(bios != NULL)
@@ -207,10 +132,24 @@ bool systemBus::loadBIOS(char *buffer, Word size){
 bool systemBus::loadRAM(char *buffer, Word size, bool kernel){
     if(kernel){
         Word address = RAMBASEADDR;
+        Word dataVAddr = 0, textSize = 0;
+        bool textSet = false;
         for(Word i = 0; i < size; i++, address++){
-           writeB(&address, (Byte) buffer[i]);
+            if(textSet && i >= textSize){
+                address = dataVAddr;
+                textSet = false;
+            }
+            if(i/4 == (AOUT_HE_DATA_VADDR+1) && i%4 == 0){
+                Word taddr = address-4;
+                readW(&taddr, &dataVAddr);
+            }
+            if(!textSet && (i/4 == (AOUT_HE_TEXT_FILESZ+1) && i%4 == 0)){
+                Word taddr = address-4;
+                readW(&taddr, &textSize);
+                textSet = true;
+            }
+            writeB(&address, (Byte) buffer[i]);
         }
-        //writeW(&address, OP_HALT);
         return true;
     }
     else{   //user program, to be placed somewhere else..
@@ -401,14 +340,6 @@ bool systemBus::getRomVector(Word *address, Byte **romptr){
         *romptr = info + (offset - INFOBASEADDR);
     else if(*address < ROMFRAMETOP && *address >= ROMFRAMEBASE){
         *romptr = romFrame + (offset - ROMFRAMEBASE);
-        /*if(*address < ROMF_EXCVTOP && *address >= ROMF_EXCVBASE)
-            *romptr = excvStates + (offset - ROMF_EXCVBASE);
-        else if(*address < ROMF_SEGTTOP && *address >= ROMF_SEGTBASE)
-            *romptr = segTable + (offset - ROMF_SEGTBASE);
-        else if(*address < ROMF_STACKTOP && *address >= ROMF_STACKBASE)
-            *romptr = romStack + (offset - ROMF_STACKBASE);
-        else
-            return false;*/
     } else
         return false;
     return true;
