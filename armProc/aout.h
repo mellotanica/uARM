@@ -49,8 +49,17 @@
 #define AOUT_HE_DATA_MEMSZ    7
 #define AOUT_HE_DATA_OFFSET   8
 #define AOUT_HE_DATA_FILESZ   9
-#define AOUT_HE_GP_VALUE      42
+#define N_AOUT_HDR_ENT     16
+//#define AOUT_HE_GP_VALUE      42
 
-#define N_AOUT_HDR_ENT     43
+//#define N_AOUT_HDR_ENT     43
+
+/* Magic Number Tags */
+#define DISKFILEID	0x0053504D
+#define TAPEFILEID	0x0153504D
+#define BIOSFILEID	0x0253504D
+#define COREFILEID	0x0353504D
+#define AOUTFILEID	0x0453504D
+#define STABFILEID	0x4153504D
 
 #endif /* !defined(UMPS_AOUT_H) */

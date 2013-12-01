@@ -28,29 +28,51 @@
 #include "Thumbisa.h"
 
 processor::processor() : pu() {
-    status = PS_RESET;
-    old_pc = 0;
-	BIGEND_sig = ENDIANESS_BIGENDIAN;
     cpint = new coprocessor_interface();
-    for(int i = 0; i < CPU_REGISTERS_NUM; i++)
-        cpu_registers[i] = 0;
-    cpu_registers[REG_CPSR] = MODE_SUPERVISOR;
+
 	execARM = new ARMisa(this);
 	execThumb = new Thumbisa(this);
 
     pipeline = bus->pipeline;
 
-    for(int i = 0; i < PIPELINE_STAGES; i ++)
-        prefetchFault[i] = false;
-
-    Word address = 0;
-    bus->writeW(&address, INITIAL_BRANCH);
+    reset();
 }
 
 processor::~processor(){
-    delete cpint;
-    delete execARM;
-    delete execThumb;
+    if(cpint != NULL){
+        delete cpint;
+        cpint = NULL;
+    }
+    if(execARM != NULL){
+        delete execARM;
+        execARM = NULL;
+    }
+    if(execThumb != NULL){
+        delete execThumb;
+        execThumb = NULL;
+    }
+    delete [] cpu_registers;
+    delete [] prefetchFault;
+}
+
+void processor::reset(){
+    status = PS_RESET;
+    old_pc = 0;
+    BIGEND_sig = ENDIANESS_BIGENDIAN;
+
+    for(int i = 0; i < CPU_REGISTERS_NUM; i++)
+        cpu_registers[i] = 0;
+
+    cpu_registers[REG_CPSR] = MODE_SUPERVISOR;
+
+    for(int i = 0; i < PIPELINE_STAGES; i ++)
+        prefetchFault[i] = false;
+
+    cpint->reset();
+    bus->reset();
+
+    Word address = 0;
+    bus->writeW(&address, INITIAL_BRANCH);
 }
 
 /* ******************** *
@@ -300,23 +322,27 @@ void processor::nextCycle() {
         prefetch();
         return;
     }                           //else run normally
-    bool armMode;
+
+    //shoud we check for pc 14 to halt the system??
+
     if(cpu_registers[REG_CPSR] & T_MASK){	//Thumb state
-		*getPC() += 2;
-        armMode = false;
+        *getPC() += 2;
     }
     else{ 									//ARM state
-		*getPC() += 4;
-        armMode = true;
+        *getPC() += 4;
     }
     old_pc = *getPC();
     prefetchFault[PIPELINE_EXECUTE] = prefetchFault[PIPELINE_DECODE];
     prefetchFault[PIPELINE_DECODE] = prefetchFault[PIPELINE_FETCH];
 	if(*getPC() % 4 == 0)	//in ARM state or after second halfword in Thumb state, fetch new word
-        prefetchFault[PIPELINE_FETCH] = !bus->fetch(*getPC(), armMode);
+        prefetchFault[PIPELINE_FETCH] = !bus->fetch(*getPC(), !(cpu_registers[REG_CPSR] & T_MASK));
 }
 
 void processor::prefetch() {
+    if(*getPC() == 0x14){
+        status = PS_HALTED;
+        return;
+    }
     prefetchFault[PIPELINE_EXECUTE] = !bus->prefetch(*getPC());
     *getPC() += 4;
     prefetchFault[PIPELINE_DECODE] = !bus->prefetch(*getPC());

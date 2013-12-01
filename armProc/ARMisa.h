@@ -37,54 +37,54 @@ public:
 private:
 	processor *p;
 	
-	typedef void(ARMisa::*InstrPointer)();
+    typedef void(ARMisa::*InstrPointer)();
 	
 	//ARM ISA
 	
-	void ADC();	//add with carry
-	void ADD();	//add
-	void AND();	//AND
-	void B();	//brach
-	void BIC();	//bit clear
-	void BL();	//branch with link
-	void BX();	//branch and exchange
-	void CDP();	//coprocessor data processing
-	void CMN(); //compare negative
-	void CMP(); //compare
-	void EOR();	//exclusive OR
-	void LDC();	//load coprocessor from memory
-	void LDM();	//load multiple registers
-	void LDR();	//load register from memory
-	void LDRH();	//load halfword
-	void LDRSB();	//load signed byte
-	void LDRSH();	//load signed halfword
-	void MCR();	//move cpu register to coprocessor register
-	void MLA();	//multiply accumulative
-	void MLAL();//multiply accumulative long
-	void MOV();	//move register or constant
-	void MRC();	//move coprocessor register to cpu register
-	void MRS();	//move PRS status/flags to register
-	void MSR();	//move register to PRS status/flags
-	void MUL();	//multiply
-	void MULL();//multiply long
-	void MVN();	//move negative register
-	void ORR();	//OR
-	void RSB();	//reverse subtract
-	void RSC();	//reverse subtract with carry
-	void SBC();	//subtract with carry
-	void STC();	//store coprocessor register to memory
-	void STM();	//store multiple
-	void STR();	//store register to memory
-	void STRH();	//store halfword
-	void SUB();	//subtract
-	void SWI();	//software interrupt
-	void SWP();	//swap register with memory
-	void TEQ();	//test bitwiser equality
-	void TST();	//test bits
-	void UND();	//undefined instruction
+    void ADC();	//add with carry
+    void ADD();	//add
+    void AND();	//AND
+    void B();	//brach
+    void BIC();	//bit clear
+    void BL();	//branch with link
+    void BX();	//branch and exchange
+    void CDP();	//coprocessor data processing
+    void CMN(); //compare negative
+    void CMP(); //compare
+    void EOR();	//exclusive OR
+    void LDC();	//load coprocessor from memory
+    void LDM();	//load multiple registers
+    void LDR();	//load register from memory
+    void LDRH();	//load halfword
+    void LDRSB();	//load signed byte
+    void LDRSH();	//load signed halfword
+    void MCR();	//move cpu register to coprocessor register
+    void MLA();	//multiply accumulative
+    void MLAL();//multiply accumulative long
+    void MOV();	//move register or constant
+    void MRC();	//move coprocessor register to cpu register
+    void MRS();	//move PRS status/flags to register
+    void MSR();	//move register to PRS status/flags
+    void MUL();	//multiply
+    void MULL();//multiply long
+    void MVN();	//move negative register
+    void ORR();	//OR
+    void RSB();	//reverse subtract
+    void RSC();	//reverse subtract with carry
+    void SBC();	//subtract with carry
+    void STC();	//store coprocessor register to memory
+    void STM();	//store multiple
+    void STR();	//store register to memory
+    void STRH();	//store halfword
+    void SUB();	//subtract
+    void SWI();	//software interrupt
+    void SWP();	//swap register with memory
+    void TEQ();	//test bitwiser equality
+    void TST();	//test bits
+    void UND();	//undefined instruction
 	
-	const InstrPointer ARM_table[257][16] = {
-		{&ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::MUL, &ARMisa::AND, &ARMisa::STRH, &ARMisa::AND, &ARMisa::UND, &ARMisa::AND, &ARMisa::UND},
+    const InstrPointer ARM_table[257][16] = {
+        {&ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::MUL, &ARMisa::AND, &ARMisa::STRH, &ARMisa::AND, &ARMisa::UND, &ARMisa::AND, &ARMisa::UND},
 		{&ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::MUL, &ARMisa::AND, &ARMisa::LDRH, &ARMisa::AND, &ARMisa::LDRSB, &ARMisa::AND, &ARMisa::LDRSH},
 		{&ARMisa::EOR, &ARMisa::EOR, &ARMisa::EOR, &ARMisa::EOR, &ARMisa::EOR, &ARMisa::EOR, &ARMisa::EOR, &ARMisa::EOR, &ARMisa::EOR, &ARMisa::MLA, &ARMisa::EOR, &ARMisa::STRH, &ARMisa::EOR, &ARMisa::UND, &ARMisa::EOR, &ARMisa::UND},
 		{&ARMisa::EOR, &ARMisa::EOR, &ARMisa::EOR, &ARMisa::EOR, &ARMisa::EOR, &ARMisa::EOR, &ARMisa::EOR, &ARMisa::EOR, &ARMisa::EOR, &ARMisa::MLA, &ARMisa::EOR, &ARMisa::LDRH, &ARMisa::EOR, &ARMisa::LDRSB, &ARMisa::EOR, &ARMisa::LDRSH},

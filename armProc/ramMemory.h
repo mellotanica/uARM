@@ -33,32 +33,29 @@
 class ramMemory{
 public:
     ramMemory() {
-        if(ramSize > 0)
-            init(ramSize);
-        else {
-            memVector = NULL;
-            ready = false;
-        }
+        memVector = NULL;
+        ready = false;
     }
     ~ramMemory() {
-        if(memVector != NULL){
+        if(memVector != NULL)
             delete [] memVector;
-            memVector = NULL;
-            ready = false;
-        }
+        memVector = NULL;
+        ready = false;
     }
 	
     void lockMem() { LOCK_sig = true; }
     void unlockMem() { LOCK_sig = false; }
     bool getMemLock() { return LOCK_sig; }
-	
-    void init(Word sz) {
-        ramSize = sz;
-        if(memVector == NULL){
-            memVector = new Byte[((DoubleWord)ramSize*4)];
+
+    void reset(Word sz){
+        if(memVector == NULL || sz != ramSize){
+            ready = false;
+            ramSize = sz;
+            if(memVector == NULL)
+                delete [] memVector;
+            memVector = new Byte[((DoubleWord)ramSize * 4)];
             ready = true;
         }
-        //std::cout<<"RAM SIZE: "<<(ramSize * 4)<<"B";
     }
 
     Word getRamSize(){

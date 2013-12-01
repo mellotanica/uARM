@@ -44,6 +44,7 @@
 #include <errno.h>
 
 #include <libelf.h>
+#include <gelf.h>
 
 #include "services/util.h"
 #include "services/debug.h"
@@ -313,10 +314,34 @@ static Elf_Scn* getSectionByType(Elf32_Word type)
  */
 static Elf32_Addr getGPValue()
 {
-    SymbolTableIterator it(elf), end;
-    for (; it != end; ++it)
-        if ((*it).name == "_GLOBAL_OFFSET_TABLE_")
-            return (*it).details->st_value;
+    Elf_Scn *dynscn = getSectionByType(SHT_DYNAMIC);
+    Elf32_Shdr *dynhdr = elf32_getshdr(dynscn);
+    Elf_Data *d = elf_getdata(dynscn, NULL);
+    GElf_Dyn dyn;
+
+    int nentries, jmax, j;
+    nentries = 0;
+    jmax = (int) (dynhdr->sh_size / dynhdr->sh_entsize);
+
+    for (j = 0; j < jmax; j++) {
+                if (gelf_getdyn(d, j, &dyn) != &dyn) {
+                    /*warnx("gelf_getdyn failed: %s",
+                        elf_errmsg(-1));*/
+                    continue;
+                }
+                nentries ++;
+                if (dyn.d_tag == DT_NULL)
+                    break;
+    }
+
+    for (j = 0; j < nentries; j++) {
+                if (gelf_getdyn(d, j, &dyn) != &dyn)
+                    continue;
+                /* Dump dynamic entry type. */
+                if(dyn.d_tag == DT_PLTGOT)
+                    return dyn.d_un.d_ptr;
+    }
+
     return (Elf32_Addr) -1;
 }
 
@@ -337,9 +362,11 @@ static void elf2aout(bool isCore)
     header[AOUT_HE_ENTRY] = elfHeader->e_entry;
 
     // Set initial $gp entry
+    /*
     header[AOUT_HE_GP_VALUE] = getGPValue();
     if (header[AOUT_HE_GP_VALUE] == (Elf32_Addr) -1)
-        fatalError("Cannot obtain initial $gp value");
+        fatalError("Can not obtain initial $gp value");
+        */
 
     // Obtain the program header table
     Elf32_Phdr* pht = elf32_getphdr(elf);
@@ -355,17 +382,18 @@ static void elf2aout(bool isCore)
     bool foundTextSeg = false;
     uint8_t* textBuf;
 
+    //prepare data and text buffers
     for (size_t i = 0; i < phtSize; i++) {
         if (pht[i].p_type != PT_LOAD)
             continue;
-        if (pht[i].p_flags == (PF_R | PF_W)) {
+        if (pht[i].p_flags == (PF_R | PF_W)) {// data segmet
             if (foundDataSeg)
                 fatalError("Redundant .data program header table entry %u", (unsigned int) i);
             foundDataSeg = true;
             header[AOUT_HE_DATA_MEMSZ] = pht[i].p_memsz;
             header[AOUT_HE_DATA_VADDR] = pht[i].p_vaddr;
             uint32_t size = isCore ? pht[i].p_memsz : pht[i].p_filesz;
-            header[AOUT_HE_DATA_FILESZ] = (size / kBlockSize) * kBlockSize;
+            header[AOUT_HE_DATA_FILESZ] = (size / kBlockSize) * kBlockSize; //rounds file size to 4k mem blocks sixe (actual memory to be allocated)
             if (header[AOUT_HE_DATA_FILESZ] < size)
                 header[AOUT_HE_DATA_FILESZ] += kBlockSize;
             if (header[AOUT_HE_DATA_FILESZ] > 0) {
@@ -374,7 +402,7 @@ static void elf2aout(bool isCore)
             } else {
                 dataBuf = NULL;
             }
-        } else if (pht[i].p_flags == (PF_R | PF_X)) {
+        } else if (pht[i].p_flags == (PF_R | PF_X)) {// text segment
             if (foundTextSeg)
                 fatalError("Redundant .text program header table entry %u", (unsigned int) i);
             if (pht[i].p_memsz == 0)
@@ -401,6 +429,7 @@ static void elf2aout(bool isCore)
         dataBuf = NULL;
     }
 
+    header[AOUT_HE_TEXT_OFFSET] = 0;
     header[AOUT_HE_TEXT_OFFSET] = 0;
     header[AOUT_HE_DATA_OFFSET] = header[AOUT_HE_TEXT_FILESZ];
 
@@ -442,15 +471,17 @@ static void elf2aout(bool isCore)
     if (file == NULL)
         fatalError("Cannot create a.out file `%s'", outName.c_str());
 
-    // If it's a core file, write the RRF padding first
+    // If it's a core file, write the RRF padding first (padding clears the bios reserved frame)
     if (isCore) {
         uint32_t tag = toTargetEndian(COREFILEID);
         if (fwrite(&tag, sizeof(tag), 1, file) != 1)
             fatalError("Error writing a.out file `%s'", outName.c_str());
+        /* i don't need this...
         uint32_t pad = 0;
         for (size_t i = 0; i < 1024; i++)
             if (fwrite(&pad, sizeof(pad), 1, file) != 1)
                 fatalError("Error writing a.out file `%s'", outName.c_str());
+                */
     }
 
     // Write the segments, finally.

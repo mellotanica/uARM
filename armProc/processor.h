@@ -59,6 +59,8 @@ class processor : public pu{
 public:
 	processor();
     ~processor();
+
+    void reset();
 	
     Word *getPC() {return &cpu_registers[REG_PC];}
 	void nextCycle();

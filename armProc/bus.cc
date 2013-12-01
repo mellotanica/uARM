@@ -22,24 +22,28 @@
 #ifndef UARM_SYSTEMBUS_CC
 #define UARM_SYSTEMBUS_CC
 
+#include <string.h>
 #include "bus.h"
+#include "aout.h"
 
 systemBus::systemBus(){
     if(ram == NULL)
         ram = new ramMemory();
     excVector = new Byte[EXCVTOP];
-    int i;
-    for(i = 0; i < EXCVTOP; i++)
-        excVector[i] = 0;
+    memset(excVector, 0, EXCVTOP);
     devRegs = new Byte[(DEVTOP - DEVBASEADDR)];
-    for(i = 0; i < (DEVTOP - DEVBASEADDR); i++)
-        devRegs[i] = 0;
+    memset(devRegs, 0, (DEVTOP - DEVBASEADDR));
     info = new Byte[(INFOTOP - INFOBASEADDR)];
-    romStack = new Byte[(ROMF_STACKTOP - ROMF_STACKBASE)];
+    memset(info, 0, (INFOTOP - INFOBASEADDR));
+    romFrame = new Byte[(ROMFRAMETOP - ROMFRAMEBASE)];
+    memset(romFrame, 0, (ROMFRAMETOP - ROMFRAMEBASE));
+    /*romStack = new Byte[(ROMF_STACKTOP - ROMF_STACKBASE)];
+    memset(romStack, 0, (ROMF_STACKTOP - ROMF_STACKBASE));
     segTable = new Byte[(ROMF_SEGTTOP - ROMF_SEGTBASE)];
+    memset(segTable, 0, (ROMF_SEGTTOP - ROMF_SEGTBASE));
     excvStates = new Byte[(ROMF_EXCVTOP - ROMF_EXCVBASE)];
-    bios = NULL;
-    initInfo();
+    memset(excvStates, 0, (ROMF_EXCVTOP - ROMF_EXCVBASE));*/
+    reset();
 }
 
 systemBus::~systemBus(){
@@ -47,6 +51,40 @@ systemBus::~systemBus(){
         delete ram;
         ram = NULL;
     }
+    delete [] excVector;
+    delete [] devRegs;
+    delete [] info;
+    delete [] romFrame;
+    /*delete [] romStack;
+    delete [] segTable;
+    delete [] excvStates;*/
+    if(bios != NULL){
+        delete [] bios;
+        bios = NULL;
+    }
+    delete [] pipeline;
+}
+
+void systemBus::reset(){
+    if(bios != NULL)
+        delete [] bios;
+    bios = NULL;
+    initInfo();
+}
+
+void systemBus::initInfo(){
+    Word addr = INFOBASEADDR;
+    writeW(&addr, RAMBASEADDR);
+    addr += 4;
+    writeW(&addr, RAMTOP);
+    addr += 4;
+    writeW(&addr, DEVBASEADDR);
+}
+
+void systemBus::updateRAMTOP(){
+    RAMTOP = ram->getRamSize();
+    Word addr = INFOBASEADDR + 4;
+    writeW(&addr, RAMTOP);
 }
 
 bool systemBus::prefetch(Word addr){ //fetches one instruction per execution from exact given address
@@ -88,6 +126,72 @@ bool systemBus::get_unpredictableB(){
     return rand() % 1;
 }
 
+/*
+bool systemBus::loadBIOS(const char *fName){
+    if(fName != NULL && *fName){
+        FILE* file;
+
+        if ((file = fopen(fName, "r")) == NULL)
+            //throw FileError(fName);
+            return false;
+
+        Word tag,size;
+        if ((fread((void *) &tag, sizeof(Word), 1, file) != 1) ||
+            (tag != BIOSFILEID) ||
+                (fread((void *) &size, sizeof(Word), 1, file) != 1))
+        {
+            fclose(file);
+            //throw InvalidFileFormatError(fileName, "ROM file expected");
+            return false;
+        }
+
+        BIOSTOP = BIOSBASEADDR + size;
+
+        bios = new Byte[size*4];
+
+        //memPtr.reset(new Word[size]);
+        if (fread((void*) bios, sizeof(Byte), size*4, file) != size*4) {
+            fclose(file);
+            return false;
+        }
+
+        fclose(file);
+        return true;
+    }
+    return false;
+}
+
+bool systemBus::loadRam(const char *fName){
+    if (fName != NULL && *fName) {
+        FILE* cFile;
+        if ((cFile = fopen(fName, "r")) == NULL)
+            //throw FileError(fName);
+            return false;
+
+        // Check validity
+        Word tag;
+        if (fread((void *) &tag, sizeof(Word), 1, cFile) != 1 ||
+            tag != COREFILEID)
+        {
+            fclose(cFile);
+            //throw InvalidCoreFileError(fName, "Invalid core file");
+            return false;
+        }
+
+        fread((void *) ram, sizeof(Byte), ram->getRamSize(), cFile);
+        if (!feof(cFile)) {
+            fclose(cFile);
+            //throw CoreFileOverflow();
+            return false;
+        }
+
+        fclose(cFile);
+        return true;
+    }
+    return false;
+}
+*/
+
 bool systemBus::loadBIOS(char *buffer, Word size){
     BIOSTOP = size + BIOSBASEADDR;
     if(bios != NULL)
@@ -106,13 +210,14 @@ bool systemBus::loadRAM(char *buffer, Word size, bool kernel){
         for(Word i = 0; i < size; i++, address++){
            writeB(&address, (Byte) buffer[i]);
         }
-        writeW(&address, OP_HALT);
+        //writeW(&address, OP_HALT);
         return true;
     }
-    else{   //user program, placed somewhere else..
+    else{   //user program, to be placed somewhere else..
         return false;
     }
 }
+
 
 AbortType systemBus::readB(Word *addr, Byte *dest){
     Word address = *addr;
@@ -295,26 +400,18 @@ bool systemBus::getRomVector(Word *address, Byte **romptr){
     else if(*address < INFOTOP && *address >= INFOBASEADDR)
         *romptr = info + (offset - INFOBASEADDR);
     else if(*address < ROMFRAMETOP && *address >= ROMFRAMEBASE){
-        if(*address < ROMF_EXCVTOP && *address >= ROMF_EXCVBASE)
+        *romptr = romFrame + (offset - ROMFRAMEBASE);
+        /*if(*address < ROMF_EXCVTOP && *address >= ROMF_EXCVBASE)
             *romptr = excvStates + (offset - ROMF_EXCVBASE);
         else if(*address < ROMF_SEGTTOP && *address >= ROMF_SEGTBASE)
             *romptr = segTable + (offset - ROMF_SEGTBASE);
         else if(*address < ROMF_STACKTOP && *address >= ROMF_STACKBASE)
             *romptr = romStack + (offset - ROMF_STACKBASE);
         else
-            return false;
+            return false;*/
     } else
         return false;
     return true;
-}
-
-void systemBus::initInfo(){
-    Word addr = INFOBASEADDR;
-    writeW(&addr, RAMBASEADDR);
-    addr += 4;
-    writeW(&addr, RAMTOP);
-    addr += 4;
-    writeW(&addr, DEVBASEADDR);
 }
 
 #endif //UARM_SYSTEMBUS_CC

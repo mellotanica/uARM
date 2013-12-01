@@ -2,7 +2,7 @@
 
 FNAME=`echo "$1" | sed -e 's/\..*//'`
 
-arm-linux-gnueabi-as -o "$FNAME".o "$1"
+arm-linux-gnueabi-gcc -mcpu=arm7tdmi -c -o "$FNAME".o "$1"
 if [ $? -eq 0 ]; then
   arm-linux-gnueabi-ld -o "$FNAME".elf "$FNAME".o
   if [ $? -eq 0 ]; then
@@ -11,7 +11,7 @@ if [ $? -eq 0 ]; then
   fi
 fi
 
-rm "$FNAME".o "$FNAME".elf > /dev/null 2> /dev/null
+#rm "$FNAME".o > /dev/null 2> /dev/null
 
 if [ \( -n "$exitV" \) -a \( $exitV = 0 \) ]; then
   echo "assembled $1 in $FNAME.bin"

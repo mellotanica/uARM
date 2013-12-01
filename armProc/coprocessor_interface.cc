@@ -31,6 +31,10 @@
 coprocessor_interface::coprocessor_interface(){
 	
 	coprocessors = new coprocessor*[COPROCESSORS_NUM];
+
+    for(int i = 0; i < COPROCESSORS_NUM; i++){
+        coprocessors[i] = NULL;
+    }
 	
 	coprocessors[COPROCESSOR_CP15] = new cp15();
 	
@@ -51,107 +55,20 @@ coprocessor_interface::coprocessor_interface(){
 #endif
 }
 
-/* hardware-encoded functions
-bool coprocessor_interface::CPA(){
-	bool ret = true;
-	coprocessor *tmp = list;
-	while(tmp != NULL){
-		ret &= tmp->CPA();
-		tmp = tmp->next;
-	}
-	return ret;
+coprocessor_interface::~coprocessor_interface(){
+    for(int i = 0; i < COPROCESSORS_NUM; i++){
+        if(coprocessors[i] != NULL)
+            delete coprocessors[i];
+    }
+    delete [] coprocessors;
 }
 
-bool coprocessor_interface::CPB(){
-	bool ret = true;
-	coprocessor *tmp = list;
-	while(tmp != NULL){
-		ret &= tmp->CPB();
-		tmp = tmp->next;
-	}
-	return ret;
+void coprocessor_interface::reset(){
+    for(int i = 0; i < COPROCESSORS_NUM; i++){
+        if(coprocessors[i] != NULL)
+            coprocessors[i]->reset();
+    }
 }
-
-void coprocessor_interface::setnCPI(bool val){
-	coprocessor *tmp = list;
-	while(tmp != NULL){
-		tmp->setnCPI(val);
-		tmp = tmp->next;
-	}
-}
-
-bool coprocessor_interface::readD(int mplex, Word *data){
-	switch(mplex){
-	case COPROCESSOR_CP15:
-		*data = coprocessors[COPROCESSOR_CP15]->getD();
-		return true;
-#ifdef COPROCESSOR_CP14
-	case COPROCESSOR_CP14:
-		*data = coprocessors[COPROCESSOR_CP14]->getD();
-		return true;
-#endif
-#ifdef COPROCESSOR_CP7
-	case COPROCESSOR_CP7:
-		*data = coprocessors[COPROCESSOR_CP7]->getD();
-		return true;
-#endif
-#ifdef COPROCESSOR_CP6
-	case COPROCESSOR_CP6:
-		*data = coprocessors[COPROCESSOR_CP6]->getD();
-		return true;
-#endif
-#ifdef COPROCESSOR_CP5
-	case COPROCESSOR_CP5:
-		*data = coprocessors[COPROCESSOR_CP5]->getD();
-		return true;
-#endif
-#ifdef COPROCESSOR_CP4
-	case COPROCESSOR_CP4:
-		*data = coprocessors[COPROCESSOR_CP4]->getD();
-		return true;
-#endif
-	default:
-		//wrong coprocessor.. undefined..
-		return false;
-	}
-}
-
-bool coprocessor_interface::writeD(int mplex, Word *data){
-	switch(mplex){
-	case COPROCESSOR_CP15:
-		coprocessors[COPROCESSOR_CP15]->setD(data);
-		return true;
-#ifdef COPROCESSOR_CP14
-	case COPROCESSOR_CP14:
-		coprocessors[COPROCESSOR_CP14]->setD(data);
-		return true;
-#endif
-#ifdef COPROCESSOR_CP7
-	case COPROCESSOR_CP7:
-		coprocessors[COPROCESSOR_CP7]->setD(data);
-		return true;
-#endif
-#ifdef COPROCESSOR_CP6
-	case COPROCESSOR_CP6:
-		coprocessors[COPROCESSOR_CP6]->setD(data);
-		return true;
-#endif
-#ifdef COPROCESSOR_CP5
-	case COPROCESSOR_CP5:
-		coprocessors[COPROCESSOR_CP5]->setD(data);
-		return true;
-#endif
-#ifdef COPROCESSOR_CP4
-	case COPROCESSOR_CP4:
-		coprocessors[COPROCESSOR_CP4]->setD(data);
-		return true;
-#endif
-	default:
-		return false;
-	}
-}
-
-*/
 
 coprocessor *coprocessor_interface::getCoprocessor(Byte cpNum){
 	coprocessor *ret = NULL;

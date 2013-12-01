@@ -28,8 +28,10 @@
 class cp15 : public coprocessor{
 public:
 	cp15();
-    ~cp15() {}
+    ~cp15();
 	
+    void reset();
+
     Word *getRegister(Word i) {return &cp15_registers[i];}
 
     Word *getRegList(){return cp15_registers;}

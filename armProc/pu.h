@@ -54,6 +54,8 @@ public:
     coprocessor() : pu() {}
     ~coprocessor(){}
 	
+    virtual void reset() = 0;
+
     virtual Word *getRegList() = 0;
 
 	virtual Word *getRegister(Word regNum) = 0;

@@ -50,7 +50,6 @@ private slots:
     void start(int speed);
     void step();
     void speedChanged(int speed);
-    void reset();
     void softReset();
     void selectCore();
     void selectBios();
@@ -61,7 +60,7 @@ private slots:
 private:
     machine *mac;
     unsigned long ramSize;
-    bool dataLoaded = false, biosLoaded = false, initialized = false;
+    bool dataLoaded = false, biosLoaded = false, initialized = false, doReset = true;
     QString coreF, biosF;
 
     QWidget *mainWidget;

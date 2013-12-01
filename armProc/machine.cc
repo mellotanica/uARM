@@ -34,23 +34,28 @@ util *util::instance;
 
 machine::machine(QObject *parent) : QObject(parent){
     cpu = NULL;
+    sysbus = NULL;
 }
 
 machine::~machine(){
-	delete sysbus;
+    if(sysbus != NULL)
+        delete sysbus;
+    if(cpu != NULL)
+        delete cpu;
 }
 
 void machine::initMac(){
     cpu = new processor();
-
     sysbus = cpu->getBus();
 }
 
 void machine::reset(unsigned long memSize){
-    if(cpu != NULL)
-        delete cpu;
-    initMac();
-    sysbus->getRam()->init(memSize);
+    if(cpu == NULL)
+        initMac();
+    else
+        cpu->reset();
+    sysbus->getRam()->reset(memSize);
+    sysbus->updateRAMTOP();
     emit updateStatus(status2QString());
 }
 
@@ -61,6 +66,8 @@ void machine::step(){
         } else {
             cpu->nextCycle();
         }
+    }
+    if(cpu->getStatus() != PS_HALTED){
         cpu->cycle();
         refreshData();
     }

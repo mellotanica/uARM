@@ -28,7 +28,9 @@ HEADERS += \
     qarm/hex_view_priv.h \
     qarm/hex_view.h \
     armProc/blockdev_params.h \
-    armProc/aout.h
+    armProc/aout.h \
+    services/debug.h \
+    assemble_BIOS
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -43,7 +45,7 @@ SOURCES += \
     qarm/mainbar.cc \
     qarm/procdisplay.cc \
     qarm/ramview.cc \
-    qarm/hex_view.cc
+    qarm/hex_view.cc \
 #    services/elf2arm.cc
 
 OTHER_FILES += \
@@ -63,4 +65,5 @@ OTHER_FILES += \
     test/IsaCheck/dataP_ADD_SUB_RSB.s \
     test/IsaCheck/dataP_ADC_SBC_RSC.s \
     test/IsaCheck/dataP_TST_TEQ_CMP_CMN.s \
-    test/BIOS_Base.bin
+    test/BIOS_Base.bin \
+    elftest/simpleBoot.s

@@ -26,6 +26,14 @@
 
 cp15::cp15(): coprocessor() {
 	ram = bus->getRam();
+    reset();
+}
+
+cp15::~cp15(){
+    delete [] cp15_registers;
+}
+
+void cp15::reset(){
     for(int i = 0; i < CP15_REGISTERS_NUM; i++)
         cp15_registers[i] = 0;
     reg1CPmask = 0;
@@ -72,7 +80,7 @@ cp15::cp15(): coprocessor() {
         reg1CPmask |= 3 << 26;
     #endif
 
-        cp15_registers[CP15_REG1_SCB] = INVERT_W(CP15_REG1_SBZ_MASK) & (CP15_REG1_SBO_MASK | (ENDIANESS_BIGENDIAN << CP15_REG1_BPOS));
+    cp15_registers[CP15_REG1_SCB] = INVERT_W(CP15_REG1_SBZ_MASK) & (CP15_REG1_SBO_MASK | (ENDIANESS_BIGENDIAN << CP15_REG1_BPOS));
 }
 
 void cp15::executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info){

@@ -54,10 +54,19 @@ public:
 	systemBus();
     ~systemBus();
 	
+    void reset();
+    void updateRAMTOP();
+
 	Word pipeline[PIPELINE_STAGES];
 
     bool loadBIOS(char *buffer, Word size);
     bool loadRAM(char *buffer, Word size, bool kernel);
+
+
+    /*
+    bool loadBIOS(const char* fName);
+    bool loadRam(const char* fName);
+*/
 
     bool prefetch(Word addr);
     bool fetch(Word pc, bool armMode);
@@ -82,11 +91,12 @@ private:
 
     Byte* excVector;
     Byte* devRegs;
-    Byte* bios;
+    Byte* bios = NULL;
     Byte* info;
-    Byte* romStack;
+    /*Byte* romStack;
     Byte* segTable;
-    Byte* excvStates;
+    Byte* excvStates;*/
+    Byte *romFrame;
 
     AbortType checkAddress(Word *address);
 
