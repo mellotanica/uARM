@@ -26,6 +26,11 @@
 #define PAUSEICON "icons/pause.png"
 #define RESETICON "icons/reset.png"
 #define STEPICON "icons/step.png"
+#define CONFIGICON "icons/config.png"
+
+#define DEFAULT_CONFIG_FILE "machine.uarm.cfg"
+
+#define BYTES_PER_MEGABYTE 1048576
 
 #define PIPECOLS    6
 #define CPUCOLS     8
@@ -35,5 +40,11 @@
 
 #define WS  (sizeof(Word))
 #define UNUSED_ARG(x) ((void) x)
+
+/* Emulation speed */
+#define IPSMAX      60
+#define IPSTRESH    50
+#define IPSMIN      1
+#define IPSSTEP     1
 
 #endif // GUICONST_H

@@ -21,7 +21,7 @@
 
 #include "qarm/mainbar.h"
 #include "qarm/guiConst.h"
-#include "armProc/const.h"
+//#include "armProc/const.h"
 
 mainBar::mainBar(QWidget *parent) :
     QToolBar(parent)
@@ -34,10 +34,17 @@ mainBar::mainBar(QWidget *parent) :
     resetIco = new QIcon(RESETICON);
     pauseIco = new QIcon(PAUSEICON);
     stepIco = new QIcon(STEPICON);
+    configIco = new QIcon(CONFIGICON);
 
+    configB = new styledButton();
+    configB->setToolTip("Machine Configs");
+    configB->setIcon(*configIco);
+
+    /* EDIT: removed open menu
     openMenu = new QMenu("Open");
     openMenu->addAction("BIOS ROM", this, SIGNAL(openBIOS()));
     openMenu->addAction("Program Image", this, SIGNAL(openRAM()));
+    */
 
     playB = new styledButton();
     playB->setToolTip("Play");
@@ -100,11 +107,13 @@ mainBar::mainBar(QWidget *parent) :
     ramB->setToolButtonStyle(Qt::ToolButtonTextOnly);
     ramB->setText("View Ram");
 
+    /* EDIT: removed open menu
     openDropDown = new QMenuBar();
     openDropDown->addMenu(openMenu);
     openDropDown->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
 
-    addWidget(openDropDown);
+    addWidget(openDropDown);*/
+    addWidget(configB);
     addWidget(playB);
     addWidget(resetB);
     addWidget(stepB);
@@ -121,6 +130,7 @@ mainBar::mainBar(QWidget *parent) :
     connect(ramB, SIGNAL(clicked()), this, SIGNAL(showRam()));
     connect(plusB, SIGNAL(clicked()), this, SLOT(plus()));
     connect(minusB, SIGNAL(clicked()), this, SLOT(minus()));
+    connect(configB, SIGNAL(clicked()), this, SIGNAL(showConfig()));
 }
 
 void mainBar::playToggled(bool checked){
@@ -140,6 +150,10 @@ void mainBar::resetPressed(){
     if(playB->isChecked())
         playB->toggle();
     emit reset();
+}
+
+void mainBar::setSpeed(int speedVal){
+    speedSl->setValue(speedVal);
 }
 
 void mainBar::setSpeedLab(int spV){

@@ -55,7 +55,6 @@ HEADERS += \
     services/utility.h \
     qarm/mac_id_edit.h \
     qarm/address_line_edit.h \
-    qarm/machine_config_view.h \
     qarm/machine_config_dialog_priv.h \
     qarm/machine_config_dialog.h
 
@@ -85,7 +84,6 @@ SOURCES += \
     services/error.cc \
     qarm/mac_id_edit.cc \
     qarm/address_line_edit.cc \
-    qarm/machine_config_view.cc \
     qarm/machine_config_dialog.cc
 
 OTHER_FILES += \
@@ -106,4 +104,5 @@ OTHER_FILES += \
     test/IsaCheck/dataP_ADC_SBC_RSC.s \
     test/IsaCheck/dataP_TST_TEQ_CMP_CMN.s \
     test/BIOS_Base.bin \
-    elftest/simpleBoot.s
+    elftest/simpleBoot.s \
+    icons/machine_settings-22.png

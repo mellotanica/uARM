@@ -29,6 +29,7 @@
 #include "armProc/basic_types.h"
 #include "armProc/arch.h"
 #include "armProc/types.h"
+#include "qarm/guiConst.h"
 
 enum ROMType {
     ROM_TYPE_BIOS,
@@ -48,9 +49,9 @@ public:
     static const unsigned int MAX_CPUS = 1;
     static const unsigned int DEFAULT_NUM_CPUS = 1;
 
-    static const unsigned int MIN_CLOCK_RATE = 1;
-    static const unsigned int MAX_CLOCK_RATE = 99;
-    static const unsigned int DEFAULT_CLOCK_RATE = 1;
+    static const unsigned int MIN_CLOCK_RATE = IPSMIN;
+    static const unsigned int MAX_CLOCK_RATE = IPSMAX;
+    static const unsigned int DEFAULT_CLOCK_RATE = 4;
 
     /* we do not have any tlb
      *static const Word MIN_TLB = 4;
@@ -70,7 +71,9 @@ public:
 
     bool Validate(std::list<std::string>* errors) const;
 
-    void setLoadCoreEnabled(bool setting) { loadCoreFile = setting; }
+    // STATIC: now only direct core loading is possible.. change this!
+    //void setLoadCoreEnabled(bool setting) { loadCoreFile = setting; }
+    void setLoadCoreEnabled(bool setting) { loadCoreFile = setting | true; }
     bool isLoadCoreEnabled() const { return loadCoreFile; }
 
     void setRamSize(Word size);

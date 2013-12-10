@@ -29,19 +29,20 @@
 #include "qarm/ramview.h"
 #include "qarm/QLine.h"
 #include <QMainWindow>
+#include <QWidget>
 #include <QVBoxLayout>
 #include <QTimer>
 #include <QFile>
 #include <QDataStream>
 #include <QMessageBox>
+#include <QApplication>
 
 static MachineConfig *machineConfigs;
 
 class qarm : public QMainWindow{
     Q_OBJECT
 public:
-
-    qarm();
+    qarm(QApplication *app);
 
 signals:
     void resetDisplay();
@@ -55,13 +56,12 @@ private slots:
     void softReset();
     void selectCore();
     void selectBios();
-    void openRAM();
-    void openBIOS();
     void showRam();
+    void showConfigDialog();
 
 private:
+    QApplication *application;
     machine *mac;
-    unsigned long ramSize;
     bool dataLoaded = false, biosLoaded = false, initialized = false, doReset = true;
     QString coreF, biosF;
 
@@ -71,7 +71,10 @@ private:
     mainBar *toolbar;
     QTimer *clock;
 
-    void initialize();
+    bool initialize();
+    bool openRAM();
+    bool openBIOS();
+    QWidget *createConfigTab();
 };
 
 MachineConfig *getMachineConfig();

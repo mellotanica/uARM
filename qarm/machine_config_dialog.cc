@@ -84,7 +84,7 @@ QWidget* MachineConfigDialog::createGeneralTab()
     cpuSpinner->setValue(config->getNumProcessors());
     layout->addWidget(cpuSpinner, 1, 3);
 
-    layout->addWidget(new QLabel("Clock Rate (MHz):"), 2, 1);
+    layout->addWidget(new QLabel("Clock Rate (Istr/Sec):"), 2, 1);
     clockRateSpinner = new QSpinBox();
     clockRateSpinner->setMinimum(MachineConfig::MIN_CLOCK_RATE);
     clockRateSpinner->setMaximum(MachineConfig::MAX_CLOCK_RATE);
@@ -143,6 +143,8 @@ QWidget* MachineConfigDialog::createGeneralTab()
 
     coreBootCheckBox = new QCheckBox("Load core file");
     coreBootCheckBox->setChecked(config->isLoadCoreEnabled());
+    // STATIC: when dynamic loading will be possible remove this!
+    coreBootCheckBox->setEnabled(false);
     layout->addWidget(coreBootCheckBox, 11, 1, 1, 3);
 
     layout->addWidget(new QLabel("Core file:"), 12, 1);
@@ -219,28 +221,28 @@ QWidget* MachineConfigDialog::createDeviceTab()
     connect(devClassView, SIGNAL(itemSelectionChanged()), this, SLOT(onDeviceClassChanged()));
 
     registerDeviceClass("Disks\n Interrupt Line 3",
-                        ":/icons/disk-32.png",
+                        "icons/disk-32.png",
                         EXT_IL_INDEX(IL_DISK),
                         "Disks", "Disk",
                         true);
 
     registerDeviceClass("Tapes\n Interrupt Line 4",
-                        ":/icons/tape-32.png",
+                        "icons/tape-32.png",
                         EXT_IL_INDEX(IL_TAPE),
                         "Tapes", "Tape");
 
     registerDeviceClass("Network\n Interrupt Line 5",
-                        ":/icons/network-32.png",
+                        "icons/network-32.png",
                         EXT_IL_INDEX(IL_ETHERNET),
                         "Network Interfaces", "Net");
 
     registerDeviceClass("Printers\n Interrupt Line 6",
-                        ":/icons/printer-32.png",
+                        "icons/printer-32.png",
                         EXT_IL_INDEX(IL_PRINTER),
                         "Printers", "Printer");
 
     registerDeviceClass("Terminals\n Interrupt Line 7",
-                        ":/icons/terminal-32.png",
+                        "icons/terminal-32.png",
                         EXT_IL_INDEX(IL_TERMINAL),
                         "Terminals", "Terminal");
 

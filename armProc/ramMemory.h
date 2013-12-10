@@ -51,7 +51,7 @@ public:
         if(memVector == NULL || sz != ramSize){
             ready = false;
             ramSize = sz;
-            if(memVector == NULL)
+            if(memVector != NULL)
                 delete [] memVector;
             memVector = new Byte[((DoubleWord)ramSize * 4)];
             ready = true;

@@ -19,18 +19,34 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "qarm.h"
+#include "qarm/qarm.h"
+#include "armProc/aout.h"
+#include "qarm/machine_config_dialog.h"
+#include "services/error.h"
+
 #include <QFileDialog>
 #include <QFile>
-#include "armProc/aout.h"
+#include <QScrollArea>
 
-qarm::qarm(){
-    ramSize = MEM_SIZE_W;
+
+qarm::qarm(QApplication *app):
+    application(app)
+{
+    // INFO: machine config init
+    //configView = NULL;
+    std::string error;
+    std::string defaultFName = DEFAULT_CONFIG_FILE;
+    machineConfigs = MachineConfig::LoadFromFile(defaultFName, error);
+    if(machineConfigs == NULL)
+        machineConfigs = MachineConfig::Create(defaultFName);
+
     mac = new machine;
 
     mainWidget = new QWidget;
     toolbar = new mainBar;
     display = new procDisplay(this);
+
+    toolbar->setSpeed(getMachineConfig()->getClockRate());
 
     centralLayout = new QVBoxLayout;
 
@@ -49,8 +65,10 @@ qarm::qarm(){
     connect(toolbar, SIGNAL(reset()), this, SLOT(softReset()));
     connect(toolbar, SIGNAL(showRam()), this, SLOT(showRam()));
     connect(toolbar, SIGNAL(step()), this, SLOT(step()));
-    connect(toolbar, SIGNAL(openRAM()), this, SLOT(selectCore()));
-    connect(toolbar, SIGNAL(openBIOS()), this, SLOT(selectBios()));
+    //EDIT: no longer needed with MachineConfig
+    //connect(toolbar, SIGNAL(openRAM()), this, SLOT(selectCore()));
+    //connect(toolbar, SIGNAL(openBIOS()), this, SLOT(selectBios()));
+    connect(toolbar, SIGNAL(showConfig()), this, SLOT(showConfigDialog()));
 
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
 
@@ -70,19 +88,21 @@ qarm::qarm(){
 void qarm::softReset(){
     clock->stop();
     initialized = false;
-    emit resetMachine(ramSize);
+    emit resetMachine(getMachineConfig()->getRamSize() * BYTES_PER_MEGABYTE);
     doReset = false;
     if(dataLoaded && biosLoaded)
         initialize();
 }
 
-void qarm::initialize(){
-    openBIOS();
-    openRAM();
+bool qarm::initialize(){
     initialized = true;
+    initialized &= openBIOS();
+    initialized &= openRAM();
+    return initialized;
 }
 
 void qarm::step(){
+    /*EDIT: no longer needed
     if(!(dataLoaded && biosLoaded)){
         QString msg = "";
         int c = 0;
@@ -112,13 +132,16 @@ void qarm::step(){
         } else {
             dataLoaded = biosLoaded = true;
         }
-    }
+    }*/
     if(doReset){
-        emit resetMachine(ramSize);
+        emit resetMachine(getMachineConfig()->getRamSize() * BYTES_PER_MEGABYTE);
         doReset = false;
     }
     if(!initialized){
-        initialize();
+        if(!initialize()){
+            emit stop();
+            return;
+        }
     }
     mac->step();
 }
@@ -188,13 +211,13 @@ void qarm::selectBios(){
     }
 }
 
-void qarm::openRAM(){
+bool qarm::openRAM(){
+    coreF = QString::fromStdString(getMachineConfig()->getROM(ROM_TYPE_CORE));
     if(coreF != ""){
         QFile f (coreF);
         if(!f.open(QIODevice::ReadOnly)) {
-            QMessageBox::critical(this, "Error", "Could not open file");
-            dataLoaded = false;
-            return;
+            QMessageBox::critical(this, "Error", "Could not open Core file");
+            return false;
         }
         QDataStream in(&f);
         ramMemory *ram = mac->getBus()->getRam();
@@ -203,30 +226,29 @@ void qarm::openRAM(){
             char *buffer = new char[len];
             int sz = in.readRawData(buffer, len);
             if(sz <= 0 || (buffer[0] | buffer[1]<<8 | buffer[2]<<16 | buffer[3]<<24) != COREFILEID){
-                QMessageBox::critical(this, "Error", "Irregular core file");
-                dataLoaded = false;
-                return;
+                QMessageBox::critical(this, "Error", "Irregular Core file");
+                return false;
             }
             sz -= 4;
             if(sz <= 0 || !mac->getBus()->loadRAM(buffer+4, (Word) sz, true)){
-                QMessageBox::critical(this, "Error", "Problems while loading RAM");
-                dataLoaded = false;
-                return;
+                QMessageBox::critical(this, "Error", "Problems while loading Core file");
+                return false;
             }
             delete [] buffer;
         }
         f.close();
         mac->refreshData();
     }
+    return true;
 }
 
-void qarm::openBIOS(){
+bool qarm::openBIOS(){
+    biosF = QString::fromStdString(getMachineConfig()->getROM(ROM_TYPE_BIOS));
     if(biosF != ""){
         QFile f (biosF);
         if(!f.open(QIODevice::ReadOnly)) {
-            QMessageBox::critical(this, "Error", "Could not open file");
-            biosLoaded = false;
-            return;
+            QMessageBox::critical(this, "Error", "Could not open BIOS file");
+            return false;
         }
         QDataStream in(&f);
         Word len = (Word) f.size();
@@ -234,19 +256,35 @@ void qarm::openBIOS(){
         Word sz = in.readRawData(buffer, len);
         if(sz <= 0 || (buffer[0] | buffer[1]<<8 | buffer[2]<<16 | buffer[3]<<24) != BIOSFILEID){
             QMessageBox::critical(this, "Error", "Irregular BIOS file");
-            biosLoaded = false;
-            return;
+            return false;
         }
         sz -= 8;
         if(sz <= 0 || !mac->getBus()->loadBIOS(buffer+8, (Word) sz)){
             QMessageBox::critical(this, "Error", "Problems while flashing BIOS ROM");
-            biosLoaded = false;
-            return;
+            return false;
         }
         delete [] buffer;
         f.close();
     }
+    return true;
 }
+
+void qarm::showConfigDialog(){
+    assert(getMachineConfig());
+
+    MachineConfigDialog dialog(getMachineConfig(), this);
+    if (dialog.exec() == QDialog::Accepted) {
+        try {
+            getMachineConfig()->Save();
+        } catch (FileError& e) {
+            QMessageBox::critical(this, QString("%1: Error").arg(application->applicationName()), e.what());
+            return;
+        }
+        // EDIT: no config view for now..
+        //configView->Update();
+    }
+}
+
 
 MachineConfig *getMachineConfig(){
     return machineConfigs;

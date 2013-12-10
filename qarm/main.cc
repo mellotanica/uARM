@@ -25,7 +25,7 @@
 int main(int argn, char **argv){
     QApplication app(argn, argv);
     app.setFont(monoLabel::getMonospaceFont(), "procDisplay");
-    qarm *wid = new qarm();
+    qarm *wid = new qarm(&app);
     wid->setMinimumSize(770, 540); //570
     wid->show();
     return app.exec();

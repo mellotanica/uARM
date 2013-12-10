@@ -40,6 +40,9 @@ class mainBar : public QToolBar
 public:
     explicit mainBar(QWidget *parent = 0);
 
+public slots:
+    void setSpeed(int speedVal);
+
 signals:
     void play(int speedVal);
     void reset();
@@ -49,6 +52,7 @@ signals:
     void openRAM();
     void openBIOS();
     void showRam();
+    void showConfig();
 
 private slots:
     void setSpeedLab(int speedVal);
@@ -60,10 +64,10 @@ private slots:
     void updateStatus(QString state);
 
 private:
-    styledButton *playB, *resetB, *stepB, *ramB, *plusB, *minusB;   //interactions
+    styledButton *playB, *resetB, *stepB, *ramB, *plusB, *minusB, *configB;   //interactions
     QVBoxLayout *plusMinusL, *scrollerL;
     QWidget *plusMinusW, *scrollerW;
-    const QIcon *playIco, *resetIco, *pauseIco, *stepIco;
+    const QIcon *playIco, *resetIco, *pauseIco, *stepIco, *configIco;
     QSlider *speedSl;
     QLabel *speedLab, *statusLab;
     QMenu *openMenu;
