@@ -1,8 +1,17 @@
+configure.target = config.h
+configure.commands = autoreconf; ./configure
+QMAKE_EXTRA_TARGETS += configure
+PRE_TARGETDEPS = config.h
+
 QMAKE_CXXFLAGS += -std=c++11
 QMAKE_LFLAGS += -lelf
 CONFIG += qt debug
 TARGET = uarm
 #TARGET = elf2uarm
+
+#INCLUDEPATH += /usr/include/sigc++-2.0 \
+#	    /usr/lib/sigc++-2.0/include \
+#	    /usr/lib/i386-linux-gnu/sigc++-2.0/include
 
 HEADERS += \
     armProc/types.h \
@@ -30,7 +39,20 @@ HEADERS += \
     armProc/blockdev_params.h \
     armProc/aout.h \
     services/debug.h \
-    assemble_BIOS
+    assemble_BIOS \
+    config.h \
+    armProc/device.h \
+    armProc/machine_config.h \
+    services/json.h \
+    services/error.h \
+    armProc/arch.h \
+    services/lang.h \
+    armProc/blockdev.h \
+    armProc/vde_network.h \
+    armProc/time_stamp.h \
+    armProc/libvdeplug_dyn.h \
+    armProc/event.h \
+    services/utility.h
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -47,6 +69,15 @@ SOURCES += \
     qarm/ramview.cc \
     qarm/hex_view.cc \
 #    services/elf2arm.cc
+    armProc/device.cc \
+    armProc/machine_config.cc \
+    services/json.cc \
+    armProc/blockdev.cc \
+    armProc/time_stamp.cc \
+    armProc/vde_network.cc \
+    armProc/event.cc \
+    services/utility.cc \
+    services/error.cc
 
 OTHER_FILES += \
     test/testProgBehavior \

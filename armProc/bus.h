@@ -24,6 +24,8 @@
 
 #include "const.h"
 #include "ramMemory.h"
+#include "armProc/event.h"
+#include "blockdev.h"
 
 //change these values accordignly to linker behavior
 
@@ -73,6 +75,40 @@ public:
     AbortType writeH(Word *address, HalfWord data);
     AbortType readW(Word *address, Word *dest);
     AbortType writeW(Word *address, Word data);
+
+    // This method transfers a block from or to memory, starting with
+    // address startAddr; it returns TRUE is transfer was not successful
+    // (non-existent memory, read-only memory, unaligned addresses),
+    // FALSE otherwise.  It notifies too the memory accesses to Watch
+    // control object
+    bool DMATransfer(Block * blk, Word startAddr, bool toMemory);
+
+    // This method transfers a partial block from or to memory, starting with
+    // address startAddr; it returns TRUE is transfer was not successful
+    // (non-existent memory, read-only memory, unaligned addresses),
+    // FALSE otherwise.  It notifies too the memory accesses to Watch
+    // control object
+    bool DMAVarTransfer(Block * blk, Word startAddr, Word byteLength, bool toMemory);
+
+    uint64_t scheduleEvent(uint64_t delay, Event::Callback callback);
+    // This method sets the appropriate bits into intCauseDev[] and
+    // IntPendMask to signal device interrupt pending; it notifies
+    // memory changes to Watch too
+    void IntReq(unsigned int intNum, unsigned int devNum);
+
+    // This method resets the appropriate bits into intCauseDev[] and
+    // IntPendMask to signal device interrupt acknowlege; it notifies
+    // memory changes to Watch too
+    void IntAck(unsigned int intNum, unsigned int devNum);
+
+    Word getToDLO() const { return 1; }
+    Word getToDHI() const { return 0; }
+    Word getTimer() const { return 0; }
+    /* good ones
+    Word getToDLO() const { return TimeStamp::getLo(tod); }
+    Word getToDHI() const { return TimeStamp::getHi(tod); }
+    Word getTimer() const { return timer; }
+    */
 
     Word get_unpredictable();
     bool get_unpredictableB();

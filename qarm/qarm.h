@@ -22,18 +22,18 @@
 #ifndef QARM_H
 #define QARM_H
 
-#include <QMainWindow>
-#include <QVBoxLayout>
-#include <QTimer>
-#include <QFile>
-#include <QDataStream>
-#include <QMessageBox>
 #include "armProc/machine.h"
 #include "mainbar.h"
 #include "guiConst.h"
 #include "ramview.h"
 #include "procdisplay.h"
 #include "QLine.h"
+#include <QMainWindow>
+#include <QVBoxLayout>
+#include <QTimer>
+#include <QFile>
+#include <QDataStream>
+#include <QMessageBox>
 
 class qarm : public QMainWindow{
     Q_OBJECT

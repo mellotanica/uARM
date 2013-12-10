@@ -26,6 +26,8 @@
 #ifndef UARM_CONST_H
 #define UARM_CONST_H
 
+#include "config.h"
+
 #include "registers.h"
 #include "types.h"
 #include <math.h>
@@ -130,5 +132,106 @@
 
 #define ROMF_STACKBASE  0x00007FF0
 #define ROMF_STACKTOP   0x00008000
+
+
+
+// interrupt handling related constants
+
+// timer interrupt line
+#define TIMERINT	2
+
+// device starting interrupt line
+#define DEVINTBASE	3
+
+// device register length
+#define DEVREGLEN 	4
+
+// interrupts available for registers
+#define DEVINTUSED 	5
+
+// devices per interrupt line
+#define DEVPERINT	8
+
+// device type codes
+#define NULLDEV	0
+#define DISKDEV	1
+#define TAPEDEV	2
+#define ETHDEV 3
+#define PRNTDEV 4
+#define TERMDEV 5
+
+// interrupt line offset used for terminals
+// (lots of code must be modified if this changes)
+
+#define TERMINT	4
+
+// memory access types for brkpt/susp/trace ranges in watch.cc and appforms.cc
+// modules
+#define READWRITE 0x6
+#define READ	0x4
+#define WRITE	0x2
+#define EXEC	0x1
+#define EMPTY 	0x0
+
+// some useful macros
+
+// recognizes bad (unaligned) virtual address
+#define BADADDR(w)	((w & ALIGNMASK) != 0UL)
+
+// returns the sign bit of a word
+#define SIGNBIT(w)	(w & SIGNMASK)
+
+// returns 1 if the two strings are equal, 0 otherwise
+#define SAMESTRING(s,t)	(strcmp(s,t) == 0)
+
+// returns 1 if a is in open-ended interval [b, c[, 0 otherwise
+#define INBOUNDS(a,b,c)		(a >= b && a < c)
+
+// word length in bytes, byte length in bits, sign masks, etc.
+#define WORDLEN 4
+#define BYTELEN	8
+#define WORDSHIFT	2
+#define MAXWORDVAL	0xFFFFFFFFUL
+#define SIGNMASK	0x80000000UL
+#define BYTEMASK	0x000000FFUL
+
+// immediate/lower halfword part mask
+#define IMMMASK	0x0000FFFFUL
+
+// halfword bit length
+#define HWORDLEN	16
+
+// some utility constants
+#define	HIDDEN	static
+
+#define	EOS	'\0'
+#define EMPTYSTR	""
+#define	EXIT_FAILURE	1
+#define	EXIT_SUCCESS	0
+
+// host specific constants
+#ifdef WORDS_BIGENDIAN
+#define BIGENDIANCPU	1
+#else
+#define BIGENDIANCPU	0
+#endif
+
+// hardware constants
+
+// physical memory page frame size (in words)
+#define FRAMESIZE	1024
+
+// KB per frame
+#define FRAMEKB	4
+
+// block device size in words
+#define BLOCKSIZE	FRAMESIZE
+
+// eth packet size
+#define PACKETSIZE 1514
+
+// DMA transfer time
+#define DMATICKS	BLOCKSIZE
+
 
 #endif //UARM_CONST_H

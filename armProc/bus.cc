@@ -345,4 +345,20 @@ bool systemBus::getRomVector(Word *address, Byte **romptr){
     return true;
 }
 
+//FIXME: tutte da implementare!
+uint64_t systemBus::scheduleEvent(uint64_t delay, Event::Callback callback){
+    return delay;
+}
+
+void systemBus::IntReq(unsigned int intNum, unsigned int devNum){}
+
+void systemBus::IntAck(unsigned int intNum, unsigned int devNum){}
+
+bool systemBus::DMATransfer(Block * blk, Word startAddr, bool toMemory){
+    return true;
+}
+bool systemBus::DMAVarTransfer(Block * blk, Word startAddr, Word byteLength, bool toMemory){
+    return true;
+}
+
 #endif //UARM_SYSTEMBUS_CC

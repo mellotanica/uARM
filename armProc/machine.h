@@ -26,7 +26,6 @@
 #ifndef UARM_MACHINE_H
 #define UARM_MACHINE_H
 
-#include <QObject>
 #include "services/util.h"
 #include "armProc/const.h"
 #include "armProc/bus.h"
@@ -34,6 +33,9 @@
 #include "armProc/cp15.h"
 #include "armProc/coprocessor_interface.h"
 #include "armProc/processor.h"
+#include "armProc/device.h"
+#include <QObject>
+
 
 class machine : public QObject{
     Q_OBJECT
