@@ -27,9 +27,9 @@
 #include <QLabel>
 #include <sstream>
 #include <iomanip>
-#include "QLine.h"
+#include "qarm/QLine.h"
 #include "armProc/const.h"
-#include "guiConst.h"
+#include "qarm/guiConst.h"
 
 class monoLabel;
 

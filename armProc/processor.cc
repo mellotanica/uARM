@@ -211,85 +211,85 @@ bool processor::condCheck(){
 bool processor::condCheck(Byte cond){
 	switch(cond){
 		case 0:	//EQ
-			if(util::getInstance()->checkBit(&cpu_registers[REG_CPSR], Z_POS))
+            if(checkBit(&cpu_registers[REG_CPSR], Z_POS))
 				return true;
 			else
 				return false;
 			break;
 		case 1:	//NE
-			if(util::getInstance()->checkBit(&cpu_registers[REG_CPSR], Z_POS))
+            if(checkBit(&cpu_registers[REG_CPSR], Z_POS))
 				return false;
 			else
 				return true;
 			break;
 		case 2:	//CS/HS
-			if(util::getInstance()->checkBit(&cpu_registers[REG_CPSR], C_POS))
+            if(checkBit(&cpu_registers[REG_CPSR], C_POS))
 				return true;
 			else
 				return false;
 			break;
 		case 3:	//CC/LO
-			if(util::getInstance()->checkBit(&cpu_registers[REG_CPSR], C_POS))
+            if(checkBit(&cpu_registers[REG_CPSR], C_POS))
 				return false;
 			else
 				return true;
 			break;
 		case 4:	//MI
-			if(util::getInstance()->checkBit(&cpu_registers[REG_CPSR], N_POS))
+            if(checkBit(&cpu_registers[REG_CPSR], N_POS))
 				return true;
 			else
 				return false;
 			break;
 		case 5:	//PL
-			if(util::getInstance()->checkBit(&cpu_registers[REG_CPSR], N_POS))
+            if(checkBit(&cpu_registers[REG_CPSR], N_POS))
 				return false;
 			else
 				return true;
 			break;
 		case 6:	//VS
-			if(util::getInstance()->checkBit(&cpu_registers[REG_CPSR], V_POS))
+            if(checkBit(&cpu_registers[REG_CPSR], V_POS))
 				return true;
 			else
 				return false;
 			break;
 		case 7:	//VC
-			if(util::getInstance()->checkBit(&cpu_registers[REG_CPSR], V_POS))
+            if(checkBit(&cpu_registers[REG_CPSR], V_POS))
 				return false;
 			else
 				return true;
 			break;
 		case 8:	//HI
-			if(	util::getInstance()->checkBit(&cpu_registers[REG_CPSR], C_POS) &&
-				!util::getInstance()->checkBit(&cpu_registers[REG_CPSR], Z_POS))
+            if(	checkBit(&cpu_registers[REG_CPSR], C_POS) &&
+                !checkBit(&cpu_registers[REG_CPSR], Z_POS))
 				return true;
 			else
 				return false;
 			break;
 		case 9:	//LS
-			if(	!util::getInstance()->checkBit(&cpu_registers[REG_CPSR], C_POS) ||
-				util::getInstance()->checkBit(&cpu_registers[REG_CPSR], Z_POS))
+            if(	!checkBit(&cpu_registers[REG_CPSR], C_POS) ||
+                checkBit(&cpu_registers[REG_CPSR], Z_POS))
 				return true;
 			else
 				return false;
 			break;
 		case 10:	//GE
-			if (util::getInstance()->checkBit(&cpu_registers[REG_CPSR], N_POS) ==
-				util::getInstance()->checkBit(&cpu_registers[REG_CPSR], V_POS))
+            if (checkBit(&cpu_registers[REG_CPSR], N_POS) ==
+                checkBit(&cpu_registers[REG_CPSR], V_POS))
 				return true;
 			else
 				return false;
 			break;
 		case 11:	//LT
-			if (util::getInstance()->checkBit(&cpu_registers[REG_CPSR], N_POS) !=
-				util::getInstance()->checkBit(&cpu_registers[REG_CPSR], V_POS))
+            if (checkBit(&cpu_registers[REG_CPSR], N_POS) !=
+                checkBit(&cpu_registers[REG_CPSR], V_POS))
 				return true;
 			else
 				return false;
 			break;
 		case 12:	//GT
-			if (!util::getInstance()->checkBit(&cpu_registers[REG_CPSR], Z_POS) &&
-					(	util::getInstance()->checkBit(&cpu_registers[REG_CPSR], N_POS) ==
-						util::getInstance()->checkBit(&cpu_registers[REG_CPSR], V_POS)
+            if (!checkBit(&cpu_registers[REG_CPSR], Z_POS) &&
+                    (	checkBit(&cpu_registers[REG_CPSR], N_POS) ==
+                        checkBit(&cpu_registers[REG_CPSR], V_POS)
 					)
 				)
 				return true;
@@ -297,9 +297,9 @@ bool processor::condCheck(Byte cond){
 				return false;
 			break;
 		case 13:	//LE
-			if (util::getInstance()->checkBit(&cpu_registers[REG_CPSR], Z_POS) ||
-					(	util::getInstance()->checkBit(&cpu_registers[REG_CPSR], N_POS) !=
-						util::getInstance()->checkBit(&cpu_registers[REG_CPSR], V_POS)
+            if (checkBit(&cpu_registers[REG_CPSR], Z_POS) ||
+                    (	checkBit(&cpu_registers[REG_CPSR], N_POS) !=
+                        checkBit(&cpu_registers[REG_CPSR], V_POS)
 					)
 				)
 				return true;
@@ -461,8 +461,8 @@ void processor::execTrap(ExceptionMode exception){
 	switch(exception){	//enter privileged mode and edit status register as needed
 		case EXC_SWI:
 			*cpsr |= MODE_SUPERVISOR;
-			util::getInstance()->resetBitReg(cpsr, 5);	//execute in arm state
-			util::getInstance()->setBitReg(cpsr, 7);	//disable normal interrupts
+            resetBitReg(cpsr, 5);	//execute in arm state
+            setBitReg(cpsr, 7);	//disable normal interrupts
 			break;
 		case EXC_UNDEF:
 			*cpsr |= MODE_UNDEFINED;
@@ -580,10 +580,10 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
 		Word *cpReg;
 		Byte offset = pipeline[PIPELINE_EXECUTE] & 0xFF;
 		bool P, U, W, N;
-		P = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 24);	// pre/post indexing
-		U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 23);	// up/down
-		W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);	// Write-back
-		N = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);	// single/multiple transfer
+        P = checkBit(pipeline[PIPELINE_EXECUTE], 24);	// pre/post indexing
+        U = checkBit(pipeline[PIPELINE_EXECUTE], 23);	// up/down
+        W = checkBit(pipeline[PIPELINE_EXECUTE], 21);	// Write-back
+        N = checkBit(pipeline[PIPELINE_EXECUTE], 22);	// single/multiple transfer
         Word address = *base; //(base == getPC() ? (*base - 4) : *base); 	//if PC is specified as base the value should be the index of current instruction + 8 (== PC - 4)
         if(P)
             address += ((U ? 1 : -1) * (offset << 2));
@@ -644,10 +644,10 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
             cp->registerTransfer(&rec, opcode, rm, rn, info, toCoproc);
 		
 			if(rd == getPC()){
-                util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, &rec);
-                util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], Z_POS, &rec);
-                util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], C_POS, &rec);
-                util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], V_POS, &rec);
+                copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, &rec);
+                copyBitFromReg(&cpu_registers[REG_CPSR], Z_POS, &rec);
+                copyBitFromReg(&cpu_registers[REG_CPSR], C_POS, &rec);
+                copyBitFromReg(&cpu_registers[REG_CPSR], V_POS, &rec);
 			}
 			else{
                 *rd = rec;
@@ -658,7 +658,7 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
 
 
 void processor::multiply(bool accumulate, bool lngWord){
-    bool S = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 20);	// set condition flags
+    bool S = checkBit(pipeline[PIPELINE_EXECUTE], 20);	// set condition flags
     Word *rm, *rs, *rd, *rn;
     rm = getVisibleRegister(pipeline[PIPELINE_EXECUTE] & 0xF);
     rs = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 8) & 0xF);
@@ -669,7 +669,7 @@ void processor::multiply(bool accumulate, bool lngWord){
 
 void processor::multiply(Word *rd, Word *rm, Word *rs, Word *rn , bool accumulate, bool lngWord, bool S){ //without booth algorythm
 	if(lngWord){	//multiply (and accumulate) doublewords
-		bool U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);	// unsigned operation
+        bool U = checkBit(pipeline[PIPELINE_EXECUTE], 22);	// unsigned operation
 		Word *destHi, *destLo;
         destLo = rn;
         destHi = rd;
@@ -701,10 +701,10 @@ void processor::multiply(Word *rd, Word *rm, Word *rs, Word *rn , bool accumulat
 		}
 		
 		if(S){
-			util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, destHi, 31);
-			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], Z_POS, ((*destHi == 0 && *destLo == 0) ? 1 : 0));
-            util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], C_POS, (bus->get_unpredictableB() ? 1 : 0));	// C and V bit is set to a meaningless value
-            util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], V_POS, (bus->get_unpredictableB() ? 1 : 0));
+            copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, destHi, 31);
+            copyBitReg(&cpu_registers[REG_CPSR], Z_POS, ((*destHi == 0 && *destLo == 0) ? 1 : 0));
+            copyBitReg(&cpu_registers[REG_CPSR], C_POS, (bus->get_unpredictableB() ? 1 : 0));	// C and V bit is set to a meaningless value
+            copyBitReg(&cpu_registers[REG_CPSR], V_POS, (bus->get_unpredictableB() ? 1 : 0));
 		}
 	}
 	else{			//multiply (and accumulate) words
@@ -714,9 +714,9 @@ void processor::multiply(Word *rd, Word *rm, Word *rs, Word *rn , bool accumulat
 		}
         *rd = (*rm) * (*rs) + (accumulate ? *rn : 0);
         if(S){
-            util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, rd, 31);
-            util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], Z_POS, (*rd == 0 ? 1 : 0));
-            util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], C_POS, (bus->get_unpredictableB() ? 1 : 0));	// C bit is set to a meaningless value
+            copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, rd, 31);
+            copyBitReg(&cpu_registers[REG_CPSR], Z_POS, (*rd == 0 ? 1 : 0));
+            copyBitReg(&cpu_registers[REG_CPSR], C_POS, (bus->get_unpredictableB() ? 1 : 0));	// C bit is set to a meaningless value
 		}
 	}
 }
@@ -731,7 +731,7 @@ void processor::singleDataSwap(){
 		return;
 	}
 	
-	bool B = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);	// swap byte/word
+    bool B = checkBit(pipeline[PIPELINE_EXECUTE], 22);	// swap byte/word
 	
 	Word tmpRead;
 	
@@ -746,10 +746,10 @@ void processor::blockDataTransfer(bool load){
     Word *base = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
     HalfWord list = pipeline[PIPELINE_EXECUTE] & 0xFFFF;
     bool P, U, S, W;
-    P = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 24);	// pre/post indexing
-    U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 23);	// up/down
-    S = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);	// PSR & force user
-    W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);	// Write-back
+    P = checkBit(pipeline[PIPELINE_EXECUTE], 24);	// pre/post indexing
+    U = checkBit(pipeline[PIPELINE_EXECUTE], 23);	// up/down
+    S = checkBit(pipeline[PIPELINE_EXECUTE], 22);	// PSR & force user
+    W = checkBit(pipeline[PIPELINE_EXECUTE], 21);	// Write-back
 
     blockDataTransfer(base, list, load, P, U, S, W);
 }
@@ -853,7 +853,7 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 }
 
 void processor::accessPSR(bool load){
-	bool spsr = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);
+    bool spsr = checkBit(pipeline[PIPELINE_EXECUTE], 22);
 	if(getMode() == MODE_USER && spsr){	//user mode doesn't have SPSR register, unpredictable behavior
 		unpredictable();
 		return;
@@ -871,12 +871,12 @@ void processor::accessPSR(bool load){
 		}
 	}
 	else{		//MSR
-		if(util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 16) && util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 25)){	//if immediate and field bits are set wrong unpredictable behavior
+        if(checkBit(pipeline[PIPELINE_EXECUTE], 16) && checkBit(pipeline[PIPELINE_EXECUTE], 25)){	//if immediate and field bits are set wrong unpredictable behavior
 			unpredictable();
 			return;
 		}
 		Word operand;
-		if(util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 25)){	//immediate value
+        if(checkBit(pipeline[PIPELINE_EXECUTE], 25)){	//immediate value
 			Word val = pipeline[PIPELINE_EXECUTE] & 0xFF;
 			Word amount = (pipeline[PIPELINE_EXECUTE] >> 8) & 0xF;
 			operand = (val >> amount) | (val << (sizeof(Word)*8 - amount));
@@ -893,7 +893,7 @@ void processor::accessPSR(bool load){
 			unpredictable();
 			return;
 		}
-		Word mask = 0xFF000000 | (util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 16) ? 0xFF : 0);
+        Word mask = 0xFF000000 | (checkBit(pipeline[PIPELINE_EXECUTE], 16) ? 0xFF : 0);
 		if(spsr)
 			mask &= (PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK);
 		else{
@@ -919,7 +919,7 @@ void processor::branch(bool link, bool exchange){
 void processor::branch(Word *rd, Word offset, bool link, bool exchange){
 	Word *pc = getVisibleRegister(REG_PC);
 	if(exchange){
-        util::getInstance()->copyBitReg(getVisibleRegister(REG_CPSR), T_POS, (*rd & 1));
+        copyBitReg(getVisibleRegister(REG_CPSR), T_POS, (*rd & 1));
         *pc = *rd & 0xFFFFFFFE;
 	} else {
 		if(link){
@@ -937,10 +937,10 @@ void processor::branch(Word *rd, Word offset, bool link, bool exchange){
 
 void processor::halfwordDataTransfer(bool sign, bool load_halfwd){
     bool P, U, I, W;
-    P = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 24);
-    U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 23);
-    I = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);
-    W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);
+    P = checkBit(pipeline[PIPELINE_EXECUTE], 24);
+    U = checkBit(pipeline[PIPELINE_EXECUTE], 23);
+    I = checkBit(pipeline[PIPELINE_EXECUTE], 22);
+    W = checkBit(pipeline[PIPELINE_EXECUTE], 21);
 
     Word *src = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
     Word *dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
@@ -1032,10 +1032,10 @@ void processor::singleMemoryAccess(bool L){
 	} else
 		offset = pipeline[PIPELINE_EXECUTE] & 0xFFF;
 	bool P, U, B, W;
-	P = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 24);
-	U = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 23);
-	B = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 22);
-	W = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 21);
+    P = checkBit(pipeline[PIPELINE_EXECUTE], 24);
+    U = checkBit(pipeline[PIPELINE_EXECUTE], 23);
+    B = checkBit(pipeline[PIPELINE_EXECUTE], 22);
+    W = checkBit(pipeline[PIPELINE_EXECUTE], 21);
 	
 	loadStore(L, P, U, B, W, srcDst, base, offset);
 }
@@ -1115,14 +1115,14 @@ void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, 
 }
 
 void processor::dataProcessing(Byte opcode){
-    bool I = util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 25);
+    bool I = checkBit(pipeline[PIPELINE_EXECUTE], 25);
     Word op1 = *(getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF));
     Word *dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
     if(I)
 		barrelShifter(true, (pipeline[PIPELINE_EXECUTE] & 0xFF), ((pipeline[PIPELINE_EXECUTE] >> 8) & 0xF));
     else{
         barrelShifter(false, ((pipeline[PIPELINE_EXECUTE] >> 4) & 0xFF), (pipeline[PIPELINE_EXECUTE] & 0xF));
-        if(util::getInstance()->checkBit(pipeline[PIPELINE_EXECUTE], 4)){       //if shift amount is specified in a register
+        if(checkBit(pipeline[PIPELINE_EXECUTE], 4)){       //if shift amount is specified in a register
             if(getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF))    //and PC is used it, should have value PC+4
                 op1 += 4;
             else if(dest == getPC())
@@ -1190,14 +1190,14 @@ void processor::dataProcessing(Byte opcode){
 void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest, bool S){
     *dest = 0;
     bool overflow = false;
-    bool borrow = carry && util::getInstance()->checkBit(getVisibleRegister(REG_CPSR), C_POS);
+    bool borrow = carry && checkBit(getVisibleRegister(REG_CPSR), C_POS);
     Word sop2 = op2;
     if(!sum){
         sop2 ^= 0xFFFFFFFF;
         borrow = true;
     }
     for(uint i = 0; i < sizeof(Word)*8; i++){
-        switch((util::getInstance()->checkBit(op1, i) ? 1 : 0) + (util::getInstance()->checkBit(sop2, i) ? 1 : 0) + (borrow ? 1 : 0)){
+        switch((checkBit(op1, i) ? 1 : 0) + (checkBit(sop2, i) ? 1 : 0) + (borrow ? 1 : 0)){
             case 1:
                 *dest |= (1 << i);
             case 0:
@@ -1210,8 +1210,8 @@ void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest, b
                 break;
         }
     }
-    if((util::getInstance()->checkBit(op1, 31) == util::getInstance()->checkBit(sop2, 31))
-      && (util::getInstance()->checkBit(op1, (31)) != util::getInstance()->checkBit(op1, (31))))
+    if((checkBit(op1, 31) == checkBit(sop2, 31))
+      && (checkBit(op1, (31)) != checkBit(op1, (31))))
         overflow = true;
 	if(S){	// S == 1
 		if(dest == getPC()){
@@ -1221,10 +1221,10 @@ void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest, b
 			else
                 unpredictable();
 		} else {
-			util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, dest, 31);
-			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], Z_POS, (*dest == 0 ? 1 : 0));
-			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], C_POS, (borrow ? 1 : 0));
-			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], V_POS, (overflow ? 1 : 0));
+            copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, dest, 31);
+            copyBitReg(&cpu_registers[REG_CPSR], Z_POS, (*dest == 0 ? 1 : 0));
+            copyBitReg(&cpu_registers[REG_CPSR], C_POS, (borrow ? 1 : 0));
+            copyBitReg(&cpu_registers[REG_CPSR], V_POS, (overflow ? 1 : 0));
 		}
 	}
 }
@@ -1238,9 +1238,9 @@ void processor::bitwiseReturn(Word *dest, bool S){
 			else
                 unpredictable();
 		} else {
-			util::getInstance()->copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, dest, 31);
-			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], Z_POS, (*dest == 0 ? 1 : 0));
-			util::getInstance()->copyBitReg(&cpu_registers[REG_CPSR], C_POS, (shifter_carry_out ? 1 : 0));
+            copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, dest, 31);
+            copyBitReg(&cpu_registers[REG_CPSR], Z_POS, (*dest == 0 ? 1 : 0));
+            copyBitReg(&cpu_registers[REG_CPSR], C_POS, (shifter_carry_out ? 1 : 0));
 		}
 	}
 }

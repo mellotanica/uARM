@@ -326,7 +326,6 @@ void Device::setCondition(bool working)
 {
     if (dType != NULLDEV && working != isWorking) {
         isWorking = working;
-        // WARN: .emit
         emit SignalConditionChanged(isWorking);
     }
 }
@@ -610,7 +609,6 @@ void TerminalDevice::WriteDevReg(unsigned int regnum, Word data)
                 recvIntPend = true;
                 break;
             }
-            //WARN: .emit
             emit SignalStatusChanged(getDevSStr());
         }
         break;
@@ -663,7 +661,6 @@ void TerminalDevice::WriteDevReg(unsigned int regnum, Word data)
                 tranIntPend = true;
                 break;
             }
-            //WARN: .emit
             emit SignalStatusChanged(getDevSStr());
         }
         break;
@@ -798,7 +795,6 @@ unsigned int TerminalDevice::CompleteDevOp()
                 }
                 // else operation is successful:
                 fflush(termFile);
-                //WARN: .emit
                 emit SignalTransmitted((unsigned char) ((reg[TRANCOMMAND] >> BYTELEN) & BYTEMASK));
                 sprintf(tranStatStr, "Transm. char 0x%.2lX : waiting for ACK",
                         (reg[TRANCOMMAND] >> BYTELEN) & BYTEMASK);
@@ -820,7 +816,6 @@ unsigned int TerminalDevice::CompleteDevOp()
         tranIntPend = true;
         devMod = TRANSTATUS;
     }
-    //WARN: .emit
     emit SignalStatusChanged(getDevSStr());
 
     /* FIXME: implementare nel bus/machine!

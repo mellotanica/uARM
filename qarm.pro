@@ -52,7 +52,12 @@ HEADERS += \
     armProc/time_stamp.h \
     armProc/libvdeplug_dyn.h \
     armProc/event.h \
-    services/utility.h
+    services/utility.h \
+    qarm/mac_id_edit.h \
+    qarm/address_line_edit.h \
+    qarm/machine_config_view.h \
+    qarm/machine_config_dialog_priv.h \
+    qarm/machine_config_dialog.h
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -77,7 +82,11 @@ SOURCES += \
     armProc/vde_network.cc \
     armProc/event.cc \
     services/utility.cc \
-    services/error.cc
+    services/error.cc \
+    qarm/mac_id_edit.cc \
+    qarm/address_line_edit.cc \
+    qarm/machine_config_view.cc \
+    qarm/machine_config_dialog.cc
 
 OTHER_FILES += \
     test/testProgBehavior \

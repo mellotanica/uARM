@@ -247,3 +247,7 @@ void qarm::openBIOS(){
         f.close();
     }
 }
+
+MachineConfig *getMachineConfig(){
+    return machineConfigs;
+}

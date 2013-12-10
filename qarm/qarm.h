@@ -23,17 +23,19 @@
 #define QARM_H
 
 #include "armProc/machine.h"
-#include "mainbar.h"
-#include "guiConst.h"
-#include "ramview.h"
-#include "procdisplay.h"
-#include "QLine.h"
+#include "qarm/mainbar.h"
+#include "qarm/procdisplay.h"
+#include "qarm/guiConst.h"
+#include "qarm/ramview.h"
+#include "qarm/QLine.h"
 #include <QMainWindow>
 #include <QVBoxLayout>
 #include <QTimer>
 #include <QFile>
 #include <QDataStream>
 #include <QMessageBox>
+
+static MachineConfig *machineConfigs;
 
 class qarm : public QMainWindow{
     Q_OBJECT
@@ -71,5 +73,7 @@ private:
 
     void initialize();
 };
+
+MachineConfig *getMachineConfig();
 
 #endif // QARM_H

@@ -31,7 +31,6 @@
 #include "armProc/types.h"
 
 enum ROMType {
-    ROM_TYPE_BOOT,
     ROM_TYPE_BIOS,
     ROM_TYPE_CORE,
     ROM_TYPE_STAB,
@@ -41,23 +40,26 @@ enum ROMType {
 class MachineConfig {
 public:
     static const Word MIN_RAM = 8;
-    static const Word MAX_RAM = 512;
-    static const Word DEFAUlT_RAM_SIZE = 64;
+    static const Word MAX_RAM = 1024;
+    static const Word DEFAUlT_RAM_SIZE = 256;
 
+    // STATIC: only one cpu...
     static const unsigned int MIN_CPUS = 1;
-    static const unsigned int MAX_CPUS = 16;
+    static const unsigned int MAX_CPUS = 1;
     static const unsigned int DEFAULT_NUM_CPUS = 1;
 
     static const unsigned int MIN_CLOCK_RATE = 1;
     static const unsigned int MAX_CLOCK_RATE = 99;
     static const unsigned int DEFAULT_CLOCK_RATE = 1;
 
-    static const Word MIN_TLB = 4;
-    static const Word MAX_TLB = 64;
-    static const Word DEFAULT_TLB_SIZE = 16;
+    /* we do not have any tlb
+     *static const Word MIN_TLB = 4;
+     *static const Word MAX_TLB = 64;
+     *static const Word DEFAULT_TLB_SIZE = 16;
+     */
 
-    static const Word MIN_ASID = 0;
-    static const Word MAX_ASID = 64;
+    static const Word MIN_ASID = 1;
+    static const Word MAX_ASID = 256;
 
     static MachineConfig* LoadFromFile(const std::string& fileName, std::string& error);
     static MachineConfig* Create(const std::string& fileName);

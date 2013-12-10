@@ -22,15 +22,13 @@
 #ifndef UARM_MACHINE_CC
 #define UARM_MACHINE_CC
 
-#include "services/util.h"
-#include "bus.h"
-#include "pu.h"
-#include "coprocessor_interface.h"
-#include "processor.h"
-#include "machine.h"
+#include "armProc/bus.h"
+#include "armProc/pu.h"
+#include "armProc/coprocessor_interface.h"
+#include "armProc/processor.h"
+#include "armProc/machine.h"
 
 systemBus *pu::bus;
-util *util::instance;
 
 machine::machine(QObject *parent) : QObject(parent){
     cpu = NULL;

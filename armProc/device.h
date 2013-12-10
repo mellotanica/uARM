@@ -22,9 +22,6 @@
 #ifndef UMPS_DEVICE_H
 #define UMPS_DEVICE_H
 
-//#include <sigc++/sigc++.h>
-//TODO: passare a qt!
-
 #include <QObject>
 #include "armProc/types.h"
 #include "armProc/const.h"

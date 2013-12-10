@@ -26,6 +26,7 @@
 
 #include "armProc/const.h"
 
+/* WARN: removing useless singleton..
 class util {
 private:
 	static util *instance;
@@ -37,35 +38,35 @@ public:
 		if(instance == NULL)
 			instance = new util();
 		return instance;
-    }
+    }*/
 	
-    void setBitsReg(Word *reg, Word mask) {*reg = *reg | mask;}
-    void setBitReg(Word *reg, unsigned bit) {setBitsReg(reg, 1<<bit);}
+    inline void setBitsReg(Word *reg, Word mask) {*reg = *reg | mask;}
+    inline void setBitReg(Word *reg, unsigned bit) {setBitsReg(reg, 1<<bit);}
 
-    void resetBitsReg(Word *reg, Word mask) {*reg = *reg & INVERT_W(mask);}
-    void resetBitReg(Word *reg, unsigned bit) {resetBitsReg(reg, 1<<bit);}
+    inline void resetBitsReg(Word *reg, Word mask) {*reg = *reg & INVERT_W(mask);}
+    inline void resetBitReg(Word *reg, unsigned bit) {resetBitsReg(reg, 1<<bit);}
 
-    bool checkBits(Word *wd, Word mask) {return ((*wd & mask) == mask ? true : false);}	//returns true if all bits set in mask are
-    bool checkBits(Word wd, Word mask) {return ((wd & mask) == mask ? true : false);}	//also set in word
-    bool checkBit(Word *wd, unsigned bit) {return ((*wd & (1<<bit)) > 0 ? true : false);}
-    bool checkBit(Word wd, unsigned bit) {return ((wd & (1<<bit)) > 0 ? true : false);}
+    inline bool checkBits(Word *wd, Word mask) {return ((*wd & mask) == mask ? true : false);}	//returns true if all bits set in mask are
+    inline bool checkBits(Word wd, Word mask) {return ((wd & mask) == mask ? true : false);}	//also set in word
+    inline bool checkBit(Word *wd, unsigned bit) {return ((*wd & (1<<bit)) > 0 ? true : false);}
+    inline bool checkBit(Word wd, unsigned bit) {return ((wd & (1<<bit)) > 0 ? true : false);}
 	
-    void copyBitReg(Word *reg, unsigned bit, unsigned val) {
+    inline void copyBitReg(Word *reg, unsigned bit, unsigned val) {
         *reg = (*reg & INVERT_W(INVERT_B(val) << bit)) | (val << bit);
     }
-    void copyBitFromReg(Word *dest, unsigned bit, Word *src) {
+    inline void copyBitFromReg(Word *dest, unsigned bit, Word *src) {
 		if(((*src>>bit)&1) != 0)	
 			copyBitReg(dest, bit, 1); 
 		else 
 			copyBitReg(dest, bit, 0);
     }
-    void copyBitFromReg(Word *dest, unsigned dbit, Word *src, unsigned sbit) {
+    inline void copyBitFromReg(Word *dest, unsigned dbit, Word *src, unsigned sbit) {
 		if(((*src>>sbit)&1) != 0) 
 			copyBitReg(dest, dbit, 1); 
 		else 
 			copyBitReg(dest, dbit, 0);
     }   
-};
+//};
 
 inline uint32_t SwapEndian32(uint32_t x)
 {
