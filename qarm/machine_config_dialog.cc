@@ -84,7 +84,7 @@ QWidget* MachineConfigDialog::createGeneralTab()
     cpuSpinner->setValue(config->getNumProcessors());
     layout->addWidget(cpuSpinner, 1, 3);
 
-    layout->addWidget(new QLabel("Clock Rate (Istr/Sec):"), 2, 1);
+    layout->addWidget(new QLabel("Default Clock Rate (Istr/Sec):"), 2, 1);
     clockRateSpinner = new QSpinBox();
     clockRateSpinner->setMinimum(MachineConfig::MIN_CLOCK_RATE);
     clockRateSpinner->setMaximum(MachineConfig::MAX_CLOCK_RATE);

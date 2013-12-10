@@ -89,6 +89,7 @@ void qarm::softReset(){
     clock->stop();
     initialized = false;
     emit resetMachine(getMachineConfig()->getRamSize() * BYTES_PER_MEGABYTE);
+    toolbar->setSpeed(getMachineConfig()->getClockRate());
     doReset = false;
     if(dataLoaded && biosLoaded)
         initialize();
