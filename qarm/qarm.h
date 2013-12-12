@@ -44,7 +44,7 @@ public:
 
 signals:
     void resetDisplay();
-    void resetMachine(unsigned long memSize);
+    void resetMachine();
     void stop();
 
 private slots:

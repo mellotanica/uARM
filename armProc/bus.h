@@ -29,6 +29,8 @@
 #include "armProc/blockdev.h"
 #include "armProc/mpic.h"
 #include "armProc/device.h"
+#include "armProc/machine.h"
+#include "armProc/processor.h"
 //#include "armProc/mp_controller.h"
 
 
@@ -46,21 +48,12 @@
 #define RAMBASEADDR  0x00008000
 
 
-enum AbortType {
-    ABT_NOABT   = 0,
-    ABT_MEMERR  = 1,
-    ABT_BUSERR  = 2,
-    ABT_ADDRERR = 3,
-    ABT_SEGERR  = 4,
-    ABT_PAGEERR = 5,
-    NOABT_ROM   = 0xFF
-};
-
 class Device;
+class machine;
 
 class systemBus{
 public:
-	systemBus();
+    systemBus(machine *mac);
     ~systemBus();
 	
     void reset();
@@ -123,11 +116,19 @@ public:
     Word getTimer() const { return timer; }
     */
 
+    processor* getProcessor(unsigned int cpuId) { return cpus[cpuId]; }
+
     Word get_unpredictable();
     bool get_unpredictableB();
 
+    void HandleBusAccess(Word pAddr, Word access, processor* cpu);
+    void HandleVMAccess(Word asid, Word vaddr, Word access, processor* cpu);
+
 private:
+    machine *mac;
     ramMemory *ram = NULL;
+    processor **cpus;
+    unsigned int activeCpus = 0;
 
     Word BIOSTOP;
     Word RAMTOP;

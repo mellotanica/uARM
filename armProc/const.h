@@ -88,6 +88,10 @@
 #define MEM_SIZE_H 536870912 //2^29
 //#define MEM_SIZE_W 268435456 //2^28
 
+#define BYTES_PER_MEGABYTE 1048576
+
+#define SIGNMASK	0x80000000UL
+
 #define VM_PSEG_START   0x00008000
 #define VM_PSEG_TOP     0xC0000000
 #define VM_SHSEG_START  0xC0000000
@@ -173,6 +177,12 @@
 
 // some useful macros
 
+// DMA transfer time
+#define DMATICKS	BLOCKSIZE
+
+// word alignment mask
+#define ALIGNMASK	0x00000003UL
+
 // recognizes bad (unaligned) virtual address
 #define BADADDR(w)	((w & ALIGNMASK) != 0UL)
 
@@ -230,6 +240,16 @@
 
 // DMA transfer time
 #define DMATICKS	BLOCKSIZE
+
+enum AbortType {
+    ABT_NOABT   = 0,
+    ABT_MEMERR  = 1,
+    ABT_BUSERR  = 2,
+    ABT_ADDRERR = 3,
+    ABT_SEGERR  = 4,
+    ABT_PAGEERR = 5,
+    NOABT_ROM   = 0xFF
+};
 
 
 #endif //UARM_CONST_H

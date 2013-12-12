@@ -55,9 +55,10 @@ private:
     Word pa;
 };
 
-systemBus::systemBus(){
+systemBus::systemBus(machine *mac) : mac(mac){
     if(ram == NULL)
         ram = new ramMemory();
+    cpus = new processor*[MachineConfig::MAX_CPUS];
     excVector = new Byte[EXCVTOP];
     memset(excVector, 0, EXCVTOP);
     devRegs = new Byte[(DEVTOP - DEVBASEADDR)];
@@ -83,12 +84,41 @@ systemBus::~systemBus(){
         bios = NULL;
     }
     delete [] pipeline;
+    for(unsigned int i = 0; i < MachineConfig::MAX_CPUS; i++){
+        if(cpus[i] != NULL)
+            delete cpus[i];
+    }
+    delete [] cpus;
 }
 
 void systemBus::reset(){
     if(bios != NULL)
         delete [] bios;
     bios = NULL;
+    ram->reset(MC_Holder::getInstance()->getConfig()->getRamSize());
+    if(activeCpus != MC_Holder::getInstance()->getConfig()->getNumProcessors()){
+        //if there will be less cpus then what are active now destroy exceding instances
+        //and reset the other ones
+        if(activeCpus > MC_Holder::getInstance()->getConfig()->getNumProcessors()){
+            for(unsigned int i = 0; i < activeCpus; i++){
+                if(i < MC_Holder::getInstance()->getConfig()->getNumProcessors())
+                    cpus[i]->reset();
+                else
+                    delete cpus[i];
+            }
+        //else reset existing cpus and create the new ones
+        } else {
+            for(unsigned int i = 0; i < MC_Holder::getInstance()->getConfig()->getNumProcessors(); i++){
+                if(i < activeCpus)
+                    cpus[i]->reset();
+                else
+                    cpus[i] = new processor(this);
+            }
+        }
+    } else {
+        for(unsigned int i = 0; i < activeCpus; i++)
+            cpus[i]->reset();
+    }
     initInfo();
 }
 
@@ -96,16 +126,12 @@ void systemBus::initInfo(){
     Word addr = INFOBASEADDR;
     writeW(&addr, RAMBASEADDR);
     addr += 4;
+    RAMTOP = ram->getRamSize();
     writeW(&addr, RAMTOP);
     addr += 4;
     writeW(&addr, DEVBASEADDR);
 }
 
-void systemBus::updateRAMTOP(){
-    RAMTOP = ram->getRamSize();
-    Word addr = INFOBASEADDR + 4;
-    writeW(&addr, RAMTOP);
-}
 
 bool systemBus::prefetch(Word addr){ //fetches one instruction per execution from exact given address
     pipeline[PIPELINE_EXECUTE] = pipeline[PIPELINE_DECODE];
@@ -379,27 +405,93 @@ uint64_t systemBus::scheduleEvent(uint64_t delay, Event::Callback callback){
     return delay;
 }
 
-void systemBus::IntReq(unsigned int intNum, unsigned int devNum){}
+void systemBus::IntReq(unsigned int intl, unsigned int devNum){
+    pic->StartIRQ(DEV_IL_START + intl, devNum);
+}
 
-void systemBus::IntAck(unsigned int intNum, unsigned int devNum){}
+void systemBus::IntAck(unsigned int intl, unsigned int devNum){
+    pic->EndIRQ(DEV_IL_START + intl, devNum);
+}
 
 bool systemBus::DMATransfer(Block * blk, Word startAddr, bool toMemory){
+    if (BADADDR(startAddr))
+        return true;
+
+    AbortType error;
+
+    Word addr;
+    if (toMemory) {
+        for (Word ofs = 0; ofs < BLOCKSIZE && error == ABT_NOABT; ofs++) {
+            addr = startAddr + (ofs * WORDLEN);
+            error = writeW(&addr, blk->getWord(ofs));
+            HandleBusAccess(startAddr + (ofs * WORDLEN), WRITE, NULL);
+        }
+    } else {
+        Word val;
+        for (Word ofs = 0; ofs < BLOCKSIZE && error == ABT_NOABT; ofs++) {
+            addr = startAddr + (ofs * WORDLEN);
+            error = readW(&addr, &val);
+            HandleBusAccess(startAddr + (ofs * WORDLEN), READ, NULL);
+            blk->setWord(ofs, val);
+        }
+    }
+
+    if(error == ABT_NOABT)
+        return false;
     return true;
 }
 bool systemBus::DMAVarTransfer(Block * blk, Word startAddr, Word byteLength, bool toMemory){
+    // fit bytes into words
+    Word length;
+    if (byteLength % WORDLEN)
+        length = (byteLength / WORDLEN) + 1;
+    else
+        length = byteLength / WORDLEN;
+
+    if (BADADDR(startAddr) || length > BLOCKSIZE)
+        return true;
+
+    AbortType error;
+
+    Word addr;
+    if (toMemory) {
+        for (Word ofs = 0; ofs < length && error == ABT_NOABT; ofs++) {
+            addr = startAddr + (ofs * WORDLEN);
+            error = writeW(&addr, blk->getWord(ofs));
+            HandleBusAccess(startAddr + (ofs * WORDLEN), WRITE, NULL);
+        }
+    } else {
+        Word val;
+        for (Word ofs = 0; ofs < length && error == ABT_NOABT; ofs++) {
+            addr = startAddr + (ofs * WORDLEN);
+            error = readW(&addr, &val);
+            HandleBusAccess(startAddr + (ofs * WORDLEN), READ, NULL);
+            blk->setWord(ofs, val);
+        }
+    }
+
+    if(error == ABT_NOABT)
+        return false;
     return true;
 }
 
 Word systemBus::getPendingInt(const processor* cpu){
-
+    return pic->GetIP(cpu->Id());
 }
 
 void systemBus::AssertIRQ(unsigned int il, unsigned int target){
+    getProcessor(target)->AssertIRQ(il);
+}
+
+void systemBus::DeassertIRQ(unsigned int il, unsigned int target){
+    getProcessor(target)->DeassertIRQ(il);
+}
+
+void systemBus::HandleBusAccess(Word pAddr, Word access, processor* cpu){
 
 }
 
-
-void systemBus::DeassertIRQ(unsigned int il, unsigned int target){
+void systemBus::HandleVMAccess(Word asid, Word vaddr, Word access, processor* cpu){
 
 }
 

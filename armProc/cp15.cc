@@ -24,8 +24,7 @@
 
 #include "cp15.h"
 
-cp15::cp15(): coprocessor() {
-	ram = bus->getRam();
+cp15::cp15(systemBus *bus): coprocessor(bus) {
     reset();
 }
 
@@ -163,6 +162,10 @@ void cp15::register15(Word *cpureg, Byte opcode, bool toCoproc){
     } else {        //read
         *cpureg = cp15_registers[CP15_REG15_CAUSE];
     }
+}
+
+Word* cp15::getIPCauseRegister(){
+    return cp15_registers + CP15_REG15_IP_CAUSE;
 }
 
 void cp15::EntryHi(Word *cpureg, Byte opcode, bool toCoproc){

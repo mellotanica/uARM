@@ -27,8 +27,9 @@
 #include "armProc/ARMisa.h"
 #include "armProc/Thumbisa.h"
 
-processor::processor() : pu() {
-    cpint = new coprocessor_interface();
+processor::processor(systemBus *bus) : pu(bus) {
+    //cpint = new coprocessor_interface(bus);
+    coproc = new cp15(bus);
 
 	execARM = new ARMisa(this);
 	execThumb = new Thumbisa(this);
@@ -39,9 +40,9 @@ processor::processor() : pu() {
 }
 
 processor::~processor(){
-    if(cpint != NULL){
-        delete cpint;
-        cpint = NULL;
+    if(coproc != NULL){
+        delete coproc;
+        coproc = NULL;
     }
     if(execARM != NULL){
         delete execARM;
@@ -68,8 +69,7 @@ void processor::reset(){
     for(int i = 0; i < PIPELINE_STAGES; i ++)
         prefetchFault[i] = false;
 
-    cpint->reset();
-    bus->reset();
+    coproc->reset();
 
     Word address = 0;
     bus->writeW(&address, INITIAL_BRANCH);
@@ -368,6 +368,22 @@ void processor::debugThumb(string mnemonic){
 	setOP(mnemonic, false);
 }
 
+void processor::AssertIRQ(unsigned int il)
+{
+    *(coproc->getIPCauseRegister()) |= CAUSE_IP(il);
+
+    // If in standby mode, go back to being a power hog.
+    if (status == PS_IDLE){
+        status = PS_RUNNING;
+        // WARN: do we n eed to notify someone here??
+    }
+}
+
+void processor::DeassertIRQ(unsigned int il)
+{
+    *(coproc->getIPCauseRegister()) &= ~CAUSE_IP(il);
+}
+
 /* *************************** *
  * 							   *
  * Exceptions & traps handling *
@@ -554,7 +570,7 @@ void processor::execute(){
  * *************************** */
  
 void processor::coprocessorOperation(){
-	coprocessor *cp = cpint->getCoprocessor((pipeline[PIPELINE_EXECUTE] >> 8) & 0xF);
+    coprocessor *cp = coproc; //cpint->getCoprocessor((pipeline[PIPELINE_EXECUTE] >> 8) & 0xF);
 	if(cp == NULL){	//no coprocessor can take this command: undefined trap!
 		undefinedTrap();
 		return;
@@ -568,8 +584,8 @@ void processor::coprocessorOperation(){
 }
 
 void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
-	Byte cpNum = (pipeline[PIPELINE_EXECUTE] >> 8) & 0xF;
-	coprocessor *cp = cpint->getCoprocessor(cpNum);
+    //Byte cpNum = (pipeline[PIPELINE_EXECUTE] >> 8) & 0xF;
+    coprocessor *cp = coproc;//cpint->getCoprocessor(cpNum);
 	if(cp == NULL){	//no coprocessor can take this command: undefined trap!
 		undefinedTrap();
 		return;

@@ -23,8 +23,10 @@
 #define UARM_PROCESSOR_H
 
 #include "armProc/pu.h"
+#include "armProc/bus.h"
 //LOOP: processor
-#include "armProc/coprocessor_interface.h"
+//#include "armProc/coprocessor_interface.h"
+#include "armProc/cp15.h"
 
 enum ProcessorStatus {
     PS_HALTED,
@@ -55,10 +57,11 @@ enum ExceptionMode {	//priority (hi -> low): Reset, Data Abort, FIQ, IRQ, Prefet
 
 class ARMisa;
 class Thumbisa;
+class cp15;
 
 class processor : public pu{
 public:
-	processor();
+    processor(systemBus *bus);
     ~processor();
 
     void reset();
@@ -73,7 +76,8 @@ public:
     Word getId() const { return 0; }
     Word Id() const { return 0; }
 	
-    coprocessor_interface *getCopInt() {return cpint;}
+    //coprocessor_interface *getCopInt() {return cpint;}
+    cp15* getCP15() {return coproc;}
 	
     void setEndianess(bool bigEndian) {BIGEND_sig = bigEndian;}	//system is set little endian by default, use this method to change the setting
     ProcessorStatus getStatus() {return status;}
@@ -97,13 +101,17 @@ public:
 		execute();
     }
 	
+    void AssertIRQ(unsigned int il);
+    void DeassertIRQ(unsigned int il);
+
 	Word OPcode;
 	bool isOPcodeARM = true;
 	string mnemonicOPcode;
 	friend class ARMisa;
     friend class Thumbisa;
 private:
-	coprocessor_interface *cpint;
+    //coprocessor_interface *cpint;
+    cp15 *coproc;
 	ProcessorStatus status;
     Word *pipeline;
     bool prefetchFault[PIPELINE_STAGES];

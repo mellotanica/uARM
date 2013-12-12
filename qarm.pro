@@ -22,7 +22,6 @@ HEADERS += \
     armProc/processor.h \
     armProc/machine.h \
     armProc/cp15.h \
-    armProc/coprocessor_interface.h \
     armProc/const.h \
     armProc/bus.h \
     armProc/basic_types.h \
@@ -64,7 +63,6 @@ SOURCES += \
     armProc/processor.cc \
     armProc/machine.cc \
     armProc/cp15.cc \
-    armProc/coprocessor_interface.cc \
     armProc/bus.cc \
     armProc/ARMisa.cc \
     qarm/qarm.cc \

@@ -75,8 +75,8 @@ qarm::qarm(QApplication *app):
 
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
 
-    connect(this, SIGNAL(resetMachine(ulong)), mac, SLOT(reset(ulong)));
-    connect(this, SIGNAL(resetMachine(ulong)), this, SIGNAL(resetDisplay()));
+    connect(this, SIGNAL(resetMachine()), mac, SLOT(reset()));
+    connect(this, SIGNAL(resetMachine()), this, SIGNAL(resetDisplay()));
     connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,QString)), display, SLOT(updateVals(Word*,Word*,Word*,QString)));
     connect(this, SIGNAL(resetDisplay()), display, SLOT(reset()));
 
@@ -91,7 +91,7 @@ qarm::qarm(QApplication *app):
 void qarm::softReset(){
     clock->stop();
     initialized = false;
-    emit resetMachine(MC_Holder::getInstance()->getConfig()->getRamSize() * BYTES_PER_MEGABYTE);
+    emit resetMachine();
     toolbar->setSpeed(MC_Holder::getInstance()->getConfig()->getClockRate());
     doReset = false;
     if(dataLoaded && biosLoaded)
@@ -107,7 +107,7 @@ bool qarm::initialize(){
 
 void qarm::step(){
     if(doReset){
-        emit resetMachine(MC_Holder::getInstance()->getConfig()->getRamSize() * BYTES_PER_MEGABYTE);
+        emit resetMachine();
         doReset = false;
     }
     if(!initialized){
@@ -138,7 +138,7 @@ void qarm::speedChanged(int speed){
 void qarm::showRam(){
     if(initialized){
         ramView *ramWindow = new ramView(mac, this);
-        connect(this, SIGNAL(resetMachine(ulong)), ramWindow, SLOT(update()));
+        connect(this, SIGNAL(resetMachine()), ramWindow, SLOT(update()));
         connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,QString)), ramWindow, SLOT(update()));
         ramWindow->show();
     } else {
@@ -210,7 +210,7 @@ bool qarm::openRAM(){
             delete [] buffer;
         }
         f.close();
-        mac->refreshData();
+        //mac->refreshData();
     }
     return true;
 }

@@ -29,11 +29,6 @@
 #include "services/util.h"
 #include "armProc/const.h"
 #include "armProc/bus.h"
-#include "armProc/pu.h"
-#include "armProc/cp15.h"
-#include "armProc/coprocessor_interface.h"
-#include "armProc/processor.h"
-#include "armProc/device.h"
 #include <QObject>
 
 
@@ -42,8 +37,7 @@ class machine : public QObject{
 public:
     machine(QObject *parent = 0);
 	~machine();
-	
-    processor *getCPU() {return cpu;}
+
     systemBus *getBus() {return sysbus;}
 
 signals:
@@ -56,15 +50,14 @@ public slots:
 
 private slots:
     void run();
-    void reset(unsigned long memSize);
+    void reset();
 
 private:
     void initMac();
 
     QString status2QString();
 
-	systemBus *sysbus;
-	processor *cpu;
+    systemBus *sysbus;
 };
 
 #endif //UARM_MACHINE_CC

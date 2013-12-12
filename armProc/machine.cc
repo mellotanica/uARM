@@ -22,42 +22,29 @@
 #ifndef UARM_MACHINE_CC
 #define UARM_MACHINE_CC
 
-#include "armProc/bus.h"
-#include "armProc/pu.h"
-#include "armProc/coprocessor_interface.h"
-#include "armProc/processor.h"
 #include "armProc/machine.h"
-
-systemBus *pu::bus;
+#include "armProc/processor.h"
+//#include "armProc/coprocessor_interface.h"
 
 machine::machine(QObject *parent) : QObject(parent){
-    cpu = NULL;
-    sysbus = NULL;
+    sysbus = new systemBus(this);
 }
 
 machine::~machine(){
     if(sysbus != NULL)
         delete sysbus;
-    if(cpu != NULL)
-        delete cpu;
 }
 
 void machine::initMac(){
-    cpu = new processor();
-    sysbus = cpu->getBus();
 }
 
-void machine::reset(unsigned long memSize){
-    if(cpu == NULL)
-        initMac();
-    else
-        cpu->reset();
-    sysbus->getRam()->reset(memSize);
-    sysbus->updateRAMTOP();
+void machine::reset(){
+    sysbus->reset();
     emit updateStatus(status2QString());
 }
 
 void machine::step(){
+    processor *cpu = sysbus->getProcessor(0);
     if(cpu->getStatus() != PS_HALTED){
         if(cpu->branchHappened()){
             cpu->prefetch();
@@ -72,14 +59,15 @@ void machine::step(){
 }
 
 void machine::refreshData(){
+    processor *cpu = sysbus->getProcessor(0);
     emit updateStatus(status2QString());
     QString mnem = QString::fromStdString(cpu->mnemonicOPcode) + (cpu->isOPcodeARM ? "(ARM)" : "(Thumb)" );
-    emit dataReady(cpu->getRegList(), cpu->getCopInt()->getCoprocessor(15)->getRegList() , sysbus->pipeline, mnem);
+    emit dataReady(cpu->getRegList(), cpu->getCP15()->getRegList() , sysbus->pipeline, mnem);
 
 }
 
 QString machine::status2QString(){
-    switch(cpu->getStatus()){
+    switch(sysbus->getProcessor(0)->getStatus()){
         case PS_HALTED: return "HALTED"; break;
         case PS_IDLE: return "IDLE"; break;
         case PS_RUNNING: return "RUNNING"; break;
@@ -89,7 +77,7 @@ QString machine::status2QString(){
 }
 
 void machine::run(){
-	while(cpu->getStatus() != PS_HALTED)
+    while(sysbus->getProcessor(0)->getStatus() != PS_HALTED)
 		step();
 }
 

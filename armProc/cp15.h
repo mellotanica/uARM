@@ -24,10 +24,11 @@
 
 #include "armProc/const.h"
 #include "armProc/pu.h"
+#include "armProc/bus.h"
 
 class cp15 : public coprocessor {
 public:
-	cp15();
+    cp15(systemBus *bus);
     ~cp15();
 	
     void reset();
@@ -39,6 +40,8 @@ public:
     void executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info);
     void registerTransfer(Word *cpuReg, Byte opcode, Byte operand, Byte srcDest, Byte info, bool toCoproc);
 	
+    Word *getIPCauseRegister();
+
 private:
     enum ID_Codes{
         MAIN_ID = 0x41807767,
@@ -57,13 +60,11 @@ private:
     void EntryLo(Word *cpureg, bool toCoproc);
 
     bool getPFN();
-
-    void writeCause(Word causeW);
-
-	ramMemory *ram;
 	
     Word reg1CPmask;
 	Word cp15_registers[CP15_REGISTERS_NUM];
+
+    void writeCause(Word causeW);
 };
 
 #endif //UARM_CP15_CC

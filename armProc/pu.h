@@ -29,30 +29,24 @@
 
 #include "armProc/const.h"
 //LOOP: pu
-#include "armProc/bus.h"
+//#include "armProc/bus.h"
+
+class systemBus;
 
 class pu{
 public:
-	pu() {
-		if(bus == NULL)
-			bus = new systemBus();
-    }
-    virtual ~pu() {
-        if(bus != NULL){
-            delete bus;
-            bus = NULL;
-        }
-    }
+    pu(systemBus *bus) : bus(bus) {}
+    virtual ~pu() {}
 	
     virtual Word *getRegList() = 0;
 
 protected:
-	static systemBus *bus;
+    systemBus *bus;
 };
 
 class coprocessor : public pu{
 public:
-    coprocessor() : pu() {}
+    coprocessor(systemBus *bus) : pu(bus) {}
     ~coprocessor(){}
 	
     virtual void reset() = 0;

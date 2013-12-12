@@ -131,9 +131,10 @@
 #define CP15_REG13_PID   12  // Process ID
 */
 
-#define CP15_REG2_EntryHi 3  // PTE Hy Word
-#define CP15_REG2_EntryLo 4  // PTE Lo Word
-#define CP15_REG15_CAUSE  5  // Exception Cause
+#define CP15_REG2_EntryHi 3     // PTE Hy Word
+#define CP15_REG2_EntryLo 4     // PTE Lo Word
+#define CP15_REG15_CAUSE  5     // Exception Cause
+#define CP15_REG15_IP_CAUSE 6   // Interrupt Cause
 
 #define CP15_REG1_MPOS  0   // enable MMU or protection unit (read 0)
 #define CP15_REG1_APOS  1   // enable memory alignement fault check (read 0 if arch checks memory alignement)

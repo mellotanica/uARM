@@ -30,8 +30,6 @@
 
 #define DEFAULT_CONFIG_FILE "machine.uarm.cfg"
 
-#define BYTES_PER_MEGABYTE 1048576
-
 #define PIPECOLS    6
 #define CPUCOLS     8
 #define CPUROWS     19

@@ -48,6 +48,7 @@ public:
     bool getMemLock() { return LOCK_sig; }
 
     void reset(Word sz){
+        sz *= BYTES_PER_MEGABYTE;
         if(memVector == NULL || sz != ramSize){
             ready = false;
             ramSize = sz;
