@@ -25,13 +25,13 @@
  * IMPORTANT: Keep this header assembler-safe!
  */
 
-#ifndef UMPS_ARCH_H
-#define UMPS_ARCH_H
+#ifndef UARM_ARCH_H
+#define UARM_ARCH_H
 
 /*
  * Generalities
  */
-#define WORD_SIZE 4
+#define WORD_SIZE (sizeof(Word))
 #define WS        WORD_SIZE
 
 #define MMIO_BASE 0x10000000
@@ -188,4 +188,4 @@
 
 #define MMIO_END                MCTL_END
 
-#endif /* !defined(UMPS_ARCH_H) */
+#endif //UARM_ARCH_H

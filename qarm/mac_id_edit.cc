@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#ifndef QARM_MAC_ID_EDIT_CC
+#define QARM_MAC_ID_EDIT_CC
+
 #include "qarm/mac_id_edit.h"
 
 #include <QValidator>
@@ -43,6 +46,7 @@ QValidator::State Validator::validate(QString& input, int& pos) const
         return Invalid;
     else
         return Acceptable;
+
 }
 
 
@@ -63,3 +67,5 @@ void MacIdEdit::setMacId(const uint8_t* id)
 {
     setText(MACIdToString(id).c_str());
 }
+
+#endif //QARM_MAC_ID_EDIT_CC

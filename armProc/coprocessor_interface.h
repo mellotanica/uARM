@@ -28,7 +28,7 @@
 
 #include "armProc/const.h"
 #include "armProc/cp15.h"
-#include "armProc/pu.h"
+//#include "armProc/pu.h"
 
 class coprocessor_interface{
 public:

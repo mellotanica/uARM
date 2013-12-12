@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#ifndef QARM_MAINBAR_CC
+#define QARM_MAINBAR_CC
+
 #include "qarm/mainbar.h"
 #include "qarm/guiConst.h"
 //#include "armProc/const.h"
@@ -40,7 +43,7 @@ mainBar::mainBar(QWidget *parent) :
     configB->setToolTip("Machine Configs");
     configB->setIcon(*configIco);
 
-    /* EDIT: removed open menu
+    /* UNUSED: removed open menu
     openMenu = new QMenu("Open");
     openMenu->addAction("BIOS ROM", this, SIGNAL(openBIOS()));
     openMenu->addAction("Program Image", this, SIGNAL(openRAM()));
@@ -107,7 +110,7 @@ mainBar::mainBar(QWidget *parent) :
     ramB->setToolButtonStyle(Qt::ToolButtonTextOnly);
     ramB->setText("View Ram");
 
-    /* EDIT: removed open menu
+    /* UNUSED: removed open menu
     openDropDown = new QMenuBar();
     openDropDown->addMenu(openMenu);
     openDropDown->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
@@ -192,3 +195,5 @@ void mainBar::minus(){
 void mainBar::updateStatus(QString state){
     statusLab->setText(state);
 }
+
+#endif //QARM_MAINBAR_CC

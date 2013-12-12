@@ -22,10 +22,10 @@
 #ifndef UARM_PROCESSOR_CC
 #define UARM_PROCESSOR_CC
 
-#include "processor.h"
+#include "armProc/processor.h"
 #include "services/util.h"
-#include "ARMisa.h"
-#include "Thumbisa.h"
+#include "armProc/ARMisa.h"
+#include "armProc/Thumbisa.h"
 
 processor::processor() : pu() {
     cpint = new coprocessor_interface();

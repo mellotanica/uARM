@@ -56,7 +56,8 @@ HEADERS += \
     qarm/mac_id_edit.h \
     qarm/address_line_edit.h \
     qarm/machine_config_dialog_priv.h \
-    qarm/machine_config_dialog.h
+    qarm/machine_config_dialog.h \
+    armProc/mpic.h
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -84,7 +85,8 @@ SOURCES += \
     services/error.cc \
     qarm/mac_id_edit.cc \
     qarm/address_line_edit.cc \
-    qarm/machine_config_dialog.cc
+    qarm/machine_config_dialog.cc \
+    armProc/mpic.cc
 
 OTHER_FILES += \
     test/testProgBehavior \

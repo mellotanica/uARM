@@ -25,7 +25,8 @@
 #ifndef UARM_ARMISA_H
 #define UARM_ARMISA_H
  
-#include "processor.h"
+//LOOP: armisa
+#include "armProc/processor.h"
 
 class ARMisa{
 public:

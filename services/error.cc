@@ -19,12 +19,17 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#ifndef BASE_ERROR_CC
+#define BASE_ERROR_CC
+
 #include <QMessageBox>
 #include <QString>
 
 void Panic(const char* message)
 {
     QMessageBox::critical(0, "PANIC", QString("PANIC: %1").arg(message));
-    // WARN: was it necessary
+    // WARN: was it necessary?
     //Appl()->quit();
 }
+
+#endif //BASE_ERROR_CC

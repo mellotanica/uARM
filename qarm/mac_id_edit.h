@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef QMPS_MAC_ID_EDIT_H
-#define QMPS_MAC_ID_EDIT_H
+#ifndef QARM_MAC_ID_EDIT_H
+#define QARM_MAC_ID_EDIT_H
 
 #include <QLineEdit>
 
@@ -34,4 +34,4 @@ public:
     void setMacId(const uint8_t* id);
 };
 
-#endif // QMPS_MAC_ID_EDIT_H
+#endif // QARM_MAC_ID_EDIT_H

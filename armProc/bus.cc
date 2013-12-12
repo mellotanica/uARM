@@ -23,8 +23,37 @@
 #define UARM_SYSTEMBUS_CC
 
 #include <string.h>
-#include "bus.h"
-#include "aout.h"
+#include "armProc/bus.h"
+#include "armProc/aout.h"
+
+// DeviceAreaAddress is a convenience class used to find a specific
+// device in bus device area
+class DeviceAreaAddress {
+public:
+    DeviceAreaAddress(Word paddr)
+        : pa(paddr)
+    {
+        assert(MMIO_BASE <= paddr && paddr < MMIO_END);
+    }
+
+    DeviceAreaAddress(unsigned int line, unsigned int device, unsigned int field)
+        : pa(DEV_REG_ADDR(line + DEV_IL_START, device) + field * WS)
+    {
+        assert(line < N_EXT_IL && device < N_DEV_PER_IL && field < DEV_REG_SIZE_W);
+    }
+
+    Word address() const { return pa; }
+
+    unsigned int regIndex() const { return wordIndex() / DEV_REG_SIZE_W; }
+    unsigned int line() const { return regIndex() / N_DEV_PER_IL; }
+    unsigned int device() const { return regIndex() % N_DEV_PER_IL; }
+    unsigned int field() const { return wordIndex() % DEV_REG_SIZE_W; }
+
+private:
+    unsigned int wordIndex() const { return (pa - DEV_REG_START) >> 2; }
+
+    Word pa;
+};
 
 systemBus::systemBus(){
     if(ram == NULL)
@@ -359,6 +388,19 @@ bool systemBus::DMATransfer(Block * blk, Word startAddr, bool toMemory){
 }
 bool systemBus::DMAVarTransfer(Block * blk, Word startAddr, Word byteLength, bool toMemory){
     return true;
+}
+
+Word systemBus::getPendingInt(const processor* cpu){
+
+}
+
+void systemBus::AssertIRQ(unsigned int il, unsigned int target){
+
+}
+
+
+void systemBus::DeassertIRQ(unsigned int il, unsigned int target){
+
 }
 
 #endif //UARM_SYSTEMBUS_CC

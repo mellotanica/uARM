@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef UMPS_TIME_STAMP_H
-#define UMPS_TIME_STAMP_H
+#ifndef UARM_TIME_STAMP_H
+#define UARM_TIME_STAMP_H
 
 #include <string>
 
@@ -53,4 +53,4 @@ std::string toString(uint64_t ts);
 
 } // namespace TimeStamp
 
-#endif // UMPS_TIME_STAMP_H
+#endif // UARM_TIME_STAMP_H

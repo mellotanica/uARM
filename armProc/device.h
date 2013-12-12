@@ -19,12 +19,13 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef UMPS_DEVICE_H
-#define UMPS_DEVICE_H
+#ifndef UARM_DEVICE_H
+#define UARM_DEVICE_H
 
 #include <QObject>
 #include "armProc/types.h"
 #include "armProc/const.h"
+//LOOP: device.h
 #include "armProc/bus.h"
 
 enum DeviceType {
@@ -127,7 +128,7 @@ public:
     void setCondition(bool working);
     bool getCondition() const { return isWorking; }
 
-    //WARN: vecchi sig
+    //UNUSED: vecchi sig
     //sigc::signal<void, const char*> SignalStatusChanged;
     //sigc::signal<void, bool> SignalConditionChanged;
 
@@ -218,7 +219,7 @@ public:
 
     virtual void Input(const char * inputstr);
 
-    //WARN: vecchio signal
+    //UNUSED: vecchio signal
     //sigc::signal<void, char> SignalTransmitted;
 
 private:
@@ -381,4 +382,4 @@ private:
     netinterface *netint;
 };
 
-#endif // UMPS_DEVICE_H
+#endif // UARM_DEVICE_H

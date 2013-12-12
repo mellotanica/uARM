@@ -20,8 +20,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef QMPS_HEX_VIEW_H
-#define QMPS_HEX_VIEW_H
+#ifndef QARM_HEX_VIEW_H
+#define QARM_HEX_VIEW_H
 
 #include <QPlainTextEdit>
 
@@ -118,4 +118,4 @@ private:
     }
 };
 
-#endif // QMPS_HEX_VIEW_H
+#endif // QARM_HEX_VIEW_H

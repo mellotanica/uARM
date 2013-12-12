@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef UMPS_VDE_NETWORK_H
-#define UMPS_VDE_NETWORK_H
+#ifndef UARM_VDE_NETWORK_H
+#define UARM_VDE_NETWORK_H
 
 #include <sys/socket.h>
 #include <sys/poll.h>
@@ -59,4 +59,4 @@ class netinterface
 		class netblockq *queue;
 };
 
-#endif // UMPS_VDE_NETWORK_H
+#endif // UARM_VDE_NETWORK_H

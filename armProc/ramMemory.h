@@ -26,7 +26,7 @@
 #ifndef UARM_MEMORY_H
 #define UARM_MEMORY_H
 
-#include "const.h"
+#include "armProc/const.h"
 /*#include "services/lang.h"
 #include <boost/format.hpp>*/
 

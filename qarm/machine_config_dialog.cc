@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#ifndef QARM_MACHINE_CONFIG_DIALOG_CC
+#define QARM_MACHINE_CONFIG_DIALOG_CC
+
 #include "qarm/machine_config_dialog.h"
 
 #include <cassert>
@@ -44,7 +47,8 @@
 #include "qarm/address_line_edit.h"
 #include "qarm/mac_id_edit.h"
 #include "qarm/machine_config_dialog_priv.h"
-#include "qarm/qarm.h"
+//LOOP: machine config dialog
+#include "qarm/procdisplay.h"
 
 MachineConfigDialog::MachineConfigDialog(MachineConfig* config, QWidget* parent)
     : QDialog(parent),
@@ -91,7 +95,7 @@ QWidget* MachineConfigDialog::createGeneralTab()
     clockRateSpinner->setValue(config->getClockRate());
     layout->addWidget(clockRateSpinner, 2, 3);
 
-    /* EDIT: no TLB in config view
+    /* UNUSED: no TLB in config view
     layout->addWidget(new QLabel("TLB Size:"), 3, 1);
     tlbSizeList = new QComboBox;
     int currentIndex = 0;
@@ -117,7 +121,7 @@ QWidget* MachineConfigDialog::createGeneralTab()
 
     layout->addWidget(new QLabel("<b>BIOS</b>"), 6, 0, 1, 3);
 
-    /* EDIT: no bootstrap rom in config view
+    /* UNUSED: no bootstrap rom in config view
     layout->addWidget(new QLabel("Bootstrap ROM:"), 7, 1);
     romFileInfo[ROM_TYPE_BOOT].description = "Bootstrap ROM";
     romFileInfo[ROM_TYPE_BOOT].lineEdit = new QLineEdit;
@@ -292,11 +296,11 @@ void MachineConfigDialog::saveConfigChanges()
 {
     config->setNumProcessors(cpuSpinner->value());
     config->setClockRate(clockRateSpinner->value());
-    //EDIT: no TLB in config
+    //UNUSED: no TLB in config
     //config->setTLBSize(MachineConfig::MIN_TLB << tlbSizeList->currentIndex());
     config->setRamSize(ramSizeSpinner->value());
 
-    /*EDIT: no bootstrap rom in config
+    /*UNUSED: no bootstrap rom in config
     config->setROM(ROM_TYPE_BOOT,
                    QFile::encodeName(romFileInfo[ROM_TYPE_BOOT].lineEdit->text()).constData());*/
     config->setROM(ROM_TYPE_BIOS,
@@ -332,18 +336,16 @@ DeviceFileChooser::DeviceFileChooser(const QString& deviceClassName,
     grid->addWidget(new QLabel("<b>Device File<b>"), 1, 1);
     grid->addWidget(new QLabel("<b>Enable<b>"), 1, 3);
 
-    const MachineConfig* config = getMachineConfig();
-
     for (unsigned int i = 0; i < N_DEV_PER_IL; i++) {
         QLabel* fileLabel = new QLabel(QString("&%1:").arg(i));
         fileNameEdit[i] = new QLineEdit;
         fileLabel->setBuddy(fileNameEdit[i]);
-        fileNameEdit[i]->setText(config->getDeviceFile(il, i).c_str());
+        fileNameEdit[i]->setText(MC_Holder::getInstance()->getConfig()->getDeviceFile(il, i).c_str());
         QPushButton* bt = new QPushButton("Browse...");
         connect(bt, SIGNAL(clicked()), signalMapper, SLOT(map()));
         signalMapper->setMapping(bt, (int) i);
         enabledCB[i] = new QCheckBox;
-        enabledCB[i]->setChecked(config->getDeviceEnabled(il, i));
+        enabledCB[i]->setChecked(MC_Holder::getInstance()->getConfig()->getDeviceEnabled(il, i));
 
         grid->addWidget(fileLabel, i + 2, 0);
         grid->addWidget(fileNameEdit[i], i + 2, 1);
@@ -371,11 +373,9 @@ bool DeviceFileChooser::IsDeviceEnabled(unsigned int devNo)
 
 void DeviceFileChooser::Save()
 {
-    MachineConfig* config = getMachineConfig();
-
     for (unsigned int devNo = 0; devNo < N_DEV_PER_IL; devNo++) {
-        config->setDeviceFile(il, devNo, QFile::encodeName(fileNameEdit[devNo]->text()).constData());
-        config->setDeviceEnabled(il, devNo, enabledCB[devNo]->isChecked());
+        MC_Holder::getInstance()->getConfig()->setDeviceFile(il, devNo, QFile::encodeName(fileNameEdit[devNo]->text()).constData());
+        MC_Holder::getInstance()->getConfig()->setDeviceEnabled(il, devNo, enabledCB[devNo]->isChecked());
     }
 }
 
@@ -416,10 +416,10 @@ NetworkConfigWidget::NetworkConfigWidget(QWidget* parent)
     connect(nics, SIGNAL(currentIndexChanged(int)),
             nicConfigStack, SLOT(setCurrentIndex(int)));
 
-    const MachineConfig* config = getMachineConfig();
-
     QSignalMapper* signalMapper = new QSignalMapper(this);
     connect(signalMapper, SIGNAL(mapped(int)), this, SLOT(browseDeviceFile(int)));
+
+    MachineConfig* machineConfigs = MC_Holder::getInstance()->getConfig();
 
     for (unsigned int i = 0; i < N_DEV_PER_IL; i++) {
         QWidget* widget = new QWidget;
@@ -436,13 +436,13 @@ NetworkConfigWidget::NetworkConfigWidget(QWidget* parent)
         grid->setContentsMargins(0, 0, 0, 0);
 
         connect(enabledCB[i], SIGNAL(toggled(bool)), form, SLOT(setEnabled(bool)));
-        enabledCB[i]->setChecked(config->getDeviceEnabled(il, i));
-        form->setEnabled(config->getDeviceEnabled(il, i));
+        enabledCB[i]->setChecked(machineConfigs->getDeviceEnabled(il, i));
+        form->setEnabled(machineConfigs->getDeviceEnabled(il, i));
 
         QLabel* fileLabel = new QLabel("Device &File:");
         fileEdit[i] = new QLineEdit;
         fileLabel->setBuddy(fileEdit[i]);
-        fileEdit[i]->setText(config->getDeviceFile(il, i).c_str());
+        fileEdit[i]->setText(machineConfigs->getDeviceFile(il, i).c_str());
         grid->addWidget(fileLabel, 1, 0);
         grid->addWidget(fileEdit[i], 1, 1);
         QPushButton* fileBt = new QPushButton("&Browse...");
@@ -457,14 +457,14 @@ NetworkConfigWidget::NetworkConfigWidget(QWidget* parent)
         macIdEdit[i] = new MacIdEdit;
         macIdEdit[i]->setFont(monoLabel::getMonospaceFont());
         macIdLabel->setBuddy(macIdEdit[i]);
-        if (config->getMACId(i))
-            macIdEdit[i]->setMacId(config->getMACId(i));
+        if (machineConfigs->getMACId(i))
+            macIdEdit[i]->setMacId(machineConfigs->getMACId(i));
         grid->addWidget(macIdEdit[i], 3, 1, 1, 2);
         connect(fixedMacId[i], SIGNAL(toggled(bool)), macIdLabel, SLOT(setEnabled(bool)));
         connect(fixedMacId[i], SIGNAL(toggled(bool)), macIdEdit[i], SLOT(setEnabled(bool)));
-        fixedMacId[i]->setChecked(config->getMACId(i) != NULL);
-        macIdLabel->setEnabled(config->getMACId(i) != NULL);
-        macIdEdit[i]->setEnabled(config->getMACId(i) != NULL);
+        fixedMacId[i]->setChecked(machineConfigs->getMACId(i) != NULL);
+        macIdLabel->setEnabled(machineConfigs->getMACId(i) != NULL);
+        macIdEdit[i]->setEnabled(machineConfigs->getMACId(i) != NULL);
     }
 
     layout->addStretch(1);
@@ -472,18 +472,19 @@ NetworkConfigWidget::NetworkConfigWidget(QWidget* parent)
 
 void NetworkConfigWidget::Save()
 {
-    MachineConfig* config = getMachineConfig();
     const unsigned int il = EXT_IL_INDEX(IL_ETHERNET);
 
+    MachineConfig *machineConfigs = MC_Holder::getInstance()->getConfig();
+
     for (unsigned int devNo = 0; devNo < N_DEV_PER_IL; devNo++) {
-        config->setDeviceFile(il, devNo, QFile::encodeName(fileEdit[devNo]->text()).constData());
-        config->setDeviceEnabled(il, devNo, enabledCB[devNo]->isChecked());
+        machineConfigs->setDeviceFile(il, devNo, QFile::encodeName(fileEdit[devNo]->text()).constData());
+        machineConfigs->setDeviceEnabled(il, devNo, enabledCB[devNo]->isChecked());
         if (fixedMacId[devNo]->isChecked()) {
             uint8_t macId[6];
             assert(macIdEdit[devNo]->getMacId(macId));
-            config->setMACId(devNo, macId);
+            machineConfigs->setMACId(devNo, macId);
         } else {
-            config->setMACId(devNo, NULL);
+            machineConfigs->setMACId(devNo, NULL);
         }
     }
 }
@@ -494,3 +495,5 @@ void NetworkConfigWidget::browseDeviceFile(int devNo)
     if (!fileName.isNull())
         fileEdit[devNo]->setText(fileName);
 }
+
+#endif //QARM_MACHINE_CONFIG_DIALOG_CC

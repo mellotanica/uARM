@@ -22,10 +22,15 @@
 #ifndef UARM_SYSTEMBUS_H
 #define UARM_SYSTEMBUS_H
 
-#include "const.h"
-#include "ramMemory.h"
+#include "services/lang.h"
+#include "armProc/const.h"
+#include "armProc/ramMemory.h"
 #include "armProc/event.h"
-#include "blockdev.h"
+#include "armProc/blockdev.h"
+#include "armProc/mpic.h"
+#include "armProc/device.h"
+//#include "armProc/mp_controller.h"
+
 
 //change these values accordignly to linker behavior
 
@@ -50,6 +55,8 @@ enum AbortType {
     ABT_PAGEERR = 5,
     NOABT_ROM   = 0xFF
 };
+
+class Device;
 
 class systemBus{
 public:
@@ -101,6 +108,12 @@ public:
     // memory changes to Watch too
     void IntAck(unsigned int intNum, unsigned int devNum);
 
+    // This method returns the current interrupt line status
+    Word getPendingInt(const processor* cpu);
+
+    void AssertIRQ(unsigned int il, unsigned int target);
+    void DeassertIRQ(unsigned int il, unsigned int target);
+
     Word getToDLO() const { return 1; }
     Word getToDHI() const { return 0; }
     Word getTimer() const { return 0; }
@@ -124,6 +137,25 @@ private:
     Byte* bios = NULL;
     Byte* info;
     Byte *romFrame;
+
+    scoped_ptr<InterruptController> pic;
+
+    //scoped_ptr<MPController> mpController;
+
+    // device events queue
+    EventQueue * eventQ;
+
+    // device handling & interrupt generation tables
+    Device* devTable[DEVINTUSED][DEVPERINT];
+    Word instDevTable[DEVINTUSED];
+
+    // pending interrupts on lines: this word is packed into MIPS Cause
+    // Register IP field format for easy masking
+    Word intPendMask;
+
+    // This method accesses the system configuration and constructs
+    // the devices needed, linking them to SystemBus object
+    Device * makeDev(unsigned int intl, unsigned int dnum);
 
     AbortType checkAddress(Word *address);
 

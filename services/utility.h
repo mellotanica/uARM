@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef UMPS_UTILITY_H
-#define UMPS_UTILITY_H
+#ifndef BASE_UTILITY_H
+#define BASE_UTILITY_H
 
 #include <string>
 

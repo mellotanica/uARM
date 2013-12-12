@@ -26,6 +26,9 @@
  *
  ****************************************************************************/
 
+#ifndef BASE_UTILITY_CC
+#define BASE_UTILITY_CC
+
 #include "services/utility.h"
 
 #include "armProc/const.h"
@@ -235,3 +238,5 @@ std::string MACIdToString(const uint8_t* id)
             (unsigned int) id[5]);
     return std::string(buf);
 }
+
+#endif //BASE_UTILITY_CC

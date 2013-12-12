@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#ifndef QARM_ADDRESS_LINE_EDIT_CC
+#define QARM_ADDRESS_LINE_EDIT_CC
+
 #include "qarm/address_line_edit.h"
 
 #include <cassert>
@@ -122,3 +125,5 @@ void AsidLineEdit::setAsid(Word asid)
     if (asid <= MachineConfig::MAX_ASID)
         setText(QString::number(asid, 16));
 }
+
+#endif //QARM_ADDRESS_LINE_EDIT_CC

@@ -29,6 +29,9 @@
  *
  ***************************************************************************/
 
+#ifndef UARM_EVENT_CC
+#define UARM_EVENT_CC
+
 #include "armProc/event.h"
 
 #include <stdio.h>
@@ -153,3 +156,5 @@ void EventQueue::RemoveHead()
 	delete p;
     }
 }
+
+#endif //UARM_EVENT_CC

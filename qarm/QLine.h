@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef QFLINE_H
-#define QFLINE_H
+#ifndef QARM_QFLINE_H
+#define QARM_QFLINE_H
 
 #include <QFrame>
 
@@ -35,4 +35,4 @@ public:
     }
 };
 
-#endif // QFLINE_H
+#endif // QARM_QFLINE_H

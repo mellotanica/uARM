@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef GUICONST_H
-#define GUICONST_H
+#ifndef QARM_GUICONST_H
+#define QARM_GUICONST_H
 
 #define PLAYICON "icons/play.png"
 #define PAUSEICON "icons/pause.png"
@@ -38,7 +38,7 @@
 #define CP15COLS    8
 #define CP15ROWS    5
 
-#define WS  (sizeof(Word))
+//#define WS  (sizeof(Word))
 #define UNUSED_ARG(x) ((void) x)
 
 /* Emulation speed */
@@ -47,4 +47,4 @@
 #define IPSMIN      1
 #define IPSSTEP     1
 
-#endif // GUICONST_H
+#endif // QARM_GUICONST_H

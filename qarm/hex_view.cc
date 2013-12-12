@@ -20,6 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#ifndef QARM_HEX_VIEW_CC
+#define QARM_HEX_VIEW_CC
+
 #include "qarm/hex_view.h"
 
 #include <algorithm>
@@ -379,3 +382,5 @@ void HexViewMargin::wheelEvent(QWheelEvent* event)
 {
     hexView->wheelEvent(event);
 }
+
+#endif //QARM_HEX_VIEW_CC

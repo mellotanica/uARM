@@ -22,8 +22,9 @@
 #ifndef UARM_PROCESSOR_H
 #define UARM_PROCESSOR_H
 
-#include "pu.h"
-#include "coprocessor_interface.h"
+#include "armProc/pu.h"
+//LOOP: processor
+#include "armProc/coprocessor_interface.h"
 
 enum ProcessorStatus {
     PS_HALTED,
@@ -67,6 +68,10 @@ public:
 
 	void prefetch();
     bool branchHappened();
+
+    //STATIC: only one processor at this time..
+    Word getId() const { return 0; }
+    Word Id() const { return 0; }
 	
     coprocessor_interface *getCopInt() {return cpint;}
 	

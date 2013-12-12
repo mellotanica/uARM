@@ -24,8 +24,8 @@
  * file types.
  */
 
-#ifndef UMPS_AOUT_H
-#define UMPS_AOUT_H
+#ifndef UARM_AOUT_H
+#define UARM_AOUT_H
 
 /* Number of BIOS reserved page frames */
 #define N_BIOS_PAGES  1
@@ -62,4 +62,4 @@
 #define AOUTFILEID	0x0453504D
 #define STABFILEID	0x4153504D
 
-#endif /* !defined(UMPS_AOUT_H) */
+#endif //UARM_AOUT_H

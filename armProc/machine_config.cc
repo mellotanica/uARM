@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#ifndef UARM_MACHINE_CONFIG_CC
+#define UARM_MACHINE_CONFIG_CC
+
 #include "armProc/machine_config.h"
 
 #include <config.h>
@@ -90,7 +93,7 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
             config->setNumProcessors(root->Get("num-processors")->AsNumber());
         if (root->HasMember("clock-rate"))
             config->setClockRate(root->Get("clock-rate")->AsNumber());
-        /* EDIT: no TLB
+        /* UNUSED: no TLB
         if (root->HasMember("tlb-size"))
             config->setTLBSize(root->Get("tlb-size")->AsNumber());
             */
@@ -103,7 +106,7 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
             config->setROM(ROM_TYPE_CORE, bootOpt->Get("core-file")->AsString());
         }
 
-        /*EDIT: no bootstrap menu entry
+        /*UNUSED: no bootstrap menu entry
         if (root->HasMember("bootstrap-rom"))
             config->setROM(ROM_TYPE_BOOT, root->Get("bootstrap-rom")->AsString());
             */
@@ -171,7 +174,7 @@ void MachineConfig::Save()
     bootOpt->Set("core-file", getROM(ROM_TYPE_CORE));
     root->Set("boot", bootOpt);
 
-    //EDIT: bootstrap menu entry
+    //UNUSED: bootstrap menu entry
     //root->Set("bootstrap-rom", getROM(ROM_TYPE_BOOT));
     root->Set("execution-rom", getROM(ROM_TYPE_BIOS));
 
@@ -214,7 +217,7 @@ MachineConfig::MachineConfig(const std::string& fn)
 bool MachineConfig::Validate(std::list<std::string>* errors) const
 {
     bool isValid = true;
-    /* EDIT: no bootstrap entry required
+    /* UNUSED: no bootstrap entry required
     if (romFiles[ROM_TYPE_BOOT].empty()) {
         if (errors)
             errors->push_back("Bootstrap ROM file not set");
@@ -248,7 +251,7 @@ void MachineConfig::setClockRate(unsigned int value)
     clockRate = bumpProperty(MIN_CLOCK_RATE, value, MAX_CLOCK_RATE);
 }
 
-/* EDIT: there is no TLB
+/* UNUSED: there is no TLB
 void MachineConfig::setTLBSize(Word size)
 {
     tlbSize = bumpProperty(MIN_TLB, size, MAX_TLB);
@@ -330,13 +333,13 @@ void MachineConfig::resetToFactorySettings()
 {
     setNumProcessors(DEFAULT_NUM_CPUS);
     setClockRate(DEFAULT_CLOCK_RATE);
-    // EDIT: no TLB
+    // UNUSED: no TLB
     //setTLBSize(DEFAULT_TLB_SIZE);
     setRamSize(DEFAUlT_RAM_SIZE);
 
     std::string dataDir = PACKAGE_DATA_DIR;
 
-    // EDIT: no bootsrapt rom
+    // UNUSED: no bootsrapt rom
     //setROM(ROM_TYPE_BOOT, dataDir + "/coreboot.rom.umps");
     // STATIC: this is a temp bios, there needs to be a more complete one..
     setROM(ROM_TYPE_BIOS, dataDir + "/simpleBoot.elf.rom.uarm");
@@ -371,3 +374,14 @@ bool MachineConfig::validFileMagic(Word tag, const char* fName)
         fclose(file);
     return valid;
 }
+
+MC_Holder* MC_Holder::instance = NULL;
+MachineConfig* MC_Holder::config = NULL;
+
+MC_Holder* MC_Holder::getInstance(){
+    if(instance == NULL)
+        instance = new MC_Holder();
+    return instance;
+}
+
+#endif //UARM_MACHINE_CONFIG_CC

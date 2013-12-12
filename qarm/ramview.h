@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef RAMVIEW_H
-#define RAMVIEW_H
+#ifndef QARM_RAMVIEW_H
+#define QARM_RAMVIEW_H
 
 #include <QWidget>
 #include <QPushButton>
@@ -54,4 +54,4 @@ private:
     QPushButton *visualizeB;
 };
 
-#endif // RAMVIEW_H
+#endif // QARM_RAMVIEW_H

@@ -27,6 +27,9 @@
  *
  ****************************************************************************/
 
+#ifndef UARM_BLOCKDEV_CC
+#define UARM_BLOCKDEV_CC
+
 #include <stdio.h>
 
 #include "armProc/const.h"
@@ -167,3 +170,5 @@ unsigned int DriveParams::getDataSect(void)
 {
 	return(parms[DATASECT]);
 }
+
+#endif //UARM_BLOCKDEV_CC

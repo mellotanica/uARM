@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef PROCDISPLAY_H
-#define PROCDISPLAY_H
+#ifndef QARM_PROCDISPLAY_H
+#define QARM_PROCDISPLAY_H
 
 #include <QWidget>
 #include <QGridLayout>
@@ -72,4 +72,4 @@ public:
     }
 };
 
-#endif // PROCDISPLAY_H
+#endif // QARM_PROCDISPLAY_H

@@ -20,6 +20,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#ifndef UARM_TIME_STAMP_CC
+#define UARM_TIME_STAMP_CC
+
 #include "time_stamp.h"
 
 #include <boost/format.hpp>
@@ -34,3 +37,5 @@ std::string toString(uint64_t ts)
 }
 
 } // namespace TimeStamp
+
+#endif //UARM_TIME_STAMP_CC

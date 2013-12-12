@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef UMPS_EVENT_H
-#define UMPS_EVENT_H
+#ifndef UARM_EVENT_H
+#define UARM_EVENT_H
 
 #include <boost/function.hpp>
 
@@ -98,4 +98,4 @@ private:
     Event* lastIns;
 };
 
-#endif // UMPS_EVENT_H
+#endif // UARM_EVENT_H

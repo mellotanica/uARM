@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#ifndef QARM_PROCDISPLAY_CC
+#define QARM_PROCDISPLAY_CC
+
 #include "procdisplay.h"
 
 /*#include <iostream>
@@ -208,3 +211,5 @@ QString procDisplay::convertHex(Word val){
     }
     return ret;
 }
+
+#endif //QARM_PROCDISPLAY_CC

@@ -1,7 +1,7 @@
 /* -*- mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
-#ifndef UMPS_ERROR_H
-#define UMPS_ERROR_H
+#ifndef BASE_ERROR_H
+#define BASEs_ERROR_H
 
 // INFO: needed for Panic();
 
@@ -66,4 +66,4 @@ public:
 void Panic(const char* message);
 
 
-#endif // UMPS_ERROR_H
+#endif // BASE_ERROR_H

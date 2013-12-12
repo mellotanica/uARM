@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#ifndef QARM_RAMVIEW_CC
+#define QARM_RAMVIEW_CC
+
 #include "ramview.h"
 #include <QHBoxLayout>
 #include <QLabel>
@@ -93,3 +96,5 @@ void ramView::visualize(){
         mainLayout->addWidget(ramViewer);
     }
 }
+
+#endif //QARM_RAMVIEW_CC

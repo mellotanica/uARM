@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#ifndef QARM_QARM_CC
+#define QARM_QARM_CC
+
 #include "qarm/qarm.h"
 #include "armProc/aout.h"
 #include "qarm/machine_config_dialog.h"
@@ -36,9 +39,9 @@ qarm::qarm(QApplication *app):
     //configView = NULL;
     std::string error;
     std::string defaultFName = DEFAULT_CONFIG_FILE;
-    machineConfigs = MachineConfig::LoadFromFile(defaultFName, error);
-    if(machineConfigs == NULL)
-        machineConfigs = MachineConfig::Create(defaultFName);
+    MC_Holder::getInstance()->setConfig(MachineConfig::LoadFromFile(defaultFName, error));
+    if(MC_Holder::getInstance()->getConfig() == NULL)
+        MC_Holder::getInstance()->setConfig(MachineConfig::Create(defaultFName));
 
     mac = new machine;
 
@@ -46,7 +49,7 @@ qarm::qarm(QApplication *app):
     toolbar = new mainBar;
     display = new procDisplay(this);
 
-    toolbar->setSpeed(getMachineConfig()->getClockRate());
+    toolbar->setSpeed(MC_Holder::getInstance()->getConfig()->getClockRate());
 
     centralLayout = new QVBoxLayout;
 
@@ -65,7 +68,7 @@ qarm::qarm(QApplication *app):
     connect(toolbar, SIGNAL(reset()), this, SLOT(softReset()));
     connect(toolbar, SIGNAL(showRam()), this, SLOT(showRam()));
     connect(toolbar, SIGNAL(step()), this, SLOT(step()));
-    //EDIT: no longer needed with MachineConfig
+    //UNUSED: no longer needed with MachineConfig
     //connect(toolbar, SIGNAL(openRAM()), this, SLOT(selectCore()));
     //connect(toolbar, SIGNAL(openBIOS()), this, SLOT(selectBios()));
     connect(toolbar, SIGNAL(showConfig()), this, SLOT(showConfigDialog()));
@@ -88,8 +91,8 @@ qarm::qarm(QApplication *app):
 void qarm::softReset(){
     clock->stop();
     initialized = false;
-    emit resetMachine(getMachineConfig()->getRamSize() * BYTES_PER_MEGABYTE);
-    toolbar->setSpeed(getMachineConfig()->getClockRate());
+    emit resetMachine(MC_Holder::getInstance()->getConfig()->getRamSize() * BYTES_PER_MEGABYTE);
+    toolbar->setSpeed(MC_Holder::getInstance()->getConfig()->getClockRate());
     doReset = false;
     if(dataLoaded && biosLoaded)
         initialize();
@@ -103,39 +106,8 @@ bool qarm::initialize(){
 }
 
 void qarm::step(){
-    /*EDIT: no longer needed
-    if(!(dataLoaded && biosLoaded)){
-        QString msg = "";
-        int c = 0;
-        if(!biosLoaded){
-            if(c > 0)
-                msg += ", ";
-            msg += "BIOS ROM";
-            c++;
-        }
-        if(!dataLoaded){
-            if(c > 0)
-                msg += " and ";
-            msg += "Program File";
-            c++;
-        }
-        if(c > 1)
-            msg += " were";
-        else
-            msg += " was";
-        msg += " not selected.\nDo you want to start emulation anyways?";
-
-        QMessageBox::StandardButton reply = QMessageBox::question(this,"Caution", msg, QMessageBox::Yes|QMessageBox::No);
-
-        if(reply == QMessageBox::No){
-            emit stop();
-            return;
-        } else {
-            dataLoaded = biosLoaded = true;
-        }
-    }*/
     if(doReset){
-        emit resetMachine(getMachineConfig()->getRamSize() * BYTES_PER_MEGABYTE);
+        emit resetMachine(MC_Holder::getInstance()->getConfig()->getRamSize() * BYTES_PER_MEGABYTE);
         doReset = false;
     }
     if(!initialized){
@@ -213,7 +185,7 @@ void qarm::selectBios(){
 }
 
 bool qarm::openRAM(){
-    coreF = QString::fromStdString(getMachineConfig()->getROM(ROM_TYPE_CORE));
+    coreF = QString::fromStdString(MC_Holder::getInstance()->getConfig()->getROM(ROM_TYPE_CORE));
     if(coreF != ""){
         QFile f (coreF);
         if(!f.open(QIODevice::ReadOnly)) {
@@ -244,7 +216,7 @@ bool qarm::openRAM(){
 }
 
 bool qarm::openBIOS(){
-    biosF = QString::fromStdString(getMachineConfig()->getROM(ROM_TYPE_BIOS));
+    biosF = QString::fromStdString(MC_Holder::getInstance()->getConfig()->getROM(ROM_TYPE_BIOS));
     if(biosF != ""){
         QFile f (biosF);
         if(!f.open(QIODevice::ReadOnly)) {
@@ -271,12 +243,12 @@ bool qarm::openBIOS(){
 }
 
 void qarm::showConfigDialog(){
-    assert(getMachineConfig());
+    assert(MC_Holder::getInstance()->getConfig());
 
-    MachineConfigDialog dialog(getMachineConfig(), this);
+    MachineConfigDialog dialog(MC_Holder::getInstance()->getConfig(), this);
     if (dialog.exec() == QDialog::Accepted) {
         try {
-            getMachineConfig()->Save();
+            MC_Holder::getInstance()->getConfig()->Save();
         } catch (FileError& e) {
             QMessageBox::critical(this, QString("%1: Error").arg(application->applicationName()), e.what());
             return;
@@ -286,7 +258,4 @@ void qarm::showConfigDialog(){
     }
 }
 
-
-MachineConfig *getMachineConfig(){
-    return machineConfigs;
-}
+#endif //QARM_QARM_CC

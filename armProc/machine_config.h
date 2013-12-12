@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef UMPS_MACHINE_CONFIG_H
-#define UMPS_MACHINE_CONFIG_H
+#ifndef UARM_MACHINE_CONFIG_H
+#define UARM_MACHINE_CONFIG_H
 
 #include <string>
 #include <list>
@@ -127,4 +127,19 @@ private:
     static const char* const deviceKeyPrefix[N_EXT_IL];
 };
 
-#endif // UMPS_MACHINE_CONFIG_H
+class MC_Holder {
+private:
+    static MC_Holder *instance;
+    static MachineConfig *config;
+
+    MC_Holder() {}
+
+public:
+    ~MC_Holder() {}
+    static MC_Holder* getInstance();
+
+    MachineConfig *getConfig() {return config;}
+    void setConfig(MachineConfig *conf) {config = conf;}
+};
+
+#endif // UARM_MACHINE_CONFIG_H

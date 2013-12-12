@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef QARM_H
-#define QARM_H
+#ifndef QARM_QARM_H
+#define QARM_QARM_H
 
 #include "armProc/machine.h"
 #include "qarm/mainbar.h"
@@ -36,8 +36,6 @@
 #include <QDataStream>
 #include <QMessageBox>
 #include <QApplication>
-
-static MachineConfig *machineConfigs;
 
 class qarm : public QMainWindow{
     Q_OBJECT
@@ -77,6 +75,4 @@ private:
     QWidget *createConfigTab();
 };
 
-MachineConfig *getMachineConfig();
-
-#endif // QARM_H
+#endif // QARM_QARM_H

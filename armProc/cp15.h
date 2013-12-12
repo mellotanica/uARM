@@ -25,7 +25,7 @@
 #include "armProc/const.h"
 #include "armProc/pu.h"
 
-class cp15 : public coprocessor{
+class cp15 : public coprocessor {
 public:
 	cp15();
     ~cp15();

@@ -1,7 +1,7 @@
 #ifndef UARM_TYPES_H
 #define UARM_TYPES_H
 
-#include "basic_types.h"
+#include "armProc/basic_types.h"
 
 typedef uint32_t Word;
 

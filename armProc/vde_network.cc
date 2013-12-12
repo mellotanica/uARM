@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#ifndef UARM_VDE_NETWORK_CC
+#define UARM_VDE_NETWORK_CC
+
 #include "armProc/vde_network.h"
 
 #include <sys/types.h>
@@ -324,3 +327,5 @@ int netblockq::dequeue(char *pcontent, int len)
 		return packlen;
 	}
 }
+
+#endif //UARM_VDE_NETWORK_CC

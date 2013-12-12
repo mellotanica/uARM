@@ -32,6 +32,9 @@
  *
  ****************************************************************************/
 
+#ifndef UARM_DEVICE_CC
+#define UARM_DEVICE_CC
+
 #include <stdio.h>
 #include <string.h>
 #include <errno.h>
@@ -43,7 +46,6 @@
 #include "armProc/blockdev_params.h"
 
 #include "armProc/blockdev.h"
-#include "armProc/bus.h"
 #include "services/util.h"
 
 #include "armProc/device.h"
@@ -52,6 +54,7 @@
 #include "armProc/time_stamp.h"
 #include "services/error.h"
 #include "armProc/vde_network.h"
+//LOOP: device.cc
 #include "armProc/machine.h"
 
 
@@ -1765,3 +1768,5 @@ bool EthDevice::isBusy() const
 {
     return (reg[STATUS] & READPENDINGMASK) == BUSY;
 }
+
+#endif //UARM_DEVICE_CC

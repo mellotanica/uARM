@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef QMPS_MACHINE_CONFIG_DIALOG_PRIV_H
-#define QMPS_MACHINE_CONFIG_DIALOG_PRIV_H
+#ifndef QARM_MACHINE_CONFIG_DIALOG_PRIV_H
+#define QARM_MACHINE_CONFIG_DIALOG_PRIV_H
 
 #include <QWidget>
 
@@ -74,4 +74,4 @@ private Q_SLOTS:
     void browseDeviceFile(int devNo);
 };
 
-#endif // QMPS_MACHINE_CONFIG_DIALOG_PRIV_H
+#endif // QARM_MACHINE_CONFIG_DIALOG_PRIV_H

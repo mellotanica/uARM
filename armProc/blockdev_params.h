@@ -26,6 +26,9 @@
  *
  ****************************************************************************/
 
+#ifndef UARM_BLOCKDEV_PARAMS_H
+#define UARM_BLOCKDEV_PARAMS_H
+
 // file recognition tags (magic numbers) 
 #define DISKFILEID	0x0053504D 
 #define TAPEFILEID	0x0153504D
@@ -79,3 +82,5 @@
 #define MINDATAS	10
 #define MAXDATAS	90
 #define DFLDATAS	80
+
+#endif //UARM_BLOCKDEV_PARAMS_H

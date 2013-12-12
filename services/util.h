@@ -19,54 +19,39 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef UARM_UTIL_H
-#define UARM_UTIL_H
+#ifndef BASE_UTIL_H
+#define BASE_UTIL_H
 
 //flag operations
 
 #include "armProc/const.h"
 
-/* WARN: removing useless singleton..
-class util {
-private:
-	static util *instance;
-    util() {}
-public:
-    ~util() {}
-	
-	static util *getInstance() {
-		if(instance == NULL)
-			instance = new util();
-		return instance;
-    }*/
-	
-    inline void setBitsReg(Word *reg, Word mask) {*reg = *reg | mask;}
-    inline void setBitReg(Word *reg, unsigned bit) {setBitsReg(reg, 1<<bit);}
+inline void setBitsReg(Word *reg, Word mask) {*reg = *reg | mask;}
+inline void setBitReg(Word *reg, unsigned bit) {setBitsReg(reg, 1<<bit);}
 
-    inline void resetBitsReg(Word *reg, Word mask) {*reg = *reg & INVERT_W(mask);}
-    inline void resetBitReg(Word *reg, unsigned bit) {resetBitsReg(reg, 1<<bit);}
+inline void resetBitsReg(Word *reg, Word mask) {*reg = *reg & INVERT_W(mask);}
+inline void resetBitReg(Word *reg, unsigned bit) {resetBitsReg(reg, 1<<bit);}
 
-    inline bool checkBits(Word *wd, Word mask) {return ((*wd & mask) == mask ? true : false);}	//returns true if all bits set in mask are
-    inline bool checkBits(Word wd, Word mask) {return ((wd & mask) == mask ? true : false);}	//also set in word
-    inline bool checkBit(Word *wd, unsigned bit) {return ((*wd & (1<<bit)) > 0 ? true : false);}
-    inline bool checkBit(Word wd, unsigned bit) {return ((wd & (1<<bit)) > 0 ? true : false);}
-	
-    inline void copyBitReg(Word *reg, unsigned bit, unsigned val) {
-        *reg = (*reg & INVERT_W(INVERT_B(val) << bit)) | (val << bit);
-    }
-    inline void copyBitFromReg(Word *dest, unsigned bit, Word *src) {
-		if(((*src>>bit)&1) != 0)	
-			copyBitReg(dest, bit, 1); 
-		else 
-			copyBitReg(dest, bit, 0);
-    }
-    inline void copyBitFromReg(Word *dest, unsigned dbit, Word *src, unsigned sbit) {
-		if(((*src>>sbit)&1) != 0) 
-			copyBitReg(dest, dbit, 1); 
-		else 
-			copyBitReg(dest, dbit, 0);
-    }   
-//};
+inline bool checkBits(Word *wd, Word mask) {return ((*wd & mask) == mask ? true : false);}	//returns true if all bits set in mask are
+inline bool checkBits(Word wd, Word mask) {return ((wd & mask) == mask ? true : false);}	//also set in word
+inline bool checkBit(Word *wd, unsigned bit) {return ((*wd & (1<<bit)) > 0 ? true : false);}
+inline bool checkBit(Word wd, unsigned bit) {return ((wd & (1<<bit)) > 0 ? true : false);}
+
+inline void copyBitReg(Word *reg, unsigned bit, unsigned val) {
+    *reg = (*reg & INVERT_W(INVERT_B(val) << bit)) | (val << bit);
+}
+inline void copyBitFromReg(Word *dest, unsigned bit, Word *src) {
+    if(((*src>>bit)&1) != 0)
+        copyBitReg(dest, bit, 1);
+    else
+        copyBitReg(dest, bit, 0);
+}
+inline void copyBitFromReg(Word *dest, unsigned dbit, Word *src, unsigned sbit) {
+    if(((*src>>sbit)&1) != 0)
+        copyBitReg(dest, dbit, 1);
+    else
+        copyBitReg(dest, dbit, 0);
+}
 
 inline uint32_t SwapEndian32(uint32_t x)
 {

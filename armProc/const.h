@@ -28,8 +28,8 @@
 
 #include "config.h"
 
-#include "registers.h"
-#include "types.h"
+#include "armProc/registers.h"
+#include "armProc/types.h"
 #include <math.h>
 #include <stdlib.h>
 
@@ -130,6 +130,10 @@
 
 
 // interrupt handling related constants
+
+#define CAUSE_IP_MASK          0x0000ff00
+#define CAUSE_IP(line)         (1U << (8 + (line)))
+#define CAUSE_IP_BIT(line)     (8 + (line))
 
 // timer interrupt line
 #define TIMERINT	2

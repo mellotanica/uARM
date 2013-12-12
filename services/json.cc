@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#ifndef BASE_JSON_CC
+#define BASE_JSON_CC
+
 #include "services/json.h"
 
 #include <cassert>
@@ -536,3 +539,5 @@ JsonParser::TokenType JsonParser::ReadNumber()
 
     return TOKEN_NUMBER;
 }
+
+#endif //BASE_JSON_CC
