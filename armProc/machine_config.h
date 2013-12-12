@@ -53,12 +53,6 @@ public:
     static const unsigned int MAX_CLOCK_RATE = IPSMAX;
     static const unsigned int DEFAULT_CLOCK_RATE = 4;
 
-    /* we do not have any tlb
-     *static const Word MIN_TLB = 4;
-     *static const Word MAX_TLB = 64;
-     *static const Word DEFAULT_TLB_SIZE = 16;
-     */
-
     static const Word MIN_ASID = 1;
     static const Word MAX_ASID = 256;
 

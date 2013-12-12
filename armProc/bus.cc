@@ -389,20 +389,19 @@ bool systemBus::getRomVector(Word *address, Byte **romptr){
         *romptr = excVector + offset;
     else if(*address < DEVTOP && *address >= DEVBASEADDR)
         *romptr = devRegs + (offset - DEVBASEADDR);
-    else if(*address < BIOSTOP && *address >= BIOSBASEADDR)
-        *romptr = bios + (offset - BIOSBASEADDR);
+    else if(*address < BIOSTOP && *address >= BIOSBASEADDR){
+        if(bios != NULL)
+            *romptr = bios + (offset - BIOSBASEADDR);
+        else
+            return false;
+    }
     else if(*address < INFOTOP && *address >= INFOBASEADDR)
         *romptr = info + (offset - INFOBASEADDR);
-    else if(*address < ROMFRAMETOP && *address >= ROMFRAMEBASE){
+    else if(*address < ROMFRAMETOP && *address >= ROMFRAMEBASE)
         *romptr = romFrame + (offset - ROMFRAMEBASE);
-    } else
+    else
         return false;
     return true;
-}
-
-//FIXME: tutte da implementare!
-uint64_t systemBus::scheduleEvent(uint64_t delay, Event::Callback callback){
-    return delay;
 }
 
 void systemBus::IntReq(unsigned int intl, unsigned int devNum){
@@ -485,6 +484,11 @@ void systemBus::AssertIRQ(unsigned int il, unsigned int target){
 
 void systemBus::DeassertIRQ(unsigned int il, unsigned int target){
     getProcessor(target)->DeassertIRQ(il);
+}
+
+//FIXME: tutte da implementare!
+uint64_t systemBus::scheduleEvent(uint64_t delay, Event::Callback callback){
+    return delay;
 }
 
 void systemBus::HandleBusAccess(Word pAddr, Word access, processor* cpu){

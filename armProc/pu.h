@@ -28,8 +28,6 @@
 #define UARM_PU_H
 
 #include "armProc/const.h"
-//LOOP: pu
-//#include "armProc/bus.h"
 
 class systemBus;
 

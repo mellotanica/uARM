@@ -26,7 +26,6 @@
 #ifndef UARM_THUMBISA_H
 #define UARM_THUMBISA_H
 
-//LOOP: thumbisa
 #include "armProc/processor.h"
 
 class Thumbisa{

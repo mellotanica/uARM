@@ -68,9 +68,6 @@ qarm::qarm(QApplication *app):
     connect(toolbar, SIGNAL(reset()), this, SLOT(softReset()));
     connect(toolbar, SIGNAL(showRam()), this, SLOT(showRam()));
     connect(toolbar, SIGNAL(step()), this, SLOT(step()));
-    //UNUSED: no longer needed with MachineConfig
-    //connect(toolbar, SIGNAL(openRAM()), this, SLOT(selectCore()));
-    //connect(toolbar, SIGNAL(openBIOS()), this, SLOT(selectBios()));
     connect(toolbar, SIGNAL(showConfig()), this, SLOT(showConfigDialog()));
 
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
@@ -94,8 +91,7 @@ void qarm::softReset(){
     emit resetMachine();
     toolbar->setSpeed(MC_Holder::getInstance()->getConfig()->getClockRate());
     doReset = false;
-    if(dataLoaded && biosLoaded)
-        initialize();
+    initialize();
 }
 
 bool qarm::initialize(){

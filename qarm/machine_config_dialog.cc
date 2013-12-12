@@ -47,7 +47,6 @@
 #include "qarm/address_line_edit.h"
 #include "qarm/mac_id_edit.h"
 #include "qarm/machine_config_dialog_priv.h"
-//LOOP: machine config dialog
 #include "qarm/procdisplay.h"
 
 MachineConfigDialog::MachineConfigDialog(MachineConfig* config, QWidget* parent)
@@ -95,19 +94,6 @@ QWidget* MachineConfigDialog::createGeneralTab()
     clockRateSpinner->setValue(config->getClockRate());
     layout->addWidget(clockRateSpinner, 2, 3);
 
-    /* UNUSED: no TLB in config view
-    layout->addWidget(new QLabel("TLB Size:"), 3, 1);
-    tlbSizeList = new QComboBox;
-    int currentIndex = 0;
-    for (unsigned int val = MachineConfig::MIN_TLB; val <= MachineConfig::MAX_TLB; val <<= 1) {
-        tlbSizeList->addItem(QString::number(val));
-        if (config->getTLBSize() == val)
-            tlbSizeList->setCurrentIndex(currentIndex);
-        currentIndex++;
-    }
-    layout->addWidget(tlbSizeList, 3, 3);
-    */
-
     layout->addWidget(new QLabel("RAM Size (Frames):"), 4, 1);
     ramSizeSpinner = new QSpinBox();
     ramSizeSpinner->setMinimum(MachineConfig::MIN_RAM);
@@ -120,18 +106,6 @@ QWidget* MachineConfigDialog::createGeneralTab()
     QPushButton* fileChooserButton;
 
     layout->addWidget(new QLabel("<b>BIOS</b>"), 6, 0, 1, 3);
-
-    /* UNUSED: no bootstrap rom in config view
-    layout->addWidget(new QLabel("Bootstrap ROM:"), 7, 1);
-    romFileInfo[ROM_TYPE_BOOT].description = "Bootstrap ROM";
-    romFileInfo[ROM_TYPE_BOOT].lineEdit = new QLineEdit;
-    layout->addWidget(romFileInfo[ROM_TYPE_BOOT].lineEdit, 7, 3, 1, 2);
-    romFileInfo[ROM_TYPE_BOOT].lineEdit->setText(config->getROM(ROM_TYPE_BOOT).c_str());
-    fileChooserButton = new QPushButton("Browse...");
-    connect(fileChooserButton, SIGNAL(clicked()), fileChooserMapper, SLOT(map()));
-    fileChooserMapper->setMapping(fileChooserButton, ROM_TYPE_BOOT);
-    layout->addWidget(fileChooserButton, 7, 5);
-    */
 
     layout->addWidget(new QLabel("Execution ROM:"), 8, 1);
     romFileInfo[ROM_TYPE_BIOS].description = "Execution ROM";
@@ -296,13 +270,8 @@ void MachineConfigDialog::saveConfigChanges()
 {
     config->setNumProcessors(cpuSpinner->value());
     config->setClockRate(clockRateSpinner->value());
-    //UNUSED: no TLB in config
-    //config->setTLBSize(MachineConfig::MIN_TLB << tlbSizeList->currentIndex());
     config->setRamSize(ramSizeSpinner->value());
 
-    /*UNUSED: no bootstrap rom in config
-    config->setROM(ROM_TYPE_BOOT,
-                   QFile::encodeName(romFileInfo[ROM_TYPE_BOOT].lineEdit->text()).constData());*/
     config->setROM(ROM_TYPE_BIOS,
                    QFile::encodeName(romFileInfo[ROM_TYPE_BIOS].lineEdit->text()).constData());
     config->setROM(ROM_TYPE_CORE,

@@ -93,10 +93,6 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
             config->setNumProcessors(root->Get("num-processors")->AsNumber());
         if (root->HasMember("clock-rate"))
             config->setClockRate(root->Get("clock-rate")->AsNumber());
-        /* UNUSED: no TLB
-        if (root->HasMember("tlb-size"))
-            config->setTLBSize(root->Get("tlb-size")->AsNumber());
-            */
         if (root->HasMember("num-ram-frames"))
             config->setRamSize(root->Get("num-ram-frames")->AsNumber());
 
@@ -106,10 +102,6 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
             config->setROM(ROM_TYPE_CORE, bootOpt->Get("core-file")->AsString());
         }
 
-        /*UNUSED: no bootstrap menu entry
-        if (root->HasMember("bootstrap-rom"))
-            config->setROM(ROM_TYPE_BOOT, root->Get("bootstrap-rom")->AsString());
-            */
         if (root->HasMember("execution-rom"))
             config->setROM(ROM_TYPE_BIOS, root->Get("execution-rom")->AsString());
 
@@ -174,8 +166,6 @@ void MachineConfig::Save()
     bootOpt->Set("core-file", getROM(ROM_TYPE_CORE));
     root->Set("boot", bootOpt);
 
-    //UNUSED: bootstrap menu entry
-    //root->Set("bootstrap-rom", getROM(ROM_TYPE_BOOT));
     root->Set("execution-rom", getROM(ROM_TYPE_BIOS));
 
     JsonObject* stabObject = new JsonObject;
@@ -217,12 +207,6 @@ MachineConfig::MachineConfig(const std::string& fn)
 bool MachineConfig::Validate(std::list<std::string>* errors) const
 {
     bool isValid = true;
-    /* UNUSED: no bootstrap entry required
-    if (romFiles[ROM_TYPE_BOOT].empty()) {
-        if (errors)
-            errors->push_back("Bootstrap ROM file not set");
-        isValid = false;
-    }*/
     if (romFiles[ROM_TYPE_BIOS].empty()) {
         if (errors)
             errors->push_back("BIOS ROM file not set");
@@ -250,13 +234,6 @@ void MachineConfig::setClockRate(unsigned int value)
 {
     clockRate = bumpProperty(MIN_CLOCK_RATE, value, MAX_CLOCK_RATE);
 }
-
-/* UNUSED: there is no TLB
-void MachineConfig::setTLBSize(Word size)
-{
-    tlbSize = bumpProperty(MIN_TLB, size, MAX_TLB);
-}
-*/
 
 void MachineConfig::setROM(ROMType type, const std::string& fileName)
 {
@@ -333,14 +310,10 @@ void MachineConfig::resetToFactorySettings()
 {
     setNumProcessors(DEFAULT_NUM_CPUS);
     setClockRate(DEFAULT_CLOCK_RATE);
-    // UNUSED: no TLB
-    //setTLBSize(DEFAULT_TLB_SIZE);
     setRamSize(DEFAUlT_RAM_SIZE);
 
     std::string dataDir = PACKAGE_DATA_DIR;
 
-    // UNUSED: no bootsrapt rom
-    //setROM(ROM_TYPE_BOOT, dataDir + "/coreboot.rom.umps");
     // STATIC: this is a temp bios, there needs to be a more complete one..
     setROM(ROM_TYPE_BIOS, dataDir + "/simpleBoot.elf.rom.uarm");
 

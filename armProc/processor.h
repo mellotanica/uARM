@@ -24,8 +24,6 @@
 
 #include "armProc/pu.h"
 #include "armProc/bus.h"
-//LOOP: processor
-//#include "armProc/coprocessor_interface.h"
 #include "armProc/cp15.h"
 
 enum ProcessorStatus {
@@ -91,10 +89,8 @@ public:
 	
     systemBus *getBus() {return bus;}
 	
-	/* processor could abort the execution cycle of coprocessors in case of interrupts or traps
-	 * also, the first two cycles only do fetches to load the pipeline
-	 */
-	void cycle() {
+    // processor could abort the execution cycle of coprocessors in case of interrupts or traps
+    void cycle() {
 		fetch();
 		decode();
 		setOP("Unknown", true);
@@ -119,7 +115,7 @@ private:
 	Word shifter_operand, alu_tmp;
     Word old_pc;
 	bool shifter_carry_out;
-	bool BIGEND_sig;
+    bool BIGEND_sig;
 	
 	ARMisa *execARM;
 	Thumbisa *execThumb;

@@ -530,10 +530,6 @@ bool processor::checkAbort(AbortType memSig){
  * ******************** */
 
 void processor::execute(){
-	if(pipeline[PIPELINE_EXECUTE] == OP_HALT){
-		status = PS_HALTED;
-		return;
-	}
 
     if(prefetchFault[PIPELINE_EXECUTE]){
         prefetchAbortTrap();
@@ -789,7 +785,7 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 				unpredictable();
 				return;
 			}
-            for(unsigned i = 0; i < (sizeof(HalfWord) * 8)-1; i++){
+            for(unsigned i = 0; i < 15; i++){
 				if(list & (1<<i)){		// if register i is marked load it
                     if(!checkAbort(bus->readW(&address, &cpu_registers[i]))){
                         dataAbortTrap();
@@ -797,22 +793,21 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
                     }
 					address += 4;
 				}
-			}
-			if(list & 0x8000){			// if r15 is required for loading restore also CPSR
+            }
+            if(list & 0x8000){			// if r15 is required for loading restore also CPSR
                 if(!checkAbort(bus->readW(&address, getPC()))){
                     dataAbortTrap();
                     return;
                 }
-				cpu_registers[REG_CPSR] = *getVisibleRegister(REG_SPSR);
-				if(W)
+                cpu_registers[REG_CPSR] = *getVisibleRegister(REG_SPSR);
+                if(W)
                     *rn += (U ? 1 : -1) * (regn * 4);
-			}
-			else{
-				if(W){					// base writeback should not be used in this case
-					unpredictable();
-					return;
-				}
-			}
+            } else {
+                if(W){					// base writeback should not be used in this case
+                    unpredictable();
+                    return;
+                }
+            }
 		}
 		else{	// regular multiple load
             for(unsigned i = 0; i < (sizeof(HalfWord) * 8); i++){
@@ -824,7 +819,7 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 					address += 4;
 				}
 			}
-		}
+        }
 	}
 	else{			//STM
 		if(S){	// user bank transfer
@@ -1025,7 +1020,7 @@ void processor::halfwordDataTransfer(Word *rd, Word *rn, Word *rm, Word offs, bo
                 }
 			}
 		}
-	}
+    }
 	
 	if(P) {	//preindexing
 		if(W)	//Writeback
@@ -1127,7 +1122,7 @@ void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, 
 		}
         if(base != getPC())
             *base = address + ((U ? 1 : -1) * offset);
-	}
+    }
 }
 
 void processor::dataProcessing(Byte opcode){

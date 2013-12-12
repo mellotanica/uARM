@@ -43,12 +43,6 @@ mainBar::mainBar(QWidget *parent) :
     configB->setToolTip("Machine Configs");
     configB->setIcon(*configIco);
 
-    /* UNUSED: removed open menu
-    openMenu = new QMenu("Open");
-    openMenu->addAction("BIOS ROM", this, SIGNAL(openBIOS()));
-    openMenu->addAction("Program Image", this, SIGNAL(openRAM()));
-    */
-
     playB = new styledButton();
     playB->setToolTip("Play");
     playB->setCheckable(true);
@@ -110,12 +104,6 @@ mainBar::mainBar(QWidget *parent) :
     ramB->setToolButtonStyle(Qt::ToolButtonTextOnly);
     ramB->setText("View Ram");
 
-    /* UNUSED: removed open menu
-    openDropDown = new QMenuBar();
-    openDropDown->addMenu(openMenu);
-    openDropDown->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
-
-    addWidget(openDropDown);*/
     addWidget(configB);
     addWidget(playB);
     addWidget(resetB);

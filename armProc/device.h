@@ -25,7 +25,6 @@
 #include <QObject>
 #include "armProc/types.h"
 #include "armProc/const.h"
-//LOOP: device.h
 #include "armProc/bus.h"
 
 enum DeviceType {

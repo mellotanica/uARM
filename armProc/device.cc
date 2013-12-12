@@ -54,7 +54,6 @@
 #include "armProc/time_stamp.h"
 #include "services/error.h"
 #include "armProc/vde_network.h"
-//LOOP: device.cc
 #include "armProc/machine.h"
 
 
@@ -821,13 +820,7 @@ unsigned int TerminalDevice::CompleteDevOp()
     }
     emit SignalStatusChanged(getDevSStr());
 
-    /* FIXME: implementare nel bus/machine!
-     *
-     *
-    //bus->getMachine()->HandleBusAccess(DEV_REG_ADDR(intL, devNum) + devMod * WS, WRITE, NULL);
-     *
-     *
-     */
+    bus->HandleBusAccess(DEV_REG_ADDR(intL, devNum) + devMod * WS, WRITE, NULL);
 
     return devMod;
 }
