@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#ifndef QARM_TERMINAL_WINDOW_CC
+#define QARM_TERMINAL_WINDOW_CC
+
 #include "qarm/terminal_window.h"
 
 #include <QVBoxLayout>
@@ -36,14 +39,15 @@
 #include "qarm/terminal_view.h"
 #include "qarm/terminal_window_priv.h"
 #include "qarm/flat_push_button.h"
+#include "qarm/qarm.h"
 
 TerminalWindow::TerminalWindow(unsigned int devNo, QWidget* parent)
     : QMainWindow(parent),
       devNo(devNo),
-      mainW((qarm*) parent)
+      parent(parent)
 {
-    setWindowTitle(QString("uMPS Terminal %1").arg(devNo));
-    setWindowIcon(QIcon(":/icons/terminal-32.png"));
+    setWindowTitle(QString("uARM Terminal %1").arg(devNo));
+    setWindowIcon(QIcon("icons/terminal-32.png"));
 
     TerminalDevice* terminal = getTerminal(devNo);
 
@@ -67,8 +71,7 @@ TerminalWindow::TerminalWindow(unsigned int devNo, QWidget* parent)
         resize(fm.width(QLatin1Char('x')) * kDefaultCols, fm.lineSpacing() * kDefaultRows);
     //}
 
-    //FIXME: where is debug session?
-    //connect(debugSession, SIGNAL(MachineReset()), this, SLOT(onMachineReset()));
+    connect((qarm*) parent, SIGNAL(resetMachine()), this, SLOT(onMachineReset()));
 }
 
 void TerminalWindow::closeEvent(QCloseEvent* event)
@@ -96,7 +99,7 @@ void TerminalWindow::onMachineReset()
 
 TerminalDevice* TerminalWindow::getTerminal(unsigned int devNo)
 {
-    Device* device = mainW->getMachine()->getBus()->getDev(4, devNo);
+    Device* device = ((qarm *) parent)->getMachine()->getBus()->getDev(4, devNo);
     assert(device->Type() == TERMDEV);
     return static_cast<TerminalDevice*>(device);
 }
@@ -169,6 +172,9 @@ TerminalStatusWidget::TerminalStatusWidget(TerminalDevice* t, QWidget* parent)
         sigc::mem_fun(*this, &TerminalStatusWidget::onConditionChanged)
     );*/
 
+    connect(terminal, SIGNAL(SignalStatusChanged(const char*)), this, SLOT(updateStatus()));
+    connect(terminal, SIGNAL(SignalConditionChanged(bool)), this, SLOT(onConditionChanged(bool)));
+
     updateStatus();
 }
 
@@ -205,3 +211,5 @@ void TerminalStatusWidget::onExpanderButtonClicked()
         statusAreaWidget->show();
     }
 }
+
+#endif //QARM_TERMINAL_WINDOW_CC

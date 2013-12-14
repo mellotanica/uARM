@@ -19,8 +19,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef QMPS_TERMINAL_WINDOW_PRIV_H
-#define QMPS_TERMINAL_WINDOW_PRIV_H
+#ifndef QARM_TERMINAL_WINDOW_PRIV_H
+#define QARM_TERMINAL_WINDOW_PRIV_H
 
 #include <QWidget>
 #include <QIcon>
@@ -37,14 +37,15 @@ class TerminalStatusWidget : public QWidget
 public:
     TerminalStatusWidget(TerminalDevice* terminal, QWidget* parent = 0);
 
+private slots:
+    void updateStatus();
+    void onConditionChanged(bool isWorking);
+
 private:
     // We _have_ to set the minimumSize() property on dynamic labels
     // in resizable containers; the constant is here mainly as a
     // remainder for that :-)
     static const int kStatusLabelsMinimumWidth = 16;
-
-    void updateStatus();
-    void onConditionChanged(bool isWorking);
 
     TerminalDevice* const terminal;
 
@@ -68,4 +69,4 @@ private Q_SLOTS:
     void onExpanderButtonClicked();
 };
 
-#endif // QMPS_TERMINAL_WINDOW_PRIV_H
+#endif // QARM_TERMINAL_WINDOW_PRIV_H

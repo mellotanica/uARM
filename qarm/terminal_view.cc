@@ -19,6 +19,9 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#ifndef QARM_TERMINAL_VIEW_CC
+#define QARM_TERMINAL_VIEW_CC
+
 #include "qarm/terminal_view.h"
 
 #include <string>
@@ -41,6 +44,7 @@ TerminalView::TerminalView(TerminalDevice* terminal, QWidget* parent)
 {
     //EDIT: sigc++
     //terminal->SignalTransmitted.connect(sigc::mem_fun(this, &TerminalView::onCharTransmitted));
+    connect(terminal, SIGNAL(SignalTransmitted(char)), this, SLOT(onCharTransmitted(char)));
 
     QFont font = monoLabel::getMonospaceFont();
     setFont(font);
@@ -116,3 +120,5 @@ void TerminalView::onCharTransmitted(char c)
     cursor.movePosition(QTextCursor::End);
     setTextCursor(cursor);
 }
+
+#endif //QARM_TERMINAL_VIEW_CC

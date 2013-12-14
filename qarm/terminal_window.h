@@ -19,12 +19,11 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef QMPS_TERMINAL_WINDOW_H
-#define QMPS_TERMINAL_WINDOW_H
+#ifndef QARM_TERMINAL_WINDOW_H
+#define QARM_TERMINAL_WINDOW_H
 
 #include <QMainWindow>
 #include <QApplication>
-#include "qarm/qarm.h"
 
 class TerminalDevice;
 class QLabel;
@@ -41,7 +40,7 @@ public:
 protected:
     virtual void closeEvent(QCloseEvent* event);
 
-private Q_SLOTS:
+private slots:
     void onMachineReset();
 
 private:
@@ -52,10 +51,10 @@ private:
 
     const unsigned int devNo;
 
-    qarm *mainW;
+    QWidget *parent;
     QVBoxLayout* layout;
     TerminalView* terminalView;
     TerminalStatusWidget* statusWidget;
 };
 
-#endif // QMPS_TERMINAL_WINDOW_H
+#endif // QARM_TERMINAL_WINDOW_H

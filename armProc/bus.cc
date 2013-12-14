@@ -25,6 +25,7 @@
 #include <string.h>
 #include "armProc/bus.h"
 #include "armProc/aout.h"
+#include "services/utility.h"
 
 // DeviceAreaAddress is a convenience class used to find a specific
 // device in bus device area
@@ -67,6 +68,11 @@ systemBus::systemBus(machine *mac) : mac(mac){
     memset(info, 0, (INFOTOP - INFOBASEADDR));
     romFrame = new Byte[(ROMFRAMETOP - ROMFRAMEBASE)];
     memset(romFrame, 0, (ROMFRAMETOP - ROMFRAMEBASE));
+    for (unsigned intl = 0; intl < N_EXT_IL; intl++) {
+        for (unsigned int devNo = 0; devNo < N_DEV_PER_IL; devNo++) {
+            devTable[intl][devNo] = NULL;
+        }
+    }
     reset();
 }
 
@@ -118,6 +124,19 @@ void systemBus::reset(){
     } else {
         for(unsigned int i = 0; i < activeCpus; i++)
             cpus[i]->reset();
+    }
+    // Create devices and initialize registers used for interrupt
+    // handling.
+    intPendMask = 0UL;
+    for (unsigned intl = 0; intl < N_EXT_IL; intl++) {
+        instDevTable[intl] = 0UL;
+        for (unsigned int devNo = 0; devNo < N_DEV_PER_IL; devNo++) {
+            if(devTable[intl][devNo] != NULL)
+                delete devTable[intl][devNo];
+            devTable[intl][devNo] = makeDev(intl, devNo);
+            if (devTable[intl][devNo]->Type() != NULLDEV)
+                instDevTable[intl] = SetBit(instDevTable[intl], devNo);
+        }
     }
     initInfo();
 }
@@ -497,6 +516,46 @@ Device * systemBus::getDev(unsigned int intL, unsigned int dNum)
         // never returns
         return NULL;
     }
+}
+
+// This method accesses the system configuration and constructs
+// the devices needed, linking them to SystemBus object
+Device* systemBus::makeDev(unsigned int intl, unsigned int dnum)
+{
+    unsigned int devt;
+    Device * dev;
+
+    MachineConfig *config = MC_Holder::getInstance()->getConfig();
+
+    devt = config->getDeviceType(intl, dnum);
+
+    switch(devt) {
+    case PRNTDEV:
+        dev = new PrinterDevice(this, config, intl, dnum);
+        break;
+
+    case TERMDEV:
+        dev = new TerminalDevice(this, config, intl, dnum);
+        break;
+
+    case ETHDEV:
+        dev = new EthDevice(this, config, intl, dnum);
+        break;
+
+    case DISKDEV:
+        dev = new DiskDevice(this, config, intl, dnum);
+        break;
+
+    case TAPEDEV:
+        dev = new TapeDevice(this, config, intl, dnum);
+        break;
+
+    default:
+        dev = new Device(this, intl, dnum);
+        break;
+    }
+
+    return dev;
 }
 
 //FIXME: tutte da implementare!

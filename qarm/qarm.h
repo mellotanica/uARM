@@ -28,12 +28,14 @@
 #include "qarm/guiConst.h"
 #include "qarm/ramview.h"
 #include "qarm/QLine.h"
+#include "terminal_window.h"
 #include <QMainWindow>
 #include <QWidget>
 #include <QVBoxLayout>
 #include <QTimer>
 #include <QFile>
 #include <QDataStream>
+#include <QPointer>
 #include <QMessageBox>
 #include <QApplication>
 
@@ -43,10 +45,14 @@ public:
     qarm(QApplication *app);
     machine *getMachine() {return mac;}
 
+protected:
+    virtual void closeEvent(QCloseEvent* event);
+
 signals:
     void resetDisplay();
     void resetMachine();
     void stop();
+    void setTerminalEnabled(unsigned int devNo, bool enabled);
 
 private slots:
     void start(int speed);
@@ -57,6 +63,9 @@ private slots:
     void selectBios();
     void showRam();
     void showConfigDialog();
+    void showTerminal(unsigned int devNo);
+    void onMachineHalted();
+
 
 private:
     QApplication *application;
@@ -69,6 +78,8 @@ private:
     QVBoxLayout *centralLayout;
     mainBar *toolbar;
     QTimer *clock;
+
+    QPointer<TerminalWindow> terminalWindows[N_DEV_PER_IL];
 
     bool initialize();
     bool openRAM();

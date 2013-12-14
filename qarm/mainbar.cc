@@ -24,6 +24,7 @@
 
 #include "qarm/mainbar.h"
 #include "qarm/guiConst.h"
+#include "qarm/qarm.h"
 //#include "armProc/const.h"
 
 mainBar::mainBar(QWidget *parent) :
@@ -100,9 +101,33 @@ mainBar::mainBar(QWidget *parent) :
 
     setSpeedLab(speedSl->value());
 
+    utilsW = new QWidget;
+    utilsL = new QVBoxLayout;
+
     ramB = new styledButton();
     ramB->setToolButtonStyle(Qt::ToolButtonTextOnly);
     ramB->setText("View Ram");
+
+    for (unsigned int i = 0; i < N_DEV_PER_IL; ++i) {
+        showTerminalActions[i] = new QAction(QString("Terminal %1").arg(i), this);
+        showTerminalActions[i]->setShortcut(QKeySequence(QString("Alt+%1").arg(i)));
+        showTerminalActions[i]->setData(QVariant(i));
+        connect(showTerminalActions[i], SIGNAL(triggered()), this, SLOT(showTerminalClicked()));
+        showTerminalActions[i]->setEnabled(false);
+    }
+
+    windowMenu = new QMenu("Terminals");
+
+    for (unsigned int i = 0; i < N_DEV_PER_IL; ++i)
+        windowMenu->addAction(showTerminalActions[i]);
+
+    windowDropDown = new QMenuBar;
+    windowDropDown->addMenu(windowMenu);
+    windowDropDown->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
+
+    utilsL->addWidget(ramB);
+    utilsL->addWidget(windowDropDown);
+    utilsW->setLayout(utilsL);
 
     addWidget(configB);
     addWidget(playB);
@@ -110,7 +135,7 @@ mainBar::mainBar(QWidget *parent) :
     addWidget(stepB);
     addWidget(plusMinusW);
     addWidget(scrollerW);
-    addWidget(ramB);
+    addWidget(utilsW);
 
     connect(this, SIGNAL(speedChanged(int)), this, SLOT(setSpeedLab(int)));
     connect(speedSl, SIGNAL(valueChanged(int)), this, SIGNAL(speedChanged(int)));
@@ -182,6 +207,16 @@ void mainBar::minus(){
 
 void mainBar::updateStatus(QString state){
     statusLab->setText(state);
+}
+
+void mainBar::setTerminalEnabled(unsigned int devNo, bool enabled){
+    showTerminalActions[devNo]->setEnabled(enabled);
+}
+
+void mainBar::showTerminalClicked(){
+    QAction* action = static_cast<QAction*>(sender());
+    unsigned int devNo = action->data().toUInt();
+    emit showTerminal(devNo);
 }
 
 #endif //QARM_MAINBAR_CC

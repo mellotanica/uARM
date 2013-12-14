@@ -32,6 +32,8 @@
 #include <QMenu>
 #include <QMenuBar>
 
+#include "armProc/arch.h"
+
 class styledButton;
 
 class mainBar : public QToolBar
@@ -53,6 +55,7 @@ signals:
     void openBIOS();
     void showRam();
     void showConfig();
+    void showTerminal(unsigned int devNo);
 
 private slots:
     void setSpeedLab(int speedVal);
@@ -62,16 +65,19 @@ private slots:
     void plus();
     void minus();
     void updateStatus(QString state);
+    void setTerminalEnabled(unsigned int devNo, bool enabled);
+    void showTerminalClicked();
 
 private:
     styledButton *playB, *resetB, *stepB, *ramB, *plusB, *minusB, *configB;   //interactions
-    QVBoxLayout *plusMinusL, *scrollerL;
-    QWidget *plusMinusW, *scrollerW;
+    QVBoxLayout *plusMinusL, *scrollerL, *utilsL;
+    QWidget *plusMinusW, *scrollerW, *utilsW;
     const QIcon *playIco, *resetIco, *pauseIco, *stepIco, *configIco;
     QSlider *speedSl;
     QLabel *speedLab, *statusLab;
-    QMenu *openMenu;
-    QMenuBar *openDropDown;
+    QMenu *openMenu, *windowMenu;
+    QMenuBar *openDropDown, *windowDropDown;
+    QAction* showTerminalActions[N_DEV_PER_IL];
 };
 
 class styledButton : public QToolButton{

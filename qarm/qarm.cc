@@ -69,6 +69,8 @@ qarm::qarm(QApplication *app):
     connect(toolbar, SIGNAL(showRam()), this, SLOT(showRam()));
     connect(toolbar, SIGNAL(step()), this, SLOT(step()));
     connect(toolbar, SIGNAL(showConfig()), this, SLOT(showConfigDialog()));
+    connect(toolbar, SIGNAL(showTerminal(uint)), this, SLOT(showTerminal(uint)));
+    connect(this, SIGNAL(setTerminalEnabled(uint,bool)), toolbar, SLOT(setTerminalEnabled(uint,bool)));
 
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
 
@@ -98,6 +100,12 @@ bool qarm::initialize(){
     initialized = true;
     initialized &= openBIOS();
     initialized &= openRAM();
+    if(initialized){
+        for (unsigned int i = 0; i < N_DEV_PER_IL; ++i) {
+            const Device* d = mac->getBus()->getDev(EXT_IL_INDEX(IL_TERMINAL), i);
+            emit setTerminalEnabled(i, d->Type() == TERMDEV);
+        }
+    }
     return initialized;
 }
 
@@ -252,6 +260,66 @@ void qarm::showConfigDialog(){
         // EDIT: no config view for now..
         //configView->Update();
     }
+}
+
+void qarm::showTerminal(unsigned int devNo)
+{
+    if (terminalWindows[devNo].isNull()) {
+        terminalWindows[devNo] = new TerminalWindow(devNo, this);
+        terminalWindows[devNo]->setAttribute(Qt::WA_QuitOnClose, false);
+        terminalWindows[devNo]->setAttribute(Qt::WA_DeleteOnClose);
+        terminalWindows[devNo]->show();
+    } else {
+        terminalWindows[devNo]->activateWindow();
+        terminalWindows[devNo]->raise();
+    }
+}
+
+void qarm::closeEvent(QCloseEvent* event)
+{
+    /*STATIC: only one core, actually no processor windows
+    for (unsigned int i = 0; i < MachineConfig::MAX_CPUS; i++)
+        if (cpuWindows[i])
+            cpuWindows[i]->close();*/
+
+    for (unsigned int i = 0; i < N_DEV_PER_IL; i++)
+        if (terminalWindows[i])
+            terminalWindows[i]->close();
+
+    /*EDIT: default size at next start...
+    Appl()->settings.setValue("MonitorWindow/geometry", saveGeometry());
+    Appl()->settings.setValue("MonitorWindow/ShowStopMask", viewStopMaskAction->isChecked());
+    */
+    event->accept();
+}
+
+void qarm::onMachineHalted()
+{
+    /*EDIT: debug and multicore aren't still here
+    cpuListModel.reset();
+    suspectListModel.reset();
+    deviceTreeModel.reset();
+
+    for (unsigned int i = 0; i < MachineConfig::MAX_CPUS; i++)
+        if (cpuWindows[i])
+            cpuWindows[i]->close();*/
+
+    for (unsigned int i = 0; i < N_DEV_PER_IL; i++)
+        if (terminalWindows[i])
+            terminalWindows[i]->close();
+
+    /*EDIT: we don't have anything of this...
+    tabWidget->setTabEnabled(TAB_INDEX_CPU, false);
+    tabWidget->setTabEnabled(TAB_INDEX_MEMORY, false);
+    tabWidget->setTabEnabled(TAB_INDEX_DEVICES, false);
+
+    for (unsigned int i = 0; i < N_DEV_PER_IL; ++i)
+        showTerminalActions[i]->setEnabled(false);
+
+    for (unsigned int i = 0; i < MachineConfig::MAX_CPUS; ++i)
+        showCpuWindowActions[i]->setEnabled(false);
+
+    editConfigAction->setEnabled(true);*/
 }
 
 #endif //QARM_QARM_CC
