@@ -77,6 +77,7 @@ systemBus::systemBus(machine *mac) : mac(mac){
 }
 
 systemBus::~systemBus(){
+    delete eventQ;
     if(ram != NULL){
         delete ram;
         ram = NULL;
@@ -101,6 +102,10 @@ void systemBus::reset(){
     if(bios != NULL)
         delete [] bios;
     bios = NULL;
+    tod = UINT64_C(0);
+    timer = MAXWORDVAL;
+    eventQ = new EventQueue();
+
     ram->reset(MC_Holder::getInstance()->getConfig()->getRamSize());
     if(activeCpus != MC_Holder::getInstance()->getConfig()->getNumProcessors()){
         //if there will be less cpus then what are active now destroy exceding instances
@@ -149,8 +154,67 @@ void systemBus::initInfo(){
     writeW(&addr, RAMTOP);
     addr += 4;
     writeW(&addr, DEVBASEADDR);
+    addr = BUS_REG_TOD_HI;
+    writeW(&addr, (Word) ((tod >> 32) & 0xFFFFFFFF));   //TOD Hi
+    addr = BUS_REG_TOD_LO;
+    writeW(&addr, (Word) (tod & 0xFFFFFFFF));           //TOD Low
+    addr = BUS_REG_TIMER;
+    writeW(&addr, timer);
 }
 
+void systemBus::ClockTick(){
+    tod++;
+
+    // both registers signal "change" because they are conceptually one
+    HandleBusAccess(BUS_REG_TOD_HI, WRITE, NULL);
+    HandleBusAccess(BUS_REG_TOD_LO, WRITE, NULL);
+    Word addr = BUS_REG_TOD_HI;
+    writeW(&addr, (Word) ((tod >> 32) & 0xFFFFFFFF));   //TOD Hi
+    addr = BUS_REG_TOD_LO;
+    writeW(&addr, (Word) (tod & 0xFFFFFFFF));           //TOD Low
+
+
+    // Update interval timer
+    if (UnsSub(&timer, timer, 1))
+        pic->StartIRQ(IL_TIMER);
+    HandleBusAccess(BUS_REG_TIMER, WRITE, NULL);
+    addr = BUS_REG_TIMER;
+    writeW(&addr, timer);
+
+    // Scan the event queue
+    while (!eventQ->IsEmpty() && eventQ->nextDeadline() <= tod) {
+        (eventQ->nextCallback())();
+        eventQ->RemoveHead();
+    }
+}
+
+uint32_t systemBus::IdleCycles() const
+{
+    if (eventQ->IsEmpty())
+        return timer;
+
+    const uint64_t et = eventQ->nextDeadline();
+    if (et > tod)
+        return std::min(timer, (uint32_t) (et - tod - 1));
+    else
+        return 0;
+}
+
+void systemBus::Skip(uint32_t cycles)
+{
+    tod += cycles;
+    HandleBusAccess(BUS_REG_TOD_HI, WRITE, NULL);
+    HandleBusAccess(BUS_REG_TOD_LO, WRITE, NULL);
+    Word addr = BUS_REG_TOD_HI;
+    writeW(&addr, (Word) ((tod >> 32) & 0xFFFFFFFF));   //TOD Hi
+    addr = BUS_REG_TOD_LO;
+    writeW(&addr, (Word) (tod & 0xFFFFFFFF));           //TOD Low
+
+    timer -= cycles;
+    HandleBusAccess(BUS_REG_TIMER, WRITE, NULL);
+    addr = BUS_REG_TIMER;
+    writeW(&addr, timer);
+}
 
 bool systemBus::prefetch(Word addr){ //fetches one instruction per execution from exact given address
     pipeline[PIPELINE_EXECUTE] = pipeline[PIPELINE_DECODE];
@@ -339,6 +403,12 @@ AbortType systemBus::checkAddress(Word *address){
 
 bool systemBus::readRomB(Word *address, Byte *dest){
     Byte *romptr;
+    Word addr = *address - (*address % 4);
+    if(addr < DEVTOP && addr >= DEVBASEADDR){   //read device register
+        DeviceAreaAddress da(addr);
+        Device* device = devTable[da.line()][da.device()];
+        *dest = (Byte) ((device->ReadDevReg(da.field())) >> ((*address % 4) * 8)) & 0xFF;
+    }
     if(!getRomVector(address, &romptr))
         return false;
     *dest = *romptr;
@@ -347,6 +417,16 @@ bool systemBus::readRomB(Word *address, Byte *dest){
 
 bool systemBus::writeRomB(Word *address, Byte data){
     Byte *romptr;
+    Word addr = *address - (*address % 4);
+    if(addr < DEVTOP && addr >= DEVBASEADDR){   //write device register
+        DeviceAreaAddress dva(addr);
+        Device *device = devTable[dva.line()][dva.device()];
+        //addr is now used to edit only the register's byte addressed
+        addr = device->ReadDevReg(dva.field());
+        addr ^= (0xFF << (*address % 4));
+        addr |= (data << (*address % 4));
+        device->WriteDevReg(dva.field(), addr);
+    }
     if(!getRomVector(address, &romptr))
         return false;
     *romptr = data;
@@ -355,8 +435,13 @@ bool systemBus::writeRomB(Word *address, Byte data){
 
 bool systemBus::readRomH(Word *address, HalfWord *dest){
     Byte *romptr;
-    Word addr = *address;
+    Word addr = *address - (*address % 4);
     *dest = 0;
+    if(addr < DEVTOP && addr >= DEVBASEADDR){   //read device register
+        DeviceAreaAddress da(addr);
+        Device* device = devTable[da.line()][da.device()];
+        *dest = (HalfWord) ((device->ReadDevReg(da.field())) >> (((*address >> 1) % 2) * 16)) & 0xFFFF;
+    }
     for(uint i = 0; i < sizeof(HalfWord); i++, addr++){
         if(!getRomVector(&addr, &romptr))
             return false;
@@ -367,7 +452,16 @@ bool systemBus::readRomH(Word *address, HalfWord *dest){
 
 bool systemBus::writeRomH(Word *address, HalfWord data){
     Byte *romptr;
-    Word addr = *address;
+    Word addr = *address - (*address % 4);
+    if(addr < DEVTOP && addr >= DEVBASEADDR){   //write device register
+        DeviceAreaAddress dva(addr);
+        Device *device = devTable[dva.line()][dva.device()];
+        //addr is now used to edit only the register's halfword addressed
+        addr = device->ReadDevReg(dva.field());
+        addr ^= (0xFFFF << ((*address >> 1) % 2));
+        addr |= (data << ((*address >> 1) % 2));
+        device->WriteDevReg(dva.field(), addr);
+    }
     for(uint i = 0; i < sizeof(HalfWord); i++, addr++){
         if(!getRomVector(&addr, &romptr))
             return false;
@@ -380,6 +474,11 @@ bool systemBus::readRomW(Word *address, Word *dest){
     Byte *romptr;
     Word addr = *address;
     *dest = 0;
+    if(addr < DEVTOP && addr >= DEVBASEADDR){   //read device register
+        DeviceAreaAddress da(addr);
+        Device* device = devTable[da.line()][da.device()];
+        *dest = device->ReadDevReg(da.field());
+    }
     for(uint i = 0; i < sizeof(Word); i++, addr++){
         if(!getRomVector(&addr, &romptr))
             return false;
@@ -391,6 +490,11 @@ bool systemBus::readRomW(Word *address, Word *dest){
 bool systemBus::writeRomW(Word *address, Word data){
     Byte *romptr;
     Word addr = *address;
+    if(addr < DEVTOP && addr >= DEVBASEADDR){   //write device register
+        DeviceAreaAddress dva(addr);
+        Device *device = devTable[dva.line()][dva.device()];
+        device->WriteDevReg(dva.field(), data);
+    }
     for(uint i = 0; i < sizeof(Word); i++, addr++){
         if(!getRomVector(&addr, &romptr))
             return false;
@@ -558,11 +662,26 @@ Device* systemBus::makeDev(unsigned int intl, unsigned int dnum)
     return dev;
 }
 
-//FIXME: tutte da implementare!
 uint64_t systemBus::scheduleEvent(uint64_t delay, Event::Callback callback){
-    return delay;
+    return eventQ->InsertQ(tod, delay, callback);
 }
 
+void systemBus::setToDHI(Word hi)
+{
+    TimeStamp::setHi(tod, hi);
+}
+
+void systemBus::setToDLO(Word lo)
+{
+    TimeStamp::setLo(tod, lo);
+}
+
+void systemBus::setTimer(Word time)
+{
+    timer = time;
+}
+
+//FIXME: tutte da implementare!
 void systemBus::HandleBusAccess(Word pAddr, Word access, processor* cpu){
 
 }

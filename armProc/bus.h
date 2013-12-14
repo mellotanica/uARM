@@ -31,6 +31,7 @@
 #include "armProc/device.h"
 #include "armProc/machine.h"
 #include "armProc/processor.h"
+#include "armProc/time_stamp.h"
 //#include "armProc/mp_controller.h"
 
 
@@ -40,13 +41,12 @@
 #define DEVBASEADDR  0x00000040
 #define DEVTOP       0x000002C0
 #define INFOBASEADDR 0x000002D0
-#define INFOTOP      0x000002DC
+#define INFOTOP      0x000002E8
 #define BIOSBASEADDR 0x00000300
 #define ROMFRAMEBASE 0x00007000
 #define ROMFRAMETOP  0x00008000
 
 #define RAMBASEADDR  0x00008000
-
 
 class Device;
 class machine;
@@ -75,6 +75,17 @@ public:
     AbortType writeH(Word *address, HalfWord data);
     AbortType readW(Word *address, Word *dest);
     AbortType writeW(Word *address, Word data);
+
+    // This method increments system clock and decrements interval
+    // timer; on timer underflow (0 -> FFFFFFFF transition) a interrupt
+    // is generated.  Event queue is checked against the current clock
+    // value and device operations are completed if needed; all memory
+    // changes are notified to Watch control object
+    void ClockTick();
+
+    uint32_t IdleCycles() const;
+
+    void Skip(uint32_t cycles);
 
     // This method transfers a block from or to memory, starting with
     // address startAddr; it returns TRUE is transfer was not successful
@@ -110,14 +121,15 @@ public:
     // This method returns the Device object with given "coordinates"
     Device * getDev(unsigned int intL, unsigned int dNum);
 
-    Word getToDLO() const { return 1; }
-    Word getToDHI() const { return 0; }
-    Word getTimer() const { return 0; }
-    /* EDIT: TOD good ones
+
     Word getToDLO() const { return TimeStamp::getLo(tod); }
     Word getToDHI() const { return TimeStamp::getHi(tod); }
     Word getTimer() const { return timer; }
-    */
+
+    void setToDHI(Word hi);
+    void setToDLO(Word lo);
+    void setTimer(Word time);
+
 
     processor* getProcessor(unsigned int cpuId) { return cpus[cpuId]; }
 
@@ -132,6 +144,9 @@ private:
     ramMemory *ram = NULL;
     processor **cpus;
     unsigned int activeCpus = 0;
+
+    uint64_t tod;
+    Word timer;
 
     Word BIOSTOP;
     Word RAMTOP;

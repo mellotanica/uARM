@@ -90,9 +90,9 @@
 #define BUS_REG_BIOS_SIZE       0x1000000C
 #define BUS_REG_BOOT_BASE       0x10000010
 #define BUS_REG_BOOT_SIZE       0x10000014
-#define BUS_REG_TOD_HI          0x10000018
-#define BUS_REG_TOD_LO          0x1000001C
-#define BUS_REG_TIMER           0x10000020
+#define BUS_REG_TOD_HI          0x000002DC
+#define BUS_REG_TOD_LO          0x000002E0
+#define BUS_REG_TIMER           0x000002E4
 #define BUS_REG_TIME_SCALE      0x10000024
 
 /* Installed devices bitmap */
