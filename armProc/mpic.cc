@@ -31,11 +31,10 @@
 #include "armProc/bus.h"
 #include "armProc/processor.h"
 
-InterruptController::InterruptController(const MachineConfig* config, systemBus* bus)
-    : config(config),
-      bus(bus),
+InterruptController::InterruptController(systemBus* bus)
+    : bus(bus),
       arbiter(0),
-      cpuData(config->getNumProcessors())
+      cpuData(MC_Holder::getInstance()->getConfig()->getNumProcessors())
 {}
 
 void InterruptController::StartIRQ(unsigned int il, unsigned int devNo)
@@ -171,7 +170,7 @@ void InterruptController::Write(Word addr, Word data, const processor* cpu)
             break;
 
         case CPUCTL_OUTBOX:
-            bus->scheduleEvent(kIpiLatency * config->getClockRate(),
+            bus->scheduleEvent(kIpiLatency * MC_Holder::getInstance()->getConfig()->getClockRate(),
                                boost::bind(&InterruptController::deliverIPI, this, cpu->Id(), data));
             break;
 
@@ -197,7 +196,7 @@ void InterruptController::deliverIPI(unsigned int origin, Word outbox)
 {
     Word recipients = CPUCTL_OUTBOX_GET_RECIP(outbox);
 
-    for (unsigned int i = 0; i < config->getNumProcessors(); i++) {
+    for (unsigned int i = 0; i < MC_Holder::getInstance()->getConfig()->getNumProcessors(); i++) {
         if (recipients & (1U << i)) {
             bool hasSlot = true;
             foreach (const IpiMessage& ipi, cpuData[i].ipiInbox) {

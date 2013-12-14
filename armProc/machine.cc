@@ -63,7 +63,7 @@ void machine::refreshData(){
     processor *cpu = sysbus->getProcessor(0);
     emit updateStatus(status2QString());
     QString mnem = QString::fromStdString(cpu->mnemonicOPcode) + (cpu->isOPcodeARM ? "(ARM)" : "(Thumb)" );
-    emit dataReady(cpu->getRegList(), cpu->getCP15()->getRegList() , sysbus->pipeline, mnem);
+    emit dataReady(cpu->getRegList(), cpu->getCP15()->getRegList() , sysbus->pipeline, sysbus->getToDHI(), sysbus->getToDLO(), sysbus->getTimer(), mnem);
 
 }
 

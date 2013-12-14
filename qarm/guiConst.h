@@ -33,8 +33,10 @@
 #define PIPECOLS    6
 #define CPUCOLS     8
 #define CPUROWS     19
-#define CP15COLS    8
-#define CP15ROWS    5
+#define CP15COLS    5
+#define CP15ROWS    4
+#define INFOCOLS    3
+#define INFOROWS    4
 
 //#define WS  (sizeof(Word))
 #define UNUSED_ARG(x) ((void) x)

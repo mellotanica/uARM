@@ -56,7 +56,10 @@ private:
     Word pa;
 };
 
-systemBus::systemBus(machine *mac) : mac(mac){
+systemBus::systemBus(machine *mac) :
+    mac(mac),
+    pic(new InterruptController(this))
+{
     if(ram == NULL)
         ram = new ramMemory();
     cpus = new processor*[MachineConfig::MAX_CPUS];
@@ -408,10 +411,11 @@ bool systemBus::readRomB(Word *address, Byte *dest){
         DeviceAreaAddress da(addr);
         Device* device = devTable[da.line()][da.device()];
         *dest = (Byte) ((device->ReadDevReg(da.field())) >> ((*address % 4) * 8)) & 0xFF;
+    } else {
+        if(!getRomVector(address, &romptr))
+            return false;
+        *dest = *romptr;
     }
-    if(!getRomVector(address, &romptr))
-        return false;
-    *dest = *romptr;
     return true;
 }
 
@@ -426,10 +430,11 @@ bool systemBus::writeRomB(Word *address, Byte data){
         addr ^= (0xFF << (*address % 4));
         addr |= (data << (*address % 4));
         device->WriteDevReg(dva.field(), addr);
+    } else {
+        if(!getRomVector(address, &romptr))
+            return false;
+        *romptr = data;
     }
-    if(!getRomVector(address, &romptr))
-        return false;
-    *romptr = data;
     return true;
 }
 
@@ -441,8 +446,7 @@ bool systemBus::readRomH(Word *address, HalfWord *dest){
         DeviceAreaAddress da(addr);
         Device* device = devTable[da.line()][da.device()];
         *dest = (HalfWord) ((device->ReadDevReg(da.field())) >> (((*address >> 1) % 2) * 16)) & 0xFFFF;
-    }
-    for(uint i = 0; i < sizeof(HalfWord); i++, addr++){
+    } else for(uint i = 0; i < sizeof(HalfWord); i++, addr++){
         if(!getRomVector(&addr, &romptr))
             return false;
         *dest |= (*romptr << (i * 8));
@@ -461,8 +465,7 @@ bool systemBus::writeRomH(Word *address, HalfWord data){
         addr ^= (0xFFFF << ((*address >> 1) % 2));
         addr |= (data << ((*address >> 1) % 2));
         device->WriteDevReg(dva.field(), addr);
-    }
-    for(uint i = 0; i < sizeof(HalfWord); i++, addr++){
+    } else for(uint i = 0; i < sizeof(HalfWord); i++, addr++){
         if(!getRomVector(&addr, &romptr))
             return false;
         *romptr = (Byte) ((data >> (i * 8)) & 0xFF);
@@ -478,8 +481,7 @@ bool systemBus::readRomW(Word *address, Word *dest){
         DeviceAreaAddress da(addr);
         Device* device = devTable[da.line()][da.device()];
         *dest = device->ReadDevReg(da.field());
-    }
-    for(uint i = 0; i < sizeof(Word); i++, addr++){
+    } else for(uint i = 0; i < sizeof(Word); i++, addr++){
         if(!getRomVector(&addr, &romptr))
             return false;
         *dest |= (*romptr << (i * 8));
@@ -494,8 +496,7 @@ bool systemBus::writeRomW(Word *address, Word data){
         DeviceAreaAddress dva(addr);
         Device *device = devTable[dva.line()][dva.device()];
         device->WriteDevReg(dva.field(), data);
-    }
-    for(uint i = 0; i < sizeof(Word); i++, addr++){
+    } else for(uint i = 0; i < sizeof(Word); i++, addr++){
         if(!getRomVector(&addr, &romptr))
             return false;
         Byte dataB = (Byte) ((data >> (i * 8)) & 0xFF);

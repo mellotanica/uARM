@@ -36,7 +36,7 @@ class InterruptController {
 public:
     static const Word kIpiLatency = 20;
 
-    InterruptController(const MachineConfig* config, systemBus* bus);
+    InterruptController(systemBus* bus);
 
     void StartIRQ(unsigned int il, unsigned int devNo = 0);
     void EndIRQ(unsigned int il, unsigned int devNo = 0);
@@ -95,7 +95,6 @@ private:
 
     void deliverIPI(unsigned int origin, Word outbox);
 
-    const MachineConfig* const config;
     systemBus* const bus;
 
     // Simple rotating index used to break ties between cpu

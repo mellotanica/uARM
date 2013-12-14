@@ -41,7 +41,7 @@ public:
     systemBus *getBus() {return sysbus;}
 
 signals:
-    void dataReady(Word *cpu, Word *cp15, Word *pipeline, QString mnemonic);
+    void dataReady(Word *cpu, Word *cp15, Word *pipeline, Word todH, Word todL, Word timer, QString mnemonic);
     void updateStatus(QString state);
 
 public slots:

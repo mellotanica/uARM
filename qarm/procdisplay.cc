@@ -31,18 +31,24 @@ procDisplay::procDisplay(QWidget *parent) :
     QWidget(parent)
 {
     mainLayout = new QVBoxLayout;
+    lowLayout = new QHBoxLayout;
     pipeL = new QGridLayout;
     cpuL = new QGridLayout;
     cp15L = new QGridLayout;
+    infoL = new QGridLayout;
+    lowLayout->addLayout(cp15L);
+    lowLayout->addWidget(new QFLine(true));
+    lowLayout->addLayout(infoL);
     mainLayout->addLayout(pipeL);
     mainLayout->addWidget(new QFLine(false));
     mainLayout->addLayout(cpuL);
     mainLayout->addWidget(new QFLine(false));
-    mainLayout->addLayout(cp15L);
+    mainLayout->addLayout(lowLayout);
 
     pipeline = new monoLabel*[PIPECOLS];
     cpuReg = new monoLabel**[CPUROWS];
     cp15Reg = new monoLabel**[CP15ROWS];
+    infoReg = new monoLabel**[INFOROWS];
 
     for(int i = 0; i < PIPECOLS; i++)
         pipeline[i] = new monoLabel("");
@@ -51,7 +57,7 @@ procDisplay::procDisplay(QWidget *parent) :
         cpuReg[i] = new monoLabel*[CPUCOLS];
         for(int j = 0; j < CPUCOLS; j++)
             cpuReg[i][j] = new monoLabel("");
-    }
+    }   
 
     for(int i = 0; i < CP15ROWS; i++){
         cp15Reg[i] = new monoLabel*[CP15COLS];
@@ -59,24 +65,30 @@ procDisplay::procDisplay(QWidget *parent) :
             cp15Reg[i][j] = new monoLabel("");
     }
 
+    for(int i = 0; i < INFOROWS; i++){
+        infoReg[i] = new monoLabel*[INFOCOLS];
+        for(int j = 0; j < INFOCOLS; j++)
+            infoReg[i][j] = new monoLabel("");
+    }
+
     pipeline[0]->setText("Pipeline (E D F):");
     pipeline[4]->setText("Executing:");
     pipeline[5]->setAlignment(Qt::AlignLeft);
 
     cpuReg[0][0]->setText("CPU registers: ");
-    cpuReg[1][0]->setText("r0:");
-    cpuReg[2][0]->setText("r1:");
-    cpuReg[3][0]->setText("r2:");
-    cpuReg[4][0]->setText("r3:");
-    cpuReg[5][0]->setText("r4:");
-    cpuReg[6][0]->setText("r5:");
-    cpuReg[7][0]->setText("r6:");
-    cpuReg[8][0]->setText("r7:");
-    cpuReg[9][0]->setText("r8:");
-    cpuReg[10][0]->setText("r9:");
-    cpuReg[11][0]->setText("r10:");
-    cpuReg[12][0]->setText("r11:");
-    cpuReg[13][0]->setText("r12:");
+    cpuReg[1][0]->setText("r0(a1):");
+    cpuReg[2][0]->setText("r1(a2):");
+    cpuReg[3][0]->setText("r2(a3):");
+    cpuReg[4][0]->setText("r3(a4):");
+    cpuReg[5][0]->setText("r4(v1):");
+    cpuReg[6][0]->setText("r5(v2):");
+    cpuReg[7][0]->setText("r6(v3):");
+    cpuReg[8][0]->setText("r7(v4):");
+    cpuReg[9][0]->setText("r8(v5):");
+    cpuReg[10][0]->setText("r9(v6):");
+    cpuReg[11][0]->setText("r10(v7):");
+    cpuReg[12][0]->setText("r11(v8):");
+    cpuReg[13][0]->setText("r12(IP):");
     cpuReg[14][0]->setText("r13(SP):");
     cpuReg[15][0]->setText("r14(LR):");
     cpuReg[16][0]->setText("r15(PC):");
@@ -103,10 +115,23 @@ procDisplay::procDisplay(QWidget *parent) :
     cpuReg[0][6]->setText("FIQ");
 
     cp15Reg[0][0]->setText("CP15 registers:");
+    cp15Reg[1][1]->setText("(r0) ID:");
+    cp15Reg[2][1]->setText("(r1) SCB:");
+    cp15Reg[3][1]->setText("(r1) CCB:");
+    cp15Reg[0][3]->setText("(r2) PTE_Hi:");
+    cp15Reg[1][3]->setText("(r2) PTE_Low:");
+    cp15Reg[2][3]->setText("(r15) Exc:");
+    cp15Reg[3][3]->setText("(r15) Int:");
+    infoReg[0][0]->setText("BUS Info:");
+    infoReg[1][1]->setText("TOD_Hi:");
+    infoReg[2][1]->setText("TOD_Low:");
+    infoReg[3][1]->setText("TIMER:");
+
+    /*EDIT: coprocessors register set restricted
     for(int i = 1; i < CP15_REGISTERS_NUM+1; i++){
         cp15Reg[i%CP15ROWS][(i/CP15ROWS)*2]->setText("r"+QString::number(i-1)+":");
         cp15Reg[i%CP15ROWS][(i/CP15ROWS)*2]->setAlignment(Qt::AlignRight);
-    }
+    }*/
 
     reset();
 
@@ -120,6 +145,10 @@ procDisplay::procDisplay(QWidget *parent) :
     for(int i = 0; i < CP15ROWS; i++)
         for(int j = 0; j < CP15COLS; j++)
             cp15L->addWidget(cp15Reg[i][j], i, j);
+
+    for(int i = 0; i < INFOROWS; i++)
+        for(int j = 0; j < INFOCOLS; j++)
+            infoL->addWidget(infoReg[i][j], i, j);
 
     this->setLayout(mainLayout);
 }
@@ -148,11 +177,25 @@ void procDisplay::reset(){
     cpuReg[15][4]->setText(convertHex(0));
     cpuReg[18][4]->setText(convertHex(0));
 
+    cp15Reg[1][2]->setText(convertHex(0));
+    cp15Reg[2][2]->setText(convertHex(0));
+    cp15Reg[3][2]->setText(convertHex(0));
+    cp15Reg[0][4]->setText(convertHex(0));
+    cp15Reg[1][4]->setText(convertHex(0));
+    cp15Reg[2][4]->setText(convertHex(0));
+    cp15Reg[3][4]->setText(convertHex(0));
+
+    infoReg[1][2]->setText(convertHex(0));
+    infoReg[2][2]->setText(convertHex(0));
+    infoReg[3][2]->setText(convertHex(0));
+
+    /*EDIT: cp15 display fix
     for(int i = 1; i < CP15_REGISTERS_NUM+1; i++)
         cp15Reg[i%CP15ROWS][(i/CP15ROWS)*2+1]->setText(convertHex(0));
+        */
 }
 
-void procDisplay::updateVals(Word *cpu, Word *cp15, Word *ppln, QString ass){
+void procDisplay::updateVals(Word *cpu, Word *cp15, Word *ppln, Word todH, Word todL, Word timer, QString ass){
     pipeline[1]->setText(convertHex(ppln[2]));
     pipeline[2]->setText(convertHex(ppln[1]));
     pipeline[3]->setText(convertHex(ppln[0]));
@@ -176,8 +219,22 @@ void procDisplay::updateVals(Word *cpu, Word *cp15, Word *ppln, QString ass){
     cpuReg[15][4]->setText(convertHex(cpu[35]));
     cpuReg[18][4]->setText(convertHex(cpu[36]));
 
+    cp15Reg[1][2]->setText(convertHex(cp15[0]));
+    cp15Reg[2][2]->setText(convertHex(cp15[1]));
+    cp15Reg[3][2]->setText(convertHex(cp15[2]));
+    cp15Reg[0][4]->setText(convertHex(cp15[3]));
+    cp15Reg[1][4]->setText(convertHex(cp15[4]));
+    cp15Reg[2][4]->setText(convertHex(cp15[5]));
+    cp15Reg[3][4]->setText(convertHex(cp15[6]));
+
+    infoReg[1][2]->setText(convertHex(todH));
+    infoReg[2][2]->setText(convertHex(todL));
+    infoReg[3][2]->setText(convertHex(timer));
+
+    /*EDIT: ooooold
     for(int i = 1; i < CP15_REGISTERS_NUM+1; i++)
         cp15Reg[i%CP15ROWS][(i/CP15ROWS)*2+1]->setText(convertHex(cp15[i-1]));
+        */
 
 }
 

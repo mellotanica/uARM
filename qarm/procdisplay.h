@@ -40,14 +40,15 @@ public:
     explicit procDisplay(QWidget *parent = 0);
         
 public slots:
-    void updateVals(Word *cpu, Word *cp15, Word *pipeline, QString ass);
+    void updateVals(Word *cpu, Word *cp15, Word *pipeline, Word todH, Word todL, Word timer, QString ass);
     void reset();
 
 private:
     QVBoxLayout *mainLayout;
-    QGridLayout *pipeL, *cpuL, *cp15L;
+    QGridLayout *pipeL, *cpuL, *cp15L, *infoL;
+    QHBoxLayout *lowLayout;
     monoLabel **pipeline;
-    monoLabel ***cpuReg, ***cp15Reg;
+    monoLabel ***cpuReg, ***cp15Reg, ***infoReg;
 
     QString convertHex(Word val);
 };

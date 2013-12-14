@@ -76,7 +76,7 @@ qarm::qarm(QApplication *app):
 
     connect(this, SIGNAL(resetMachine()), mac, SLOT(reset()));
     connect(this, SIGNAL(resetMachine()), this, SIGNAL(resetDisplay()));
-    connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,QString)), display, SLOT(updateVals(Word*,Word*,Word*,QString)));
+    connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), display, SLOT(updateVals(Word*,Word*,Word*,Word,Word,Word,QString)));
     connect(this, SIGNAL(resetDisplay()), display, SLOT(reset()));
 
     connect(this, SIGNAL(stop()), clock, SLOT(stop()));

@@ -34,8 +34,8 @@
 #define WORD_SIZE (sizeof(Word))
 #define WS        WORD_SIZE
 
-#define MMIO_BASE 0x10000000
-#define RAM_BASE  0x20000000
+#define MMIO_BASE 0x00000040
+#define RAM_BASE  0x00008000
 
 /* Segment-related constants */
 #define KSEGOS_BASE        0x00000000
@@ -106,7 +106,7 @@
 #define CDEV_BITMAP_ADDR(line)  (CDEV_BITMAP_BASE + ((line) - DEV_IL_START) * WS)
 
 /* Device register area */
-#define DEV_REG_START           0x10000050
+#define DEV_REG_START           0x00000040
 #define DEV_REG_ADDR(line, dev) (DEV_REG_START + ((line) - DEV_IL_START) * N_DEV_PER_IL * DEV_REG_SIZE + (dev) * DEV_REG_SIZE)
 
 /* End of memory mapped external device registers area */
@@ -186,6 +186,6 @@
 #define MCTL_BASE               MCTL_NCPUS
 #define MCTL_END                (MCTL_POWER + WS)
 
-#define MMIO_END                MCTL_END
+#define MMIO_END                0x2C4
 
 #endif //UARM_ARCH_H
