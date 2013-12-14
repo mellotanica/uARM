@@ -108,7 +108,8 @@ static void printHelp();
 uint32_t toTargetEndian(uint32_t x);
 
 static Elf_Scn* getSectionByType(Elf32_Word type);
-static Elf32_Addr getGPValue();
+//EDIT: unused function
+//static Elf32_Addr getGPValue();
 
 static void elf2aout(bool isCore);
 static void createSymbolTable();
@@ -131,7 +132,7 @@ int main(int argc, char** argv)
     if (elf_version(EV_CURRENT) == EV_NONE)
         fatalError("ELF library out of date");
 
-    uint32_t fileId;
+    uint32_t fileId = 0;
     bool createMap = false;
 
     // Parse args, lamely
@@ -309,9 +310,11 @@ static Elf_Scn* getSectionByType(Elf32_Word type)
     return NULL;
 }
 
+
 /*
  * Retreive the starting $gp value
  */
+/* EDIT:unused function!
 static Elf32_Addr getGPValue()
 {
     Elf_Scn *dynscn = getSectionByType(SHT_DYNAMIC);
@@ -325,8 +328,8 @@ static Elf32_Addr getGPValue()
 
     for (j = 0; j < jmax; j++) {
                 if (gelf_getdyn(d, j, &dyn) != &dyn) {
-                    /*warnx("gelf_getdyn failed: %s",
-                        elf_errmsg(-1));*/
+                    warnx("gelf_getdyn failed: %s",
+                        elf_errmsg(-1));
                     continue;
                 }
                 nentries ++;
@@ -337,13 +340,13 @@ static Elf32_Addr getGPValue()
     for (j = 0; j < nentries; j++) {
                 if (gelf_getdyn(d, j, &dyn) != &dyn)
                     continue;
-                /* Dump dynamic entry type. */
+                // Dump dynamic entry type.
                 if(dyn.d_tag == DT_PLTGOT)
                     return dyn.d_un.d_ptr;
     }
 
     return (Elf32_Addr) -1;
-}
+}*/
 
 /*
  * Convert an ELF executable into a uARM a.out or core executable.
@@ -378,9 +381,9 @@ static void elf2aout(bool isCore)
 
     // Obtain segment info
     bool foundDataSeg = false;
-    uint8_t* dataBuf;
+    uint8_t* dataBuf = NULL;
     bool foundTextSeg = false;
-    uint8_t* textBuf;
+    uint8_t* textBuf = NULL;
 
     //prepare data and text buffers
     for (size_t i = 0; i < phtSize; i++) {

@@ -7,11 +7,6 @@ QMAKE_CXXFLAGS += -std=c++11
 QMAKE_LFLAGS += -lelf
 CONFIG += qt debug
 TARGET = uarm
-#TARGET = elf2uarm
-
-#INCLUDEPATH += /usr/include/sigc++-2.0 \
-#	    /usr/lib/sigc++-2.0/include \
-#	    /usr/lib/i386-linux-gnu/sigc++-2.0/include
 
 HEADERS += \
     armProc/types.h \
@@ -75,7 +70,6 @@ SOURCES += \
     qarm/procdisplay.cc \
     qarm/ramview.cc \
     qarm/hex_view.cc \
-#    services/elf2arm.cc
     armProc/device.cc \
     armProc/machine_config.cc \
     services/json.cc \
@@ -112,4 +106,5 @@ OTHER_FILES += \
     test/IsaCheck/dataP_TST_TEQ_CMP_CMN.s \
     test/BIOS_Base.bin \
     elftest/simpleBoot.s \
-    icons/machine_settings-22.png
+    icons/machine_settings-22.png \
+    elf2uarm.pro
