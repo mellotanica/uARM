@@ -486,6 +486,19 @@ void systemBus::DeassertIRQ(unsigned int il, unsigned int target){
     getProcessor(target)->DeassertIRQ(il);
 }
 
+// This method returns the Device object with given "coordinates"
+Device * systemBus::getDev(unsigned int intL, unsigned int dNum)
+{
+    if (intL < DEVINTUSED  && dNum < DEVPERINT)
+        return(devTable[intL][dNum]);
+    else {
+        //FIXME: we need panic!
+        //Panic("Unknown device specified in SystemBus::getDev()");
+        // never returns
+        return NULL;
+    }
+}
+
 //FIXME: tutte da implementare!
 uint64_t systemBus::scheduleEvent(uint64_t delay, Event::Callback callback){
     return delay;

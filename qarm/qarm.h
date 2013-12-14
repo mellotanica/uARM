@@ -41,6 +41,7 @@ class qarm : public QMainWindow{
     Q_OBJECT
 public:
     qarm(QApplication *app);
+    machine *getMachine() {return mac;}
 
 signals:
     void resetDisplay();

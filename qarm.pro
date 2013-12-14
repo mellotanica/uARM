@@ -56,7 +56,11 @@ HEADERS += \
     qarm/address_line_edit.h \
     qarm/machine_config_dialog_priv.h \
     qarm/machine_config_dialog.h \
-    armProc/mpic.h
+    armProc/mpic.h \
+    qarm/terminal_window_priv.h \
+    qarm/terminal_window.h \
+    qarm/terminal_view.h \
+    qarm/flat_push_button.h
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -84,7 +88,10 @@ SOURCES += \
     qarm/mac_id_edit.cc \
     qarm/address_line_edit.cc \
     qarm/machine_config_dialog.cc \
-    armProc/mpic.cc
+    armProc/mpic.cc \
+    qarm/terminal_window.cc \
+    qarm/terminal_view.cc \
+    qarm/flat_push_button.cc
 
 OTHER_FILES += \
     test/testProgBehavior \

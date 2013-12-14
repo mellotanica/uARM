@@ -107,10 +107,13 @@ public:
     void AssertIRQ(unsigned int il, unsigned int target);
     void DeassertIRQ(unsigned int il, unsigned int target);
 
+    // This method returns the Device object with given "coordinates"
+    Device * getDev(unsigned int intL, unsigned int dNum);
+
     Word getToDLO() const { return 1; }
     Word getToDHI() const { return 0; }
     Word getTimer() const { return 0; }
-    /* good ones
+    /* EDIT: TOD good ones
     Word getToDLO() const { return TimeStamp::getLo(tod); }
     Word getToDHI() const { return TimeStamp::getHi(tod); }
     Word getTimer() const { return timer; }
