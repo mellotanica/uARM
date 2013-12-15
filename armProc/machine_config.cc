@@ -42,7 +42,7 @@
 
 
 // STATIC: PACKAGE_DATA_DIR deve essere ereditata dal compilatore! (guardare Makefile in umps/src/umps/)
-#define PACKAGE_DATA_DIR "elftest";
+#define PACKAGE_DATA_DIR "facilities";
 
 template<typename T>
 static T bumpProperty(T minValue, T value, T maxValue)
@@ -315,7 +315,7 @@ void MachineConfig::resetToFactorySettings()
     std::string dataDir = PACKAGE_DATA_DIR;
 
     // STATIC: this is a temp bios, there needs to be a more complete one..
-    setROM(ROM_TYPE_BIOS, dataDir + "/simpleBoot.elf.rom.uarm");
+    setROM(ROM_TYPE_BIOS, dataDir + "/BIOS.rom.uarm");
 
     setLoadCoreEnabled(true);
     setROM(ROM_TYPE_CORE, "kernel.core.uarm");

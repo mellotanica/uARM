@@ -110,4 +110,4 @@ OTHER_FILES += \
     config.h.in \
     test/helloWorld.c \
     facilities/crtso.o \
-    facilities/BIOS.elf.rom.uarm
+    facilities/BIOS.rom.uarm
