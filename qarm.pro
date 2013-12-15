@@ -109,4 +109,5 @@ OTHER_FILES += \
     configure.ac \
     config.h.in \
     test/helloWorld.c \
-    facilities/crtso.o
+    facilities/crtso.o \
+    facilities/BIOS.elf.rom.uarm
