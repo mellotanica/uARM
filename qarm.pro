@@ -4,7 +4,7 @@ QMAKE_EXTRA_TARGETS += configure
 PRE_TARGETDEPS = config.h
 
 QMAKE_CXXFLAGS += -std=c++11
-QMAKE_LFLAGS += -lelf
+QMAKE_LFLAGS += -lelf -ldl
 CONFIG += qt debug
 TARGET = uarm
 

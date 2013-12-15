@@ -15,7 +15,8 @@ You will also need a cross-compile toolchain to build
 executables for ARM architecture.
 
 If you are running a Debian-based machine you can try
-Emdebian (https://wiki.debian.org/EmdebianToolchain), anyways
+gcc-arm-none-eabi (https://launchpad.net/gcc-arm-embedded/+download)
+or Emdebian (https://wiki.debian.org/EmdebianToolchain), anyways
 any ARM cross-compiling toolchain is ok.
 
 ###### RUNNING #######
@@ -95,3 +96,11 @@ emulation speed through the central slider in the top bar.
 To make the terminal window show up click on "Terminals" button
 and choose the desired terminal, you can also press Alt+[n]
 where n is the number of the desired terminal.
+
+###### NOTES #######
+
+If you are going to install Emdebian toolchain be aware that
+the last working version of the toolchain released is based on
+Debian Squeeze, so if you are running a newer version you need
+to add squeeze's main/contrib/non-free repository to your sources
+list in addition to emdebian's one.
