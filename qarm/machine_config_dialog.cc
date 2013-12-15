@@ -43,7 +43,7 @@
 #include <QFile>
 #include <QFileDialog>
 
-#include "armProc/arch.h"
+#include "facilities/arch.h"
 #include "qarm/address_line_edit.h"
 #include "qarm/mac_id_edit.h"
 #include "qarm/machine_config_dialog_priv.h"

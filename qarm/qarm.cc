@@ -128,7 +128,7 @@ void qarm::start(int speed){
     if(speed <= IPSTRESH)
         time = 1000 / speed;
     else
-        time = 1;
+        time = 0;
     clock->start(time);
 }
 

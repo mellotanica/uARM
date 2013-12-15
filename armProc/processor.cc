@@ -777,8 +777,9 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
     for(unsigned i = 0; i < sizeof(HalfWord) * 8; i++)
 		if(list & (1<<i))
 			regn++;
-	
-    Word address = *rn + ((U ? 1 : -1) * (P ? 4 : 0)) - (U ? 0 : (regn * 4));
+
+    //first address points always to lower most stored register
+    Word address = *rn + ((U ? 1 : -1) * (P ? 4 : 0)) - (U ? 0 : ((regn - 1) * 4));
 	if(load){		//LDM
 		if(S){	//user bank transfer / mode change
 			if(getMode() == MODE_USER){	// S bit should be set only in privileged mode

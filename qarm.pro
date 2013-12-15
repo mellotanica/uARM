@@ -33,13 +33,11 @@ HEADERS += \
     armProc/blockdev_params.h \
     armProc/aout.h \
     services/debug.h \
-    assemble_BIOS \
     config.h \
     armProc/device.h \
     armProc/machine_config.h \
     services/json.h \
     services/error.h \
-    armProc/arch.h \
     services/lang.h \
     armProc/blockdev.h \
     armProc/vde_network.h \
@@ -55,7 +53,8 @@ HEADERS += \
     qarm/terminal_window_priv.h \
     qarm/terminal_window.h \
     qarm/terminal_view.h \
-    qarm/flat_push_button.h
+    qarm/flat_push_button.h \
+    facilities/arch.h \
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -91,6 +90,7 @@ OTHER_FILES += \
     test/testProgBehavior \
     compile \
     assemble \
+    assemble_BIOS \
     icons/step.png \
     icons/reset.png \
     icons/play.png \
@@ -105,6 +105,8 @@ OTHER_FILES += \
     test/IsaCheck/dataP_ADC_SBC_RSC.s \
     test/IsaCheck/dataP_TST_TEQ_CMP_CMN.s \
     test/BIOS_Base.bin \
-    elftest/simpleBoot.s \
     icons/machine_settings-22.png \
-    elf2uarm.pro
+    elf2uarm.pro \
+    facilities/BIOS.s \
+    facilities/libuarm.h
+    facilities/libuarm.S

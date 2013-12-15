@@ -32,7 +32,7 @@
 #include <QMenu>
 #include <QMenuBar>
 
-#include "armProc/arch.h"
+#include "facilities/arch.h"
 
 class styledButton;
 

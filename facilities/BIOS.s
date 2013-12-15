@@ -60,7 +60,7 @@ BOOT:
 
     /*each exception points to halt function by default*/
     MOV r0, #EXCV_BASE
-    ADD r8, r1, #HALT
+    ADD r8, r1, #PANIC
     ADD r2, r0, #EXCV_INT_NEW
     ADD r2, r2, #60 /* skip to r15 */
     STR r8, [r2], #4
@@ -219,6 +219,7 @@ PANIC:
     SUB r0, r0, #8  /* r0 = PANIC */
     SUB r0, r0, #PANIC /* r0 = _start */
     ADD r5, r0, #panicMess
+    B PRINT
 
 PRINT:
     MOV r1, #4
@@ -249,11 +250,6 @@ PRINT_LOOP:
     ADD r4, r4, #1
     B PRINT_LOOP
 
-    /* print "HALT" on terminal 0 */
-    MOV r0, #0xA0000000
-    MOV r1, #0x0C000000
-    MOV r2, #0x00C00000
-    MOV r3, #0x000A0000
 HALT_LOOP:
     B HALT_LOOP
 

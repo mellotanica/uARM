@@ -24,7 +24,7 @@
 
 #include <QWidget>
 
-#include "armProc/arch.h"
+#include "facilities/arch.h"
 
 class QLineEdit;
 class QCheckBox;

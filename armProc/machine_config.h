@@ -27,7 +27,7 @@
 
 #include "services/lang.h"
 #include "armProc/basic_types.h"
-#include "armProc/arch.h"
+#include "facilities/arch.h"
 #include "armProc/types.h"
 #include "qarm/guiConst.h"
 

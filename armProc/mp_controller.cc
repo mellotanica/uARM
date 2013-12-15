@@ -32,7 +32,7 @@
 //LOOP: mp controller
 #include "armProc/machine.h"
 #include "armProc/bus.h"
-#include "armProc/arch.h"
+#include "facilities/arch.h"
 
 MPController::MPController(const MachineConfig* config, machine* mac)
     : config(config),
