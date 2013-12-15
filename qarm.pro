@@ -108,4 +108,5 @@ OTHER_FILES += \
     configure \
     configure.ac \
     config.h.in \
-    test/helloWorld.c
+    test/helloWorld.c \
+    facilities/crtso.o
