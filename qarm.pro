@@ -1,5 +1,5 @@
 configure.target = config.h
-configure.commands = autoreconf; ./configure
+configure.commands = ./configure
 QMAKE_EXTRA_TARGETS += configure
 PRE_TARGETDEPS = config.h
 
@@ -33,7 +33,6 @@ HEADERS += \
     armProc/blockdev_params.h \
     armProc/aout.h \
     services/debug.h \
-    config.h \
     armProc/device.h \
     armProc/machine_config.h \
     services/json.h \
@@ -55,6 +54,7 @@ HEADERS += \
     qarm/terminal_view.h \
     qarm/flat_push_button.h \
     facilities/arch.h \
+    config.h \
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -84,10 +84,9 @@ SOURCES += \
     armProc/mpic.cc \
     qarm/terminal_window.cc \
     qarm/terminal_view.cc \
-    qarm/flat_push_button.cc
+    qarm/flat_push_button.cc \
 
 OTHER_FILES += \
-    test/testProgBehavior \
     compile \
     assemble \
     assemble_BIOS \
@@ -95,18 +94,18 @@ OTHER_FILES += \
     icons/reset.png \
     icons/play.png \
     icons/pause.png \
-    test/sample.s \
     README.txt \
-    test/simpleBoot.s \
     test/dataP_MOV_MVN_BIC.s \
-    test/IsaCheck/dataP_MOV_MVN_BIC.s \
-    test/IsaCheck/dataP_AND_ORR_EOR.s \
-    test/IsaCheck/dataP_ADD_SUB_RSB.s \
-    test/IsaCheck/dataP_ADC_SBC_RSC.s \
-    test/IsaCheck/dataP_TST_TEQ_CMP_CMN.s \
-    test/BIOS_Base.bin \
     icons/machine_settings-22.png \
     elf2uarm.pro \
     facilities/BIOS.s \
-    facilities/libuarm.h
-    facilities/libuarm.S
+    facilities/libuarm.h \
+    facilities/libuarm.o \
+    facilities/crtso.S \
+    facilities/libuarm.S \
+    ldscript/elf32ltsarm.h.uarmcore.x \
+    ldscript/elf32ltsarm.h.uarmaout.x \
+    configure \
+    configure.ac \
+    config.h.in \
+    test/helloWorld.c

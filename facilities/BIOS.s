@@ -97,6 +97,7 @@ BOOT:
     MOV r2, #0
     MOV r3, #0
     MOV r8, #0
+    MOV r9, #0
     MOVS pc, lr			/* starts execution from ramBase in user mode */
 
 SWI_H:

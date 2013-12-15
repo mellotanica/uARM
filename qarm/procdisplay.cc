@@ -87,7 +87,7 @@ procDisplay::procDisplay(QWidget *parent) :
     cpuReg[9][0]->setText("r8(v5):");
     cpuReg[10][0]->setText("r9(v6):");
     cpuReg[11][0]->setText("r10(v7):");
-    cpuReg[12][0]->setText("r11(v8):");
+    cpuReg[12][0]->setText("r11(FP):");
     cpuReg[13][0]->setText("r12(IP):");
     cpuReg[14][0]->setText("r13(SP):");
     cpuReg[15][0]->setText("r14(LR):");

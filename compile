@@ -1,4 +1,8 @@
 #!/bin/bash
 
-qmake
+qmake elf2uarm.pro
 make
+make clean
+qmake qarm.pro
+make
+make clean
