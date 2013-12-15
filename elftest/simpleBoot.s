@@ -1,4 +1,4 @@
-.equ ROMSTACK_BASE, 0x8000
+.equ ROMSTACK_TOP, 0x8000
 .equ ROMSTACK_OFF, -0x10
 .equ EXCV_BASE, 0x7000
 .equ EXCV_INT_OLD, 0x0	/* Interrupt Old */
@@ -7,6 +7,7 @@
 .equ EXCV_PGMT_NEW, 0x154	/* Program Trap New */
 .equ EXCV_SWI_OLD, 0x198	/* Syscall Old */
 .equ EXCV_SWI_NEW, 0x1DC	/* Syscall New */
+.equ DEV_BASE, 0x40
 
 .global _start
 _start:
@@ -99,7 +100,7 @@ BOOT:
     MOVS pc, lr			/* starts execution from ramBase in user mode */
 
 SWI_H:
-    MOV ip, #ROMSTACK_BASE	/* save sp and lr onto stack */
+    MOV ip, #ROMSTACK_TOP	/* save sp and lr onto stack */
     ADD ip, ip, #ROMSTACK_OFF
     STR sp, [ip], #4
     STR lr, [ip], #4
@@ -119,7 +120,7 @@ SWI_H:
     STMeqIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}^
     STMneIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
     ADD sp, ip, #60	/* pc slot, return value is held in lr */
-    MOV ip, #ROMSTACK_BASE
+    MOV ip, #ROMSTACK_TOP
     ADD ip, ip, #ROMSTACK_OFF
     LDR lr, [ip, #4]!	/* recover lr value from stack and write it in pc slot*/
     STR lr, [sp], #4
@@ -136,7 +137,7 @@ SWI_H:
 UNDEF_H:
 DATAABT_H:
 PREFABT_H:
-    MOV ip, #ROMSTACK_BASE	/* save sp and lr onto stack */
+    MOV ip, #ROMSTACK_TOP	/* save sp and lr onto stack */
     ADD ip, ip, #ROMSTACK_OFF
     STR sp, [ip], #4
     STR lr, [ip], #4
@@ -156,7 +157,7 @@ PREFABT_H:
     STMeqIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}^
     STMneIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
     ADD sp, ip, #60	/* pc slot, return value is held in lr */
-    MOV ip, #ROMSTACK_BASE
+    MOV ip, #ROMSTACK_TOP
     ADD ip, ip, #ROMSTACK_OFF
     LDR lr, [ip, #4]!	/* recover lr value from stack and write it in pc slot*/
     STR lr, [sp], #4
@@ -172,7 +173,7 @@ PREFABT_H:
 
 IRQ_H:
 FIQ_H:
-    MOV ip, #ROMSTACK_BASE	/* save sp and lr onto stack */
+    MOV ip, #ROMSTACK_TOP	/* save sp and lr onto stack */
     ADD ip, ip, #ROMSTACK_OFF
     STR sp, [ip], #4
     STR lr, [ip], #4
@@ -192,7 +193,7 @@ FIQ_H:
     STMeqIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}^
     STMneIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
     ADD sp, ip, #60	/* pc slot, return value is held in lr */
-    MOV ip, #ROMSTACK_BASE
+    MOV ip, #ROMSTACK_TOP
     ADD ip, ip, #ROMSTACK_OFF
     LDR lr, [ip, #4]!	/* recover lr value from stack and write it in pc slot*/
     STR lr, [sp], #4
@@ -207,6 +208,47 @@ FIQ_H:
     LDMIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
 
 HALT:
+    MOV r0, pc
+    SUB r0, r0, #8  /* r0 = HALT */
+    SUB r0, r0, #HALT /* r0 = _start */
+    ADD r5, r0, #haltMess
+    B PRINT
+
+PANIC:
+    MOV r0, pc
+    SUB r0, r0, #8  /* r0 = PANIC */
+    SUB r0, r0, #PANIC /* r0 = _start */
+    ADD r5, r0, #panicMess
+
+PRINT:
+    MOV r1, #4
+    MOV r2, #4
+    MUL r1, r2, r1  /* dev reg size */
+    MOV r2, #8
+    MUL r1, r2, r1  /* devices per interrupt line */
+    MOV r2, #4
+    MUL r1, r2, r1  /* interrupt lines before terminal */
+    ADD r1, r1, #DEV_BASE
+    ADD r0, r1, #8	/* term0.TRANSM_STATUS */
+    ADD r1, r1, #0xC	/* term0.TRANSM_COMMAND */
+    MOV r4, #0	/* string counter */
+
+PRINT_LOOP:
+    LDR r3, [r0]
+    AND r3, r3, #0xFF
+    CMP r3, #3
+    Beq PRINT_LOOP
+
+    LDRB r3, [r5, r4]
+    CMP r3, #0
+    Beq HALT_LOOP
+
+    MOV r3, r3, LSL #8	/* setup char */
+    ORR r3, r3, #2	/* add print command */
+    STR r3, [r1]
+    ADD r4, r4, #1
+    B PRINT_LOOP
+
     /* print "HALT" on terminal 0 */
     MOV r0, #0xA0000000
     MOV r1, #0x0C000000
@@ -214,3 +256,9 @@ HALT:
     MOV r3, #0x000A0000
 HALT_LOOP:
     B HALT_LOOP
+
+haltMess:
+    .asciz "SYSTEM HALTED.\0"
+
+panicMess:
+    .asciz "KERNEL PANIC!\0"

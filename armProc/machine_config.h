@@ -49,9 +49,9 @@ public:
     static const unsigned int MAX_CPUS = 1;
     static const unsigned int DEFAULT_NUM_CPUS = 1;
 
-    static const unsigned int MIN_CLOCK_RATE = IPSMIN;
-    static const unsigned int MAX_CLOCK_RATE = IPSMAX;
-    static const unsigned int DEFAULT_CLOCK_RATE = 4;
+    static const unsigned int MIN_CLOCK_RATE = 1;
+    static const unsigned int MAX_CLOCK_RATE = 50;
+    static const unsigned int DEFAULT_CLOCK_RATE = 1;
 
     static const Word MIN_ASID = 1;
     static const Word MAX_ASID = 256;

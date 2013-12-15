@@ -49,7 +49,7 @@ qarm::qarm(QApplication *app):
     toolbar = new mainBar;
     display = new procDisplay(this);
 
-    toolbar->setSpeed(MC_Holder::getInstance()->getConfig()->getClockRate());
+    toolbar->setSpeed(IPSMAX);
 
     centralLayout = new QVBoxLayout;
 
@@ -91,7 +91,7 @@ void qarm::softReset(){
     clock->stop();
     initialized = false;
     emit resetMachine();
-    toolbar->setSpeed(MC_Holder::getInstance()->getConfig()->getClockRate());
+    toolbar->setSpeed(IPSMAX);
     doReset = false;
     initialize();
 }
