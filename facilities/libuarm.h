@@ -3,6 +3,10 @@
 
 void tprint(const char *s);
 
-extern unsigned int LDST(void *addr);
+void HALT();
+
+void PANIC();
+
+//unsigned int LDST(void *addr);
 
 #endif //UARM_LIBURAM_H

@@ -24,12 +24,13 @@
 
 #include <QMessageBox>
 #include <QString>
+#include "armProc/machine_config.h"
 
 void Panic(const char* message)
 {
     QMessageBox::critical(0, "PANIC", QString("PANIC: %1").arg(message));
-    // WARN: was it necessary?
-    //Appl()->quit();
+    // WARN: is it necessary?
+    MC_Holder::getInstance()->getConfig()->getApp()->quit();
 }
 
 #endif //BASE_ERROR_CC

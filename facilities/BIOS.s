@@ -1,8 +1,8 @@
 .equ ROMSTACK_TOP, 0x8000
 .equ ROMSTACK_OFF, -0x10
 .equ EXCV_BASE, 0x7000
-.equ EXCV_INT_OLD, 0x0	/* Interrupt Old */
-.equ EXCV_INT_NEW, 0x44	/* Interrupt New */
+.equ EXCV_INT_OLD, 0x0		/* Interrupt Old */
+.equ EXCV_INT_NEW, 0x44		/* Interrupt New */
 .equ EXCV_PGMT_OLD, 0x110	/* Program Trap Old */
 .equ EXCV_PGMT_NEW, 0x154	/* Program Trap New */
 .equ EXCV_SWI_OLD, 0x198	/* Syscall Old */

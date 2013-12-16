@@ -375,7 +375,7 @@ void processor::AssertIRQ(unsigned int il)
     // If in standby mode, go back to being a power hog.
     if (status == PS_IDLE){
         status = PS_RUNNING;
-        // WARN: do we n eed to notify someone here??
+        // WARN: do we need to notify someone here??
     }
 }
 

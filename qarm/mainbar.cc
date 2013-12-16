@@ -34,11 +34,13 @@ mainBar::mainBar(QWidget *parent) :
     setFloatable(false);
     setOrientation(Qt::Horizontal);
 
-    playIco = new QIcon(PLAYICON);
-    resetIco = new QIcon(RESETICON);
-    pauseIco = new QIcon(PAUSEICON);
-    stepIco = new QIcon(STEPICON);
-    configIco = new QIcon(CONFIGICON);
+    QString appPref = MC_Holder::getInstance()->getConfig()->getAppPath();
+
+    playIco = new QIcon(appPref+"/"+PLAYICON);
+    resetIco = new QIcon(appPref+"/"+RESETICON);
+    pauseIco = new QIcon(appPref+"/"+PAUSEICON);
+    stepIco = new QIcon(appPref+"/"+STEPICON);
+    configIco = new QIcon(appPref+"/"+CONFIGICON);
 
     configB = new styledButton();
     configB->setToolTip("Machine Configs");

@@ -63,7 +63,7 @@ const char* const MachineConfig::deviceKeyPrefix[N_EXT_IL] = {
     "terminal"
 };
 
-MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::string& error)
+MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::string& error, QApplication *app)
 {
     std::ifstream inputStream(fileName.c_str());
     if (inputStream.fail()) {
@@ -86,7 +86,7 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
         return NULL;
     }
 
-    std::auto_ptr<MachineConfig> config(new MachineConfig(fileName));
+    std::auto_ptr<MachineConfig> config(new MachineConfig(fileName, app));
 
     try {
         if (root->HasMember("num-processors"))
@@ -137,9 +137,9 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
     return config.release();
 }
 
-MachineConfig* MachineConfig::Create(const std::string& fileName)
+MachineConfig* MachineConfig::Create(const std::string& fileName, QApplication *app)
 {
-    std::auto_ptr<MachineConfig> config(new MachineConfig(fileName));
+    std::auto_ptr<MachineConfig> config(new MachineConfig(fileName, app));
 
     // The constructor initializes all the basic fields to sane
     // initial values; in addition, we enable a terminal device for
@@ -198,8 +198,9 @@ void MachineConfig::Save()
     file.flush();
 }
 
-MachineConfig::MachineConfig(const std::string& fn)
-    : fileName(fn)
+MachineConfig::MachineConfig(const std::string& fn, QApplication *app)
+    : fileName(fn),
+      app(app)
 {
     resetToFactorySettings();
 }
@@ -312,7 +313,7 @@ void MachineConfig::resetToFactorySettings()
     setClockRate(DEFAULT_CLOCK_RATE);
     setRamSize(DEFAUlT_RAM_SIZE);
 
-    std::string dataDir = PACKAGE_DATA_DIR;
+    std::string dataDir = app->applicationDirPath().toStdString() + "/facilities";
 
     // STATIC: this is a temp bios, there needs to be a more complete one..
     setROM(ROM_TYPE_BIOS, dataDir + "/BIOS.rom.uarm");

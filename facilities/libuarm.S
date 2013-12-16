@@ -9,12 +9,12 @@
 .equ DEVS_PER_IL,	8
 .equ DEV_TERM_OFF,	4
 
-.global tprint
-
 /* prints a 0-terminated string on terminal 0 *
  * void tprint(const char *s)                 */
+
+.global tprint
+
 tprint:
-    /*EOR r4, r4, r4	    /* r4 will hold the string index */
     MOV r5, #DEVREGSIZE
     MOV r6, #DEVS_PER_IL
     MUL r5, r6, r5
@@ -47,6 +47,40 @@ tprint_do_print:
 
 tprint_exit:
     BX lr
+
+/* HALT and PANIC functions */
+
+.global HALT
+
+HALT:
+HALT_start:
+    MOV r1, pc
+    SUB r1, r1, #8  /* r0 = HALT */
+    SUB r1, r1, #HALT_start /* r0 = BOF */
+    ADD r0, r1, #haltMess
+    ADD lr, r1, #HALT_LOOP
+    B tprint
+
+.global PANIC
+
+PANIC:
+PANIC_start:
+    MOV r1, pc
+    SUB r1, r1, #8  /* r0 = PANIC */
+    SUB r1, r1, #PANIC_start /* r0 = BOF */
+    ADD r0, r1, #panicMess
+    ADD lr, r1, #HALT_LOOP
+    B tprint
+
+HALT_LOOP:
+    B HALT_LOOP
+
+haltMess:
+    .asciz "SYSTEM HALTED.\0"
+
+panicMess:
+    .asciz "KERNEL PANIC!\0"
+
 
 /* Loads a processor state from given address *
  * unsigned int LDST(void *addr);             */

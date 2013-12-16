@@ -127,9 +127,6 @@ public:
     void setCondition(bool working);
     bool getCondition() const { return isWorking; }
 
-    //UNUSED: vecchi sig
-    //sigc::signal<void, const char*> SignalStatusChanged;
-    //sigc::signal<void, bool> SignalConditionChanged;
 
 protected:
     virtual bool isBusy() const;
@@ -218,8 +215,6 @@ public:
 
     virtual void Input(const char * inputstr);
 
-    //UNUSED: vecchio signal
-    //sigc::signal<void, char> SignalTransmitted;
 
 private:
     const MachineConfig* const config;

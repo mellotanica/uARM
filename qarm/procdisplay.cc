@@ -127,12 +127,6 @@ procDisplay::procDisplay(QWidget *parent) :
     infoReg[2][1]->setText("TOD_Low:");
     infoReg[3][1]->setText("TIMER:");
 
-    /*EDIT: coprocessors register set restricted
-    for(int i = 1; i < CP15_REGISTERS_NUM+1; i++){
-        cp15Reg[i%CP15ROWS][(i/CP15ROWS)*2]->setText("r"+QString::number(i-1)+":");
-        cp15Reg[i%CP15ROWS][(i/CP15ROWS)*2]->setAlignment(Qt::AlignRight);
-    }*/
-
     reset();
 
     for(int i = 0; i < PIPECOLS; i++)
@@ -188,11 +182,6 @@ void procDisplay::reset(){
     infoReg[1][2]->setText(convertHex(0));
     infoReg[2][2]->setText(convertHex(0));
     infoReg[3][2]->setText(convertHex(0));
-
-    /*EDIT: cp15 display fix
-    for(int i = 1; i < CP15_REGISTERS_NUM+1; i++)
-        cp15Reg[i%CP15ROWS][(i/CP15ROWS)*2+1]->setText(convertHex(0));
-        */
 }
 
 void procDisplay::updateVals(Word *cpu, Word *cp15, Word *ppln, Word todH, Word todL, Word timer, QString ass){
@@ -230,11 +219,6 @@ void procDisplay::updateVals(Word *cpu, Word *cp15, Word *ppln, Word todH, Word 
     infoReg[1][2]->setText(convertHex(todH));
     infoReg[2][2]->setText(convertHex(todL));
     infoReg[3][2]->setText(convertHex(timer));
-
-    /*EDIT: ooooold
-    for(int i = 1; i < CP15_REGISTERS_NUM+1; i++)
-        cp15Reg[i%CP15ROWS][(i/CP15ROWS)*2+1]->setText(convertHex(cp15[i-1]));
-        */
 
 }
 

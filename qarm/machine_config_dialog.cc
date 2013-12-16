@@ -196,31 +196,33 @@ QWidget* MachineConfigDialog::createDeviceTab()
     devFileChooserStack = new QStackedLayout;
     tabLayout->addLayout(devFileChooserStack);
 
+    QString appPref = MC_Holder::getInstance()->getConfig()->getAppPath();
+
     connect(devClassView, SIGNAL(itemSelectionChanged()), this, SLOT(onDeviceClassChanged()));
 
     registerDeviceClass("Disks\n Interrupt Line 3",
-                        "icons/disk-32.png",
+                        appPref+"/icons/disk-32.png",
                         EXT_IL_INDEX(IL_DISK),
                         "Disks", "Disk",
                         true);
 
     registerDeviceClass("Tapes\n Interrupt Line 4",
-                        "icons/tape-32.png",
+                        appPref+"/icons/tape-32.png",
                         EXT_IL_INDEX(IL_TAPE),
                         "Tapes", "Tape");
 
     registerDeviceClass("Network\n Interrupt Line 5",
-                        "icons/network-32.png",
+                        appPref+"/icons/network-32.png",
                         EXT_IL_INDEX(IL_ETHERNET),
                         "Network Interfaces", "Net");
 
     registerDeviceClass("Printers\n Interrupt Line 6",
-                        "icons/printer-32.png",
+                        appPref+"/icons/printer-32.png",
                         EXT_IL_INDEX(IL_PRINTER),
                         "Printers", "Printer");
 
     registerDeviceClass("Terminals\n Interrupt Line 7",
-                        "icons/terminal-32.png",
+                        appPref+"/icons/terminal-32.png",
                         EXT_IL_INDEX(IL_TERMINAL),
                         "Terminals", "Terminal");
 

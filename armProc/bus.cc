@@ -26,6 +26,7 @@
 #include "armProc/bus.h"
 #include "armProc/aout.h"
 #include "services/utility.h"
+#include "services/error.h"
 
 // DeviceAreaAddress is a convenience class used to find a specific
 // device in bus device area
@@ -616,8 +617,7 @@ Device * systemBus::getDev(unsigned int intL, unsigned int dNum)
     if (intL < DEVINTUSED  && dNum < DEVPERINT)
         return(devTable[intL][dNum]);
     else {
-        //FIXME: we need panic!
-        //Panic("Unknown device specified in SystemBus::getDev()");
+        Panic("Unknown device specified in SystemBus::getDev()");
         // never returns
         return NULL;
     }
@@ -682,7 +682,7 @@ void systemBus::setTimer(Word time)
     timer = time;
 }
 
-//FIXME: tutte da implementare!
+//FIXME: implement everything!
 void systemBus::HandleBusAccess(Word pAddr, Word access, processor* cpu){
 
 }

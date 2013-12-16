@@ -35,15 +35,11 @@
 #include "armProc/device.h"
 #include "qarm/procdisplay.h"
 #include "armProc/machine_config.h"
-//EDIT: needs app?
-//#include "qarm/application.h"
 
 TerminalView::TerminalView(TerminalDevice* terminal, QWidget* parent)
     : QPlainTextEdit(parent),
       terminal(terminal)
 {
-    //EDIT: sigc++
-    //terminal->SignalTransmitted.connect(sigc::mem_fun(this, &TerminalView::onCharTransmitted));
     connect(terminal, SIGNAL(SignalTransmitted(char)), this, SLOT(onCharTransmitted(char)));
 
     QFont font = monoLabel::getMonospaceFont();

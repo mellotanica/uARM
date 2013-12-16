@@ -31,6 +31,8 @@
 #include "armProc/types.h"
 #include "qarm/guiConst.h"
 
+#include <QApplication>
+
 enum ROMType {
     ROM_TYPE_BIOS,
     ROM_TYPE_CORE,
@@ -56,8 +58,8 @@ public:
     static const Word MIN_ASID = 1;
     static const Word MAX_ASID = 256;
 
-    static MachineConfig* LoadFromFile(const std::string& fileName, std::string& error);
-    static MachineConfig* Create(const std::string& fileName);
+    static MachineConfig* LoadFromFile(const std::string& fileName, std::string& error, QApplication *app);
+    static MachineConfig* Create(const std::string& fileName, QApplication *app);
 
     const std::string& getFileName() const { return fileName; }
 
@@ -96,8 +98,11 @@ public:
     const uint8_t* getMACId(unsigned int devNo) const;
     void setMACId(unsigned int devNo, const uint8_t* value);
 
+    QApplication* getApp() {return app;}
+    QString getAppPath() {return app->applicationDirPath();}
+
 private:
-    MachineConfig(const std::string& fileName);
+    MachineConfig(const std::string& fileName, QApplication *app);
 
     void resetToFactorySettings();
     bool validFileMagic(Word tag, const char* fName);
@@ -117,6 +122,8 @@ private:
     std::string devFiles[N_EXT_IL][N_DEV_PER_IL];
     bool devEnabled[N_EXT_IL][N_DEV_PER_IL];
     scoped_array<uint8_t> macId[N_DEV_PER_IL];
+
+    QApplication *app;
 
     static const char* const deviceKeyPrefix[N_EXT_IL];
 };
