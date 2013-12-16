@@ -36,9 +36,8 @@ qarm::qarm(QApplication *app):
     application(app)
 {
     // INFO: machine config init
-    //configView = NULL;
     std::string error;
-    std::string defaultFName = DEFAULT_CONFIG_FILE;
+    std::string defaultFName = app->applicationDirPath().toStdString()+"/"+DEFAULT_CONFIG_FILE;
     MC_Holder::getInstance()->setConfig(MachineConfig::LoadFromFile(defaultFName, error, app));
     if(MC_Holder::getInstance()->getConfig() == NULL)
         MC_Holder::getInstance()->setConfig(MachineConfig::Create(defaultFName, app));
