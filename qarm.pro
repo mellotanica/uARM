@@ -110,4 +110,5 @@ OTHER_FILES += \
     config.h.in \
     test/helloWorld.c \
     facilities/crtso.o \
-    facilities/BIOS.rom.uarm
+    facilities/BIOS.rom.uarm \
+    icons/window_default-48.png

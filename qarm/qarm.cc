@@ -45,6 +45,9 @@ qarm::qarm(QApplication *app):
 
     mac = new machine;
 
+    setWindowTitle("uARM");
+    setWindowIcon(QIcon(MC_Holder::getInstance()->getConfig()->getAppPath()+"/icons/window_default-48.png"));
+
     mainWidget = new QWidget;
     toolbar = new mainBar;
     display = new procDisplay(this);

@@ -54,6 +54,7 @@ MachineConfigDialog::MachineConfigDialog(MachineConfig* config, QWidget* parent)
       config(config)
 {
     setWindowTitle("Machine Configuration");
+    setWindowIcon(QIcon(config->getAppPath()+CONFIGICON));
 
     QTabWidget* tabWidget = new QTabWidget;
     tabWidget->addTab(createGeneralTab(), "&General");

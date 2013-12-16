@@ -22,11 +22,11 @@
 #ifndef QARM_GUICONST_H
 #define QARM_GUICONST_H
 
-#define PLAYICON "icons/play.png"
-#define PAUSEICON "icons/pause.png"
-#define RESETICON "icons/reset.png"
-#define STEPICON "icons/step.png"
-#define CONFIGICON "icons/config.png"
+#define PLAYICON "/icons/play.png"
+#define PAUSEICON "/icons/pause.png"
+#define RESETICON "/icons/reset.png"
+#define STEPICON "/icons/step.png"
+#define CONFIGICON "/icons/config.png"
 
 #define DEFAULT_CONFIG_FILE "machine.uarm.cfg"
 

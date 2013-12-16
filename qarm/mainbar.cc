@@ -36,11 +36,11 @@ mainBar::mainBar(QWidget *parent) :
 
     QString appPref = MC_Holder::getInstance()->getConfig()->getAppPath();
 
-    playIco = new QIcon(appPref+"/"+PLAYICON);
-    resetIco = new QIcon(appPref+"/"+RESETICON);
-    pauseIco = new QIcon(appPref+"/"+PAUSEICON);
-    stepIco = new QIcon(appPref+"/"+STEPICON);
-    configIco = new QIcon(appPref+"/"+CONFIGICON);
+    playIco = new QIcon(appPref+PLAYICON);
+    resetIco = new QIcon(appPref+RESETICON);
+    pauseIco = new QIcon(appPref+PAUSEICON);
+    stepIco = new QIcon(appPref+STEPICON);
+    configIco = new QIcon(appPref+CONFIGICON);
 
     configB = new styledButton();
     configB->setToolTip("Machine Configs");
