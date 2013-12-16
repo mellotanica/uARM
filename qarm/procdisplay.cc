@@ -87,7 +87,7 @@ procDisplay::procDisplay(QWidget *parent) :
     cpuReg[9][0]->setText("r8(v5):");
     cpuReg[10][0]->setText("r9(v6):");
     cpuReg[11][0]->setText("r10(v7):");
-    cpuReg[12][0]->setText("r11(FP):");
+    cpuReg[12][0]->setText("r11(v8):");
     cpuReg[13][0]->setText("r12(IP):");
     cpuReg[14][0]->setText("r13(SP):");
     cpuReg[15][0]->setText("r14(LR):");
@@ -99,12 +99,12 @@ procDisplay::procDisplay(QWidget *parent) :
         cpuReg[i][0]->setAlignment(Qt::AlignRight);
 
     cpuReg[9][CPUCOLS-1]->setText(":r8");
-    cpuReg[10][CPUCOLS-1]->setText(":r9");
-    cpuReg[11][CPUCOLS-1]->setText(":r10");
-    cpuReg[12][CPUCOLS-1]->setText(":r11");
-    cpuReg[13][CPUCOLS-1]->setText(":r12");
-    cpuReg[14][CPUCOLS-1]->setText(":r13");
-    cpuReg[15][CPUCOLS-1]->setText(":r14");
+    cpuReg[10][CPUCOLS-1]->setText(":r9(SB)");
+    cpuReg[11][CPUCOLS-1]->setText(":r10(SL)");
+    cpuReg[12][CPUCOLS-1]->setText(":r11(FP)");
+    cpuReg[13][CPUCOLS-1]->setText(":r12(IP)");
+    cpuReg[14][CPUCOLS-1]->setText(":r13(SP)");
+    cpuReg[15][CPUCOLS-1]->setText(":r14(LR)");
     cpuReg[18][CPUCOLS-1]->setText(":SPSR");
 
     cpuReg[0][1]->setText("Usr/Sys");

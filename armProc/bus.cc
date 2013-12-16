@@ -221,6 +221,7 @@ void systemBus::Skip(uint32_t cycles)
 }
 
 bool systemBus::prefetch(Word addr){ //fetches one instruction per execution from exact given address
+    ClockTick();
     pipeline[PIPELINE_EXECUTE] = pipeline[PIPELINE_DECODE];
     pipeline[PIPELINE_DECODE] = pipeline[PIPELINE_FETCH];
     if(readW(&addr, &pipeline[PIPELINE_FETCH]) != ABT_NOABT)
@@ -229,6 +230,7 @@ bool systemBus::prefetch(Word addr){ //fetches one instruction per execution fro
 }
 
 bool systemBus::fetch(Word pc, bool armMode){
+    ClockTick();
     Word addr = pc - (armMode ? 8 : 4);
     if(readW(&addr, &pipeline[PIPELINE_EXECUTE]) != ABT_NOABT)
         return false;

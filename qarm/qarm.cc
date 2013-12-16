@@ -145,7 +145,7 @@ void qarm::showRam(){
     if(initialized){
         ramView *ramWindow = new ramView(mac, this);
         connect(this, SIGNAL(resetMachine()), ramWindow, SLOT(update()));
-        connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,QString)), ramWindow, SLOT(update()));
+        connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), ramWindow, SLOT(update()));
         ramWindow->show();
     } else {
         QMessageBox::warning(this, "Warning", "Machine not initialized,\ncannot display memory contents.", QMessageBox::Ok);

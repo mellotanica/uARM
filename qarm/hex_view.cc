@@ -92,7 +92,7 @@ void HexView::Refresh()
     QString buf;
     buf.reserve(length * kCharsPerWord);
 
-    for (Word addr = start; addr <= end; addr += WS) {
+    for (Word addr = start; addr <= end && addr >= start; addr += WS) {
         unsigned int wi = (addr - start) >> 2;
         if (wi && !(wi % kWordsPerRow))
             buf += '\n';

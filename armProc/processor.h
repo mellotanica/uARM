@@ -91,6 +91,7 @@ public:
 	
     // processor could abort the execution cycle of coprocessors in case of interrupts or traps
     void cycle() {
+        branch_happened = false;
 		fetch();
 		decode();
 		setOP("Unknown", true);
@@ -114,6 +115,7 @@ private:
 	Word cpu_registers[CPU_REGISTERS_NUM];
 	Word shifter_operand, alu_tmp;
     Word old_pc;
+    bool branch_happened;
 	bool shifter_carry_out;
     bool BIGEND_sig;
 	

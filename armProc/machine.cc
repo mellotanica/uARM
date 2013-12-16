@@ -45,7 +45,6 @@ void machine::reset(){
 
 void machine::step(){
     processor *cpu = sysbus->getProcessor(0);
-    sysbus->ClockTick();
     if(cpu->getStatus() != PS_HALTED){
         if(cpu->branchHappened()){
             cpu->prefetch();

@@ -1,7 +1,7 @@
 #ifndef UARM_LIBUARM_H
 #define UARM_LIBUARM_H
 
-void tprint(const char *s);
+void tprint(char *s);
 
 void HALT();
 

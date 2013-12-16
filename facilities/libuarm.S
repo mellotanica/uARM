@@ -15,6 +15,7 @@
 .global tprint
 
 tprint:
+    push {r5, r6, r7}
     MOV r5, #DEVREGSIZE
     MOV r6, #DEVS_PER_IL
     MUL r5, r6, r5
@@ -46,6 +47,7 @@ tprint_do_print:
     B tprint_print_loop
 
 tprint_exit:
+    pop {r5, r6, r7}
     BX lr
 
 /* HALT and PANIC functions */

@@ -59,6 +59,7 @@ processor::~processor(){
 void processor::reset(){
     status = PS_RESET;
     old_pc = 0;
+    branch_happened = false;
     BIGEND_sig = ENDIANESS_BIGENDIAN;
 
     for(int i = 0; i < CPU_REGISTERS_NUM; i++)
@@ -352,7 +353,7 @@ void processor::prefetch() {
 }
 
 bool processor::branchHappened(){
-    if(old_pc != *getPC())
+    if(old_pc != *getPC() || branch_happened)
         return true;
     else
         return false;
@@ -750,7 +751,7 @@ void processor::singleDataSwap(){
 	bus->getRam()->lockMem();
 	loadStore(true, false, true, B, false, &tmpRead, base, 0);
 	loadStore(false, false, true, B, false, src, base, 0);
-	*dest = tmpRead;
+    *dest = tmpRead;
 	bus->getRam()->unlockMem();
 }
 
@@ -773,10 +774,12 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 		return;
 	}
 
-	Byte regn;
+    Byte regn = 0;
     for(unsigned i = 0; i < sizeof(HalfWord) * 8; i++)
 		if(list & (1<<i))
-			regn++;
+            regn++;
+
+    Word writeBackAddr = *rn + ((U ? 1 : -1) * 4 * regn);
 
     //first address points always to lower most stored register
     Word address = *rn + ((U ? 1 : -1) * (P ? 4 : 0)) - (U ? 0 : ((regn - 1) * 4));
@@ -819,7 +822,7 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
                     }
 					address += 4;
 				}
-			}
+            }
         }
 	}
 	else{			//STM
@@ -862,11 +865,13 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 			}
 		}
 	}
+    if(W)
+        *rn = writeBackAddr;
 }
 
 void processor::accessPSR(bool load){
     bool spsr = checkBit(pipeline[PIPELINE_EXECUTE], 22);
-	if(getMode() == MODE_USER && spsr){	//user mode doesn't have SPSR register, unpredictable behavior
+    if((getMode() == MODE_USER || getMode() == MODE_SYSTEM) && spsr){	//user/system mode doesn't have SPSR register, unpredictable behavior
 		unpredictable();
 		return;
 	}
@@ -926,6 +931,7 @@ void processor::branch(bool link, bool exchange){
     Word *dest = getVisibleRegister(pipeline[PIPELINE_EXECUTE] & 0xF);
     Word offset = (pipeline[PIPELINE_EXECUTE] & 0xFFFFFF) << 2;
     branch(dest, offset, link, exchange);
+    branch_happened = true;
 }
 
 void processor::branch(Word *rd, Word offset, bool link, bool exchange){

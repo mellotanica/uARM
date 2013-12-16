@@ -25,6 +25,7 @@
 #include "ramview.h"
 #include <QHBoxLayout>
 #include <QLabel>
+#include "armProc/machine_config.h"
 
 ramView::ramView(machine *mac, QWidget *parent) :
     mac(mac),
@@ -75,7 +76,10 @@ void ramView::visualize(){
     Word end = endEd->text().toUInt(&res,16);
     conv &= res;
 
-    if(conv && (start != startAddr || end != endAddr)){
+    if(start > end){
+        mainLayout->removeWidget(ramViewer);
+        delete ramViewer;
+    } else if(conv && (start != startAddr || end != endAddr)){
 
         if(start & 3){
             start &= 0xFFFFFFFC;
