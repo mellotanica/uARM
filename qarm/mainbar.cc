@@ -182,7 +182,7 @@ void mainBar::setSpeedLab(int spV){
         else
             text = QString::number(spV) + " instr/sec";
     } else
-            text = "        MAX Mz";
+            text = "        MAX MHz";
     speedLab->setText(text);
 }
 

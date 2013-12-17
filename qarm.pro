@@ -88,7 +88,6 @@ SOURCES += \
 
 OTHER_FILES += \
     compile \
-    assemble \
     assemble_BIOS \
     icons/step.png \
     icons/reset.png \

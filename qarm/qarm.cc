@@ -127,10 +127,13 @@ void qarm::step(){
 
 void qarm::start(int speed){
     int time;
-    if(speed <= IPSTRESH)
+    if(speed <= IPSTRESH) {
         time = 1000 / speed;
-    else
+        mac->setUIupdate(true);
+    } else {
         time = 0;
+        mac->setUIupdate(false);
+    }
     clock->start(time);
 }
 

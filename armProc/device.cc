@@ -125,9 +125,9 @@ HIDDEN char strbuf[STRBUFSIZE];
 #define TRANSMD 5
 
 // terminal op completion times (in execution cycles)
-#define TERMRESETTIME    50
-#define TRANCHRTIME      10
-#define RECVCHRTIME      10
+#define TERMRESETTIME    400
+#define TRANCHRTIME      80
+#define RECVCHRTIME      80
 
 // this means a throughput of about 12.5 KB/s
 

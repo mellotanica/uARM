@@ -38,6 +38,8 @@ public:
     machine(QObject *parent = 0);
 	~machine();
 
+    void setUIupdate(bool full){fullUIupdate = full;}
+
     systemBus *getBus() {return sysbus;}
 
 signals:
@@ -53,6 +55,9 @@ private slots:
     void reset();
 
 private:
+    bool fullUIupdate = false;
+    unsigned int ticksFromUpdate = 0;
+
     void initMac();
 
     QString status2QString();

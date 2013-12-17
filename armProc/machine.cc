@@ -59,6 +59,14 @@ void machine::step(){
 }
 
 void machine::refreshData(){
+    if(!fullUIupdate){
+        if(ticksFromUpdate < UI_UPDATE_THRESHOLD){
+            ticksFromUpdate++;
+            return;
+        } else {
+            ticksFromUpdate = 0;
+        }
+    }
     processor *cpu = sysbus->getProcessor(0);
     emit updateStatus(status2QString());
     QString mnem = QString::fromStdString(cpu->mnemonicOPcode) + (cpu->isOPcodeARM ? "(ARM)" : "(Thumb)" );
