@@ -167,6 +167,11 @@ QWidget* MachineConfigDialog::createGeneralTab()
     layout->setRowStretch(17, 1);
     layout->setColumnStretch(4, 1);
 
+    //STATIC: debug not active yet
+    romFileInfo[ROM_TYPE_STAB].lineEdit->setEnabled(false);
+    fileChooserButton->setEnabled(false);
+    stabAsidEdit->setEnabled(false);
+
     return tabWidget;
 }
 
@@ -226,6 +231,9 @@ QWidget* MachineConfigDialog::createDeviceTab()
                         appPref+"/icons/terminal-32.png",
                         EXT_IL_INDEX(IL_TERMINAL),
                         "Terminals", "Terminal");
+
+    //STATIC: devices are fixed for now..
+    tab->setEnabled(false);
 
     return tab;
 }
