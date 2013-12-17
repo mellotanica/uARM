@@ -232,7 +232,7 @@ QWidget* MachineConfigDialog::createDeviceTab()
                         EXT_IL_INDEX(IL_TERMINAL),
                         "Terminals", "Terminal");
 
-    //STATIC: devices are fixed for now..
+    //STATIC: devices are uneditable for now..
     tab->setEnabled(false);
 
     return tab;

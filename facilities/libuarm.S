@@ -87,4 +87,4 @@ panicMess:
 /* Loads a processor state from given address *
  * unsigned int LDST(void *addr);             */
 
-LDST:
+/*LDST:*/
