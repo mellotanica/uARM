@@ -111,4 +111,5 @@ OTHER_FILES += \
     test/helloWorld.c \
     facilities/crtso.o \
     facilities/BIOS.rom.uarm \
-    icons/window_default-48.png
+    icons/window_default-48.png \
+    icons/poweron.png

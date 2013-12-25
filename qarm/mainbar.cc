@@ -34,28 +34,27 @@ mainBar::mainBar(QWidget *parent) :
     setFloatable(false);
     setOrientation(Qt::Horizontal);
 
-    playIco = new QIcon(LIB_PREF PLAYICON);
-    resetIco = new QIcon(LIB_PREF RESETICON);
     pauseIco = new QIcon(LIB_PREF PAUSEICON);
-    stepIco = new QIcon(LIB_PREF STEPICON);
-    configIco = new QIcon(LIB_PREF CONFIGICON);
+    playIco = new QIcon(LIB_PREF PLAYICON);
 
     configB = new styledButton();
     configB->setToolTip("Machine Configs");
-    configB->setIcon(*configIco);
+    configB->setIcon(QIcon(LIB_PREF CONFIGICON));
 
     playB = new styledButton();
     playB->setToolTip("Play");
     playB->setCheckable(true);
     playB->setIcon(*playIco);
+    playB->setEnabled(false);
 
     resetB = new styledButton();
     resetB->setToolTip("Reset");
-    resetB->setIcon(*resetIco);
+    resetB->setIcon(QIcon(LIB_PREF POWERONICON));
 
     stepB = new styledButton();
     stepB->setToolTip("Step");
-    stepB->setIcon(*stepIco);
+    stepB->setIcon(QIcon(LIB_PREF STEPICON));
+    stepB->setEnabled(false);
 
     plusMinusW = new QWidget;
     plusMinusL = new QVBoxLayout;
@@ -144,7 +143,7 @@ mainBar::mainBar(QWidget *parent) :
     connect(this, SIGNAL(speedChanged(int)), this, SLOT(setSpeedLab(int)));
     connect(speedSl, SIGNAL(valueChanged(int)), this, SIGNAL(speedChanged(int)));
     connect(playB, SIGNAL(toggled(bool)), this, SLOT(playToggled(bool)));
-    connect(resetB, SIGNAL(clicked()), this, SLOT(resetPressed()));
+    connect(resetB, SIGNAL(clicked()), this, SLOT(poweron()));
     connect(stepB, SIGNAL(clicked()), this, SIGNAL(step()));
     connect(stepB, SIGNAL(clicked()), this, SLOT(stop()));
     connect(ramB, SIGNAL(clicked()), this, SIGNAL(showRam()));
@@ -152,6 +151,17 @@ mainBar::mainBar(QWidget *parent) :
     connect(minusB, SIGNAL(clicked()), this, SLOT(minus()));
     connect(configB, SIGNAL(clicked()), this, SIGNAL(showConfig()));
     connect(windowB, SIGNAL(clicked()), this, SLOT(showDropDownMenu()));
+}
+
+void mainBar::poweron(){
+    QIcon *resetIco = new QIcon(LIB_PREF RESETICON);
+    disconnect(resetB, SIGNAL(clicked()), this, SLOT(poweron()));
+    connect(resetB, SIGNAL(clicked()), this, SLOT(resetPressed()));
+    playB->setEnabled(true);
+    stepB->setEnabled(true);
+    resetB->setToolTip("Reset Machine");
+    resetB->setIcon(*resetIco);
+    resetPressed();
 }
 
 void mainBar::playToggled(bool checked){

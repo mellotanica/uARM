@@ -58,6 +58,7 @@ signals:
     void showTerminal(unsigned int devNo);
 
 private slots:
+    void poweron();
     void showDropDownMenu();
     void setSpeedLab(int speedVal);
     void playToggled(bool checked);
@@ -73,7 +74,7 @@ private:
     styledButton *playB, *resetB, *stepB, *ramB, *plusB, *minusB, *configB, *windowB;   //interactions
     QVBoxLayout *plusMinusL, *scrollerL, *utilsL;
     QWidget *plusMinusW, *scrollerW, *utilsW;
-    const QIcon *playIco, *resetIco, *pauseIco, *stepIco, *configIco;
+    const QIcon *playIco, *pauseIco;
     QSlider *speedSl;
     QLabel *speedLab, *statusLab;
     QMenu *windowMenu;
