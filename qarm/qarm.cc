@@ -37,7 +37,13 @@ qarm::qarm(QApplication *app):
 {
     // INFO: machine config init
     std::string error;
-    std::string defaultFName = app->applicationDirPath().toStdString()+"/"+DEFAULT_CONFIG_FILE;
+    QDir *defaultPath = new QDir(QDir::homePath()+"/"+DEFAULT_CONFIG_PATH);
+    if(!defaultPath->exists())
+        if(!defaultPath->mkdir(defaultPath->absolutePath())){   //config folder not accessible..
+            QMessageBox::critical(this, "Fatal", "Cannot create .uarm folder in home directory.\nCheck HOME environment variable.");
+            app->exit();
+        }
+    std::string defaultFName = defaultPath->absolutePath().toStdString()+"/"+DEFAULT_CONFIG_FILE;
     MC_Holder::getInstance()->setConfig(MachineConfig::LoadFromFile(defaultFName, error, app));
     if(MC_Holder::getInstance()->getConfig() == NULL)
         MC_Holder::getInstance()->setConfig(MachineConfig::Create(defaultFName, app));
@@ -45,7 +51,7 @@ qarm::qarm(QApplication *app):
     mac = new machine;
 
     setWindowTitle("uARM");
-    setWindowIcon(QIcon(MC_Holder::getInstance()->getConfig()->getAppPath()+"/icons/window_default-48.png"));
+    setWindowIcon(QIcon(LIB_PREF"/icons/window_default-48.png"));
 
     mainWidget = new QWidget;
     toolbar = new mainBar;
@@ -66,7 +72,7 @@ qarm::qarm(QApplication *app):
 
     connect(toolbar, SIGNAL(play(int)), this, SLOT(start(int)));
     connect(toolbar, SIGNAL(speedChanged(int)), this, SLOT(speedChanged(int)));
-    connect(toolbar, SIGNAL(pause()), clock, SLOT(stop()));
+    connect(toolbar, SIGNAL(pause()), this, SLOT(stop()));
     connect(toolbar, SIGNAL(reset()), this, SLOT(softReset()));
     connect(toolbar, SIGNAL(showRam()), this, SLOT(showRam()));
     connect(toolbar, SIGNAL(step()), this, SLOT(step()));
@@ -81,8 +87,8 @@ qarm::qarm(QApplication *app):
     connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), display, SLOT(updateVals(Word*,Word*,Word*,Word,Word,Word,QString)));
     connect(this, SIGNAL(resetDisplay()), display, SLOT(reset()));
 
-    connect(this, SIGNAL(stop()), clock, SLOT(stop()));
-    connect(this, SIGNAL(stop()), toolbar, SLOT(stop()));
+    connect(this, SIGNAL(stopSig()), clock, SLOT(stop()));
+    connect(this, SIGNAL(stopSig()), toolbar, SLOT(stop()));
 
     connect(mac, SIGNAL(updateStatus(QString)), toolbar, SLOT(updateStatus(QString)));
 
@@ -90,7 +96,7 @@ qarm::qarm(QApplication *app):
 }
 
 void qarm::softReset(){
-    clock->stop();
+    stop();
     initialized = false;
     emit resetMachine();
     toolbar->setSpeed(IPSMAX);
@@ -109,6 +115,11 @@ bool qarm::initialize(){
         }
     }
     return initialized;
+}
+
+void qarm::stop(){
+    emit stopSig();
+    mac->setUIupdate(true);
 }
 
 void qarm::step(){

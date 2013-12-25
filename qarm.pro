@@ -55,6 +55,7 @@ HEADERS += \
     qarm/flat_push_button.h \
     facilities/arch.h \
     config.h \
+    configUbuntu.h
 
 SOURCES += \
     armProc/Thumbisa.cc \

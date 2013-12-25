@@ -115,17 +115,23 @@ procDisplay::procDisplay(QWidget *parent) :
     cpuReg[0][6]->setText("FIQ");
 
     cp15Reg[0][0]->setText("CP15 registers:");
-    cp15Reg[1][1]->setText("(r0) ID:");
-    cp15Reg[2][1]->setText("(r1) SCB:");
-    cp15Reg[3][1]->setText("(r1) CCB:");
-    cp15Reg[0][3]->setText("(r2) PTE_Hi:");
-    cp15Reg[1][3]->setText("(r2) PTE_Low:");
-    cp15Reg[2][3]->setText("(r15) Exc:");
-    cp15Reg[3][3]->setText("(r15) Int:");
+    cp15Reg[1][1]->setText("ID (r0):");
+    cp15Reg[2][1]->setText("SCB (r1):");
+    cp15Reg[3][1]->setText("CCB (r1):");
+    cp15Reg[0][3]->setText("PTE_Hi (r2):");
+    cp15Reg[1][3]->setText("PTE_Low (r2):");
+    cp15Reg[2][3]->setText("Exc (r15):");
+    cp15Reg[3][3]->setText("Int (r15):");
     infoReg[0][0]->setText("BUS Info:");
     infoReg[1][1]->setText("TOD_Hi:");
     infoReg[2][1]->setText("TOD_Low:");
     infoReg[3][1]->setText("TIMER:");
+
+    for(unsigned int i = 0; i < 4; i++){
+        cp15Reg[i][1]->setAlignment(Qt::AlignRight);
+        cp15Reg[i][3]->setAlignment(Qt::AlignRight);
+        infoReg[i][1]->setAlignment(Qt::AlignRight);
+    }
 
     reset();
 

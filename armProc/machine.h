@@ -55,7 +55,7 @@ private slots:
     void reset();
 
 private:
-    bool fullUIupdate = false;
+    bool fullUIupdate = true;
     unsigned int ticksFromUpdate = 0;
 
     void initMac();

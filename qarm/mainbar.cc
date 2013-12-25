@@ -34,13 +34,11 @@ mainBar::mainBar(QWidget *parent) :
     setFloatable(false);
     setOrientation(Qt::Horizontal);
 
-    QString appPref = MC_Holder::getInstance()->getConfig()->getAppPath();
-
-    playIco = new QIcon(appPref+PLAYICON);
-    resetIco = new QIcon(appPref+RESETICON);
-    pauseIco = new QIcon(appPref+PAUSEICON);
-    stepIco = new QIcon(appPref+STEPICON);
-    configIco = new QIcon(appPref+CONFIGICON);
+    playIco = new QIcon(LIB_PREF PLAYICON);
+    resetIco = new QIcon(LIB_PREF RESETICON);
+    pauseIco = new QIcon(LIB_PREF PAUSEICON);
+    stepIco = new QIcon(LIB_PREF STEPICON);
+    configIco = new QIcon(LIB_PREF CONFIGICON);
 
     configB = new styledButton();
     configB->setToolTip("Machine Configs");
@@ -118,17 +116,21 @@ mainBar::mainBar(QWidget *parent) :
         showTerminalActions[i]->setEnabled(false);
     }
 
-    windowMenu = new QMenu("Terminals");
+    windowB = new styledButton();
+    windowB->setText("Terminals");
+
+    windowMenu = new QMenu;
 
     for (unsigned int i = 0; i < N_DEV_PER_IL; ++i)
         windowMenu->addAction(showTerminalActions[i]);
 
-    windowDropDown = new QMenuBar;
+    /*windowDropDown = new QMenuBar(windowB);
     windowDropDown->addMenu(windowMenu);
     windowDropDown->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
+    windowDropDown->setVisible(false);*/
 
     utilsL->addWidget(ramB);
-    utilsL->addWidget(windowDropDown);
+    utilsL->addWidget(windowB);
     utilsW->setLayout(utilsL);
 
     addWidget(configB);
@@ -149,6 +151,7 @@ mainBar::mainBar(QWidget *parent) :
     connect(plusB, SIGNAL(clicked()), this, SLOT(plus()));
     connect(minusB, SIGNAL(clicked()), this, SLOT(minus()));
     connect(configB, SIGNAL(clicked()), this, SIGNAL(showConfig()));
+    connect(windowB, SIGNAL(clicked()), this, SLOT(showDropDownMenu()));
 }
 
 void mainBar::playToggled(bool checked){
@@ -202,7 +205,7 @@ void mainBar::plus(){
 void mainBar::minus(){
     int val = speedSl->value();
     if(val > IPSTRESH)
-       speedSl->setValue(IPSTRESH);
+        speedSl->setValue(IPSTRESH);
     else
         speedSl->setValue(val-IPSSTEP);
 }
@@ -213,6 +216,10 @@ void mainBar::updateStatus(QString state){
 
 void mainBar::setTerminalEnabled(unsigned int devNo, bool enabled){
     showTerminalActions[devNo]->setEnabled(enabled);
+}
+
+void mainBar::showDropDownMenu(){
+    windowMenu->popup(windowB->mapToGlobal(QPoint(0,windowB->height())));
 }
 
 void mainBar::showTerminalClicked(){

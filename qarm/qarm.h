@@ -51,12 +51,13 @@ protected:
 signals:
     void resetDisplay();
     void resetMachine();
-    void stop();
+    void stopSig();
     void setTerminalEnabled(unsigned int devNo, bool enabled);
 
 private slots:
     void start(int speed);
     void step();
+    void stop();
     void speedChanged(int speed);
     void softReset();
     void selectCore();

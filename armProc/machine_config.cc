@@ -316,7 +316,7 @@ void MachineConfig::resetToFactorySettings()
     std::string dataDir = app->applicationDirPath().toStdString() + "/facilities";
 
     // STATIC: this is a temp bios, there needs to be a more complete one..
-    setROM(ROM_TYPE_BIOS, dataDir + "/BIOS.rom.uarm");
+    setROM(ROM_TYPE_BIOS, "/usr/include/uarm/BIOS.rom.uarm");
 
     setLoadCoreEnabled(true);
     setROM(ROM_TYPE_CORE, "kernel.core.uarm");

@@ -1,4 +1,4 @@
-#include "../facilities/libuarm.h"
+#include "/usr/include/uarm/libuarm.h"
 
 char *saluto = "Hello World!\n\0";
 char *strano = "If this got printed something fishy has happened..\n\0";

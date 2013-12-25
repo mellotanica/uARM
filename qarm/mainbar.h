@@ -58,6 +58,7 @@ signals:
     void showTerminal(unsigned int devNo);
 
 private slots:
+    void showDropDownMenu();
     void setSpeedLab(int speedVal);
     void playToggled(bool checked);
     void resetPressed();
@@ -69,14 +70,14 @@ private slots:
     void showTerminalClicked();
 
 private:
-    styledButton *playB, *resetB, *stepB, *ramB, *plusB, *minusB, *configB;   //interactions
+    styledButton *playB, *resetB, *stepB, *ramB, *plusB, *minusB, *configB, *windowB;   //interactions
     QVBoxLayout *plusMinusL, *scrollerL, *utilsL;
     QWidget *plusMinusW, *scrollerW, *utilsW;
     const QIcon *playIco, *resetIco, *pauseIco, *stepIco, *configIco;
     QSlider *speedSl;
     QLabel *speedLab, *statusLab;
-    QMenu *openMenu, *windowMenu;
-    QMenuBar *openDropDown, *windowDropDown;
+    QMenu *windowMenu;
+    QMenuBar *windowDropDown;
     QAction* showTerminalActions[N_DEV_PER_IL];
 };
 
