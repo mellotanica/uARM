@@ -95,6 +95,13 @@ QWidget* MachineConfigDialog::createGeneralTab()
     clockRateSpinner->setValue(config->getClockRate());
     layout->addWidget(clockRateSpinner, 2, 3);
 
+    layout->addWidget(new QLabel("Views Refresh Rate:"), 3, 1);
+    refreshRateSpinner = new QSpinBox();
+    refreshRateSpinner->setMinimum(MachineConfig::MIN_REFRESH_RATE);
+    refreshRateSpinner->setMaximum(MachineConfig::MAX_REFRESH_RATE);
+    refreshRateSpinner->setValue(config->getRefreshRate());
+    layout->addWidget(refreshRateSpinner, 3, 3);
+
     layout->addWidget(new QLabel("RAM Size (Frames):"), 4, 1);
     ramSizeSpinner = new QSpinBox();
     ramSizeSpinner->setMinimum(MachineConfig::MIN_RAM);
@@ -275,6 +282,7 @@ void MachineConfigDialog::saveConfigChanges()
 {
     config->setNumProcessors(cpuSpinner->value());
     config->setClockRate(clockRateSpinner->value());
+    config->setRefreshRate(refreshRateSpinner->value());
     config->setRamSize(ramSizeSpinner->value());
 
     config->setROM(ROM_TYPE_BIOS,

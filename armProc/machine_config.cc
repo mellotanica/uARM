@@ -93,6 +93,8 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
             config->setNumProcessors(root->Get("num-processors")->AsNumber());
         if (root->HasMember("clock-rate"))
             config->setClockRate(root->Get("clock-rate")->AsNumber());
+        if (root->HasMember("refresh-rate"))
+            config->setRefreshRate(root->Get("refresh-rate")->AsNumber());
         if (root->HasMember("num-ram-frames"))
             config->setRamSize(root->Get("num-ram-frames")->AsNumber());
 
@@ -158,6 +160,7 @@ void MachineConfig::Save()
 
     root->Set("num-processors", (int) getNumProcessors());
     root->Set("clock-rate", (int) getClockRate());
+    root->Set("refresh-rate", (int) getRefreshRate());
     root->Set("tlb-size", (int) getTLBSize());
     root->Set("num-ram-frames", (int) getRamSize());
 
@@ -236,6 +239,11 @@ void MachineConfig::setClockRate(unsigned int value)
     clockRate = bumpProperty(MIN_CLOCK_RATE, value, MAX_CLOCK_RATE);
 }
 
+void MachineConfig::setRefreshRate(unsigned int value)
+{
+    refreshRate = bumpProperty(MIN_REFRESH_RATE, value, MAX_REFRESH_RATE);
+}
+
 void MachineConfig::setROM(ROMType type, const std::string& fileName)
 {
     romFiles[type] = fileName;
@@ -311,9 +319,8 @@ void MachineConfig::resetToFactorySettings()
 {
     setNumProcessors(DEFAULT_NUM_CPUS);
     setClockRate(DEFAULT_CLOCK_RATE);
+    setRefreshRate(DEFAULT_REFRESH_RATE);
     setRamSize(DEFAUlT_RAM_SIZE);
-
-    std::string dataDir = app->applicationDirPath().toStdString() + "/facilities";
 
     // STATIC: this is a temp bios, there needs to be a more complete one..
     setROM(ROM_TYPE_BIOS, "/usr/include/uarm/BIOS.rom.uarm");

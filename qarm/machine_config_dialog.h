@@ -54,6 +54,7 @@ private:
 
     QSpinBox* cpuSpinner;
     QSpinBox* clockRateSpinner;
+    QSpinBox* refreshRateSpinner;
     QComboBox* tlbSizeList;
     QSpinBox* ramSizeSpinner;
     QCheckBox* coreBootCheckBox;

@@ -60,7 +60,7 @@ void machine::step(){
 
 void machine::refreshData(){
     if(!fullUIupdate){
-        if(ticksFromUpdate < UI_UPDATE_THRESHOLD){
+        if(ticksFromUpdate < refreshRate){
             ticksFromUpdate++;
             return;
         } else {

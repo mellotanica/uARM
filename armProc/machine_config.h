@@ -55,6 +55,10 @@ public:
     static const unsigned int MAX_CLOCK_RATE = 50;
     static const unsigned int DEFAULT_CLOCK_RATE = 1;
 
+    static const unsigned int MIN_REFRESH_RATE = 1;
+    static const unsigned int MAX_REFRESH_RATE = 1000;
+    static const unsigned int DEFAULT_REFRESH_RATE = 70;
+
     static const Word MIN_ASID = 1;
     static const Word MAX_ASID = 256;
 
@@ -80,6 +84,9 @@ public:
 
     void setClockRate(unsigned int value);
     unsigned int getClockRate() const { return clockRate; }
+
+    void setRefreshRate(unsigned int value);
+    unsigned int getRefreshRate() const { return refreshRate; }
 
     void setTLBSize(Word size);
     Word getTLBSize() const { return tlbSize; }
@@ -114,6 +121,7 @@ private:
     Word ramSize;
     unsigned int cpus;
     unsigned int clockRate;
+    unsigned int refreshRate;
     Word tlbSize;
 
     std::string romFiles[N_ROM_TYPES];

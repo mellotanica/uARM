@@ -119,7 +119,7 @@ bool qarm::initialize(){
 
 void qarm::stop(){
     emit stopSig();
-    mac->setUIupdate(true);
+    mac->setUIupdate(0);
 }
 
 void qarm::step(){
@@ -140,10 +140,10 @@ void qarm::start(int speed){
     int time;
     if(speed <= IPSTRESH) {
         time = 1000 / speed;
-        mac->setUIupdate(true);
+        mac->setUIupdate(0);
     } else {
         time = 0;
-        mac->setUIupdate(false);
+        mac->setUIupdate(MC_Holder::getInstance()->getConfig()->getRefreshRate());
     }
     clock->start(time);
 }

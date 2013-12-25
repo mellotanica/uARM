@@ -38,7 +38,8 @@ public:
     machine(QObject *parent = 0);
 	~machine();
 
-    void setUIupdate(bool full){fullUIupdate = full;}
+    //if refRate equals 0 the ui is updated at each instruction, else refRate specifies the amount of instructions to skip
+    void setUIupdate(unsigned int refRate){refreshRate = refRate; fullUIupdate = !refRate;}
 
     systemBus *getBus() {return sysbus;}
 
@@ -56,6 +57,7 @@ private slots:
 
 private:
     bool fullUIupdate = true;
+    unsigned int refreshRate = 1;
     unsigned int ticksFromUpdate = 0;
 
     void initMac();
