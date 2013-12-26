@@ -8,7 +8,7 @@ fi
 ICONSD="/usr/lib/uarm/icons"
 INCLUDED="/usr/include/uarm"
 TESTD=INCLUDED"/test"
-LDSCRIPTSD=INCLUDED"/ldscripts"
+LDSCRIPTSD=INCLUDED"/ldscript"
 
 mkdir -p "$ICONSD"
 mkdir -p "$INCLUDED"
@@ -16,7 +16,7 @@ mkdir -p "$TESTD"
 mkdir -p "$LDSCRIPTSD"
 
 cp icons/* "$ICONSD"
-cp ldscripts/* "$LDSCRIPTS"
+cp ldscript/* "$LDSCRIPTSD"
 cp test/* "$TESTD"
 cp facilities/* "$INCLUDED"
 

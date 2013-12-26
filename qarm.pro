@@ -54,7 +54,6 @@ HEADERS += \
     qarm/terminal_view.h \
     qarm/flat_push_button.h \
     facilities/arch.h \
-    config.h \
     configUbuntu.h
 
 SOURCES += \

@@ -203,7 +203,7 @@ void Thumbisa::Bcond(HalfWord instr){
 void Thumbisa::BL(HalfWord instr){
 	p->debugThumb(__FUNCTION__);
 
-    Word offset = instr & 0x7FE;
+    Word offset = instr & 0x7FF;
     if((instr >> 11) & 1){  //stage 2
         Word *lr = p->getVisibleRegister(REG_LR);
         Word tmp = (*lr + (offset << 1)) & 0xFFFFFFFC;
@@ -212,8 +212,11 @@ void Thumbisa::BL(HalfWord instr){
         p->branch(&tmp, 0, false, true);
     } else {                //stage 1
         offset = offset << 12;
+        if(checkBit(offset, 22))    //sign-extend the high address part
+            for(unsigned int i = 23; i < sizeof(Word) * 8; i++)
+                setBitReg(&offset, i);
         Word *lr = p->getVisibleRegister(REG_LR);
-        *lr = (*(p->getPC()) + offset) | 1;
+        *lr = *(p->getPC()) + offset;
     }
 }
 

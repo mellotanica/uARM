@@ -333,10 +333,11 @@ void processor::nextCycle() {
         *getPC() += 4;
     }
     old_pc = *getPC();
-    prefetchFault[PIPELINE_EXECUTE] = prefetchFault[PIPELINE_DECODE];
-    prefetchFault[PIPELINE_DECODE] = prefetchFault[PIPELINE_FETCH];
-	if(*getPC() % 4 == 0)	//in ARM state or after second halfword in Thumb state, fetch new word
+    if(*getPC() % 4 == 0){	//in ARM state or after second halfword in Thumb state, fetch new word
+        prefetchFault[PIPELINE_EXECUTE] = prefetchFault[PIPELINE_DECODE];
+        prefetchFault[PIPELINE_DECODE] = prefetchFault[PIPELINE_FETCH];
         prefetchFault[PIPELINE_FETCH] = !bus->fetch(*getPC(), !(cpu_registers[REG_CPSR] & T_MASK));
+    }
 }
 
 void processor::prefetch() {
@@ -344,12 +345,15 @@ void processor::prefetch() {
         status = PS_HALTED;
         return;
     }
-    prefetchFault[PIPELINE_EXECUTE] = !bus->prefetch(*getPC());
-    *getPC() += 4;
-    prefetchFault[PIPELINE_DECODE] = !bus->prefetch(*getPC());
-    *getPC() += 4;
+    Word tpc = *getPC();
+    prefetchFault[PIPELINE_EXECUTE] = !bus->prefetch(tpc);
+    tpc += 4;
+    prefetchFault[PIPELINE_DECODE] = !bus->prefetch(tpc);
+    tpc += 4;
+    prefetchFault[PIPELINE_FETCH] = !bus->prefetch(tpc);
+    //if prefetch happened in thumb mode pc must be advanced by two halfwords
+    *getPC() += (cpu_registers[REG_CPSR] & T_MASK ? 4 : 8);
     old_pc = *getPC();
-    prefetchFault[PIPELINE_FETCH] = !bus->prefetch(*getPC());
 }
 
 bool processor::branchHappened(){
