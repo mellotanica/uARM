@@ -51,4 +51,7 @@
 #define IPSMIN      1
 #define IPSSTEP     1
 
+//maximum dimension for single ram segment to show in ramviewer
+#define MAX_VIEWABLE_RAM 2500
+
 #endif // QARM_GUICONST_H

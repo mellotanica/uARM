@@ -19,14 +19,43 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#include "qarm.h"
+#include "qarm/qarm.h"
 #include <QApplication>
+#include "armProc/machine_config.h"
+#include <QFile>
+
+QString MONOSPACE_FONT_SIZE = "MONOSPACE_FONT_SIZE=";
+
+void readConfigs(){
+    QFile *def = new QFile("/etc/default/uarm");
+    if (def->open(QFile::ReadOnly)) {
+        char buf[1024];
+        QString line;
+        for(qint64 lineLength = def->readLine(buf, sizeof(buf)); lineLength != -1; lineLength = def->readLine(buf, sizeof(buf))){
+            if(lineLength == 0 || buf[0] == '\n')         //empty line
+                continue;
+            line = QString::fromAscii(buf, lineLength);
+            line = line.trimmed();
+            if(line.startsWith('#'))    //comment line
+                continue;
+            if(line.contains(MONOSPACE_FONT_SIZE)){
+                int optStart = line.indexOf('\'') + 1;
+                int optLen = line.indexOf('\'', optStart) - optStart;
+                QString opt = line.mid(optStart, optLen);
+                unsigned int val = opt.toUInt();
+                MC_Holder::getInstance()->mainConfigs.monofont_size = val;
+            }
+        }
+    } else {
+        MC_Holder::getInstance()->mainConfigs.monofont_size = 10;
+    }
+}
 
 int main(int argn, char **argv){
     QApplication app(argn, argv);
+    readConfigs();
     app.setFont(monoLabel::getMonospaceFont(), "procDisplay");
     qarm *wid = new qarm(&app);
-    wid->setMinimumSize(770, 540); //570
     wid->show();
     return app.exec();
 }

@@ -30,6 +30,7 @@
 #include "qarm/QLine.h"
 #include "armProc/const.h"
 #include "qarm/guiConst.h"
+#include "armProc/machine_config.h"
 
 class monoLabel;
 
@@ -68,7 +69,7 @@ public:
     {
         QFont monospaceFont("monospace");
         monospaceFont.setStyleHint(QFont::TypeWriter);
-        monospaceFont.setPointSize(10);
+        monospaceFont.setPointSize(MC_Holder::getInstance()->mainConfigs.monofont_size);
         return monospaceFont;
     }
 };

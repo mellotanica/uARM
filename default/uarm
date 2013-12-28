@@ -1,0 +1,5 @@
+# uARM configuration options
+
+# Set the monspace font point size for application main window.
+# Based on your system it might be necessary to modify this value. 
+MONOSPACE_FONT_SIZE='10'

@@ -70,7 +70,7 @@ to none-eabi toolchain.
 First of all you need to get the test program and compile it
 into an object file with your cross-compiler:
 
-$> cp /usr/include/uarm/test/helloWorld.c .
+$> cp /usr/share/doc/uarm/examples/helloWorld.c .
 $> arm-none-eabi-gcc -mcpu=arm7tdmi -c -o helloWorld.o \
    helloWorld.c
 

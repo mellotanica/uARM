@@ -24,6 +24,7 @@
 
 #include "ramview.h"
 #include <QHBoxLayout>
+#include <QMessageBox>
 #include <QLabel>
 #include "armProc/machine_config.h"
 
@@ -76,9 +77,16 @@ void ramView::visualize(){
     Word end = endEd->text().toUInt(&res,16);
     conv &= res;
 
-    if(start > end){
+    if(start > end || (end - start) > MAX_VIEWABLE_RAM){
         mainLayout->removeWidget(ramViewer);
         delete ramViewer;
+        QString message;
+        if(start > end){
+            message = "Start address cannot be higher than End address...";
+        } else {
+            message = "Memory segment too large,\n max displayble size: 10 KB";
+        }
+        QMessageBox::warning(this, "Warning", message, QMessageBox::Ok);
     } else if(conv && (start != startAddr || end != endAddr)){
 
         if(start & 3){

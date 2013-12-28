@@ -40,6 +40,11 @@ enum ROMType {
     N_ROM_TYPES
 };
 
+typedef struct {
+    unsigned int monofont_size;
+} main_configs_s;
+
+
 class MachineConfig {
 public:
     static const Word MIN_RAM = 8;
@@ -149,6 +154,8 @@ public:
 
     MachineConfig *getConfig() {return config;}
     void setConfig(MachineConfig *conf) {config = conf;}
+
+    main_configs_s mainConfigs;
 };
 
 #endif // UARM_MACHINE_CONFIG_H

@@ -112,4 +112,5 @@ OTHER_FILES += \
     facilities/BIOS.rom.uarm \
     icons/window_default-48.png \
     icons/poweron.png \
-    install.sh
+    install.sh \
+    default/uarm
