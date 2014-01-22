@@ -41,8 +41,6 @@
 
 #include <boost/bind.hpp>
 
-#include "armProc/const.h"
-#include "armProc/types.h"
 #include "armProc/blockdev_params.h"
 
 #include "armProc/blockdev.h"

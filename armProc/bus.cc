@@ -27,6 +27,7 @@
 #include "armProc/aout.h"
 #include "services/utility.h"
 #include "services/error.h"
+#include "services/debug.h"
 
 // DeviceAreaAddress is a convenience class used to find a specific
 // device in bus device area
@@ -188,6 +189,10 @@ void systemBus::ClockTick(){
     // Scan the event queue
     while (!eventQ->IsEmpty() && eventQ->nextDeadline() <= tod) {
         (eventQ->nextCallback())();
+
+        //EDIT: this needs to be done if pauseOnInterrupt is enabled
+        //debugSignaler::getInstance()->pauseExec();
+
         eventQ->RemoveHead();
     }
 }
@@ -296,7 +301,7 @@ bool systemBus::loadRAM(char *buffer, Word size, bool kernel){
         }
         return true;
     }
-    else{   //user program, to be placed somewhere else..
+    else{   //user program, to be placed somewhere else.. should be loaded via os
         return false;
     }
 }

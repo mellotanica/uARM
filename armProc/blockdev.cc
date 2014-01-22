@@ -32,9 +32,6 @@
 
 #include <stdio.h>
 
-#include "armProc/const.h"
-
-#include "armProc/types.h"
 #include "armProc/blockdev_params.h"
 #include "services/utility.h"
 #include "armProc/blockdev.h"

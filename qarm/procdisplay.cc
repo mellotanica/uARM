@@ -22,7 +22,7 @@
 #ifndef QARM_PROCDISPLAY_CC
 #define QARM_PROCDISPLAY_CC
 
-#include "procdisplay.h"
+#include "qarm/procdisplay.h"
 
 /*#include <iostream>
 using namespace std;*/

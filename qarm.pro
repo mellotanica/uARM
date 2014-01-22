@@ -85,6 +85,7 @@ SOURCES += \
     qarm/terminal_window.cc \
     qarm/terminal_view.cc \
     qarm/flat_push_button.cc \
+    services/debug.cc
 
 OTHER_FILES += \
     compile \

@@ -27,6 +27,8 @@
 #include "qarm/qarm.h"
 //#include "armProc/const.h"
 
+#include "services/debug.h"
+
 mainBar::mainBar(QWidget *parent) :
     QToolBar(parent)
 {
@@ -151,6 +153,9 @@ mainBar::mainBar(QWidget *parent) :
     connect(minusB, SIGNAL(clicked()), this, SLOT(minus()));
     connect(configB, SIGNAL(clicked()), this, SIGNAL(showConfig()));
     connect(windowB, SIGNAL(clicked()), this, SLOT(showDropDownMenu()));
+
+    debugSignaler *debugger = debugSignaler::getInstance();
+    connect(debugger, SIGNAL(pause()), this, SLOT(stop()));
 }
 
 void mainBar::poweron(){
@@ -178,8 +183,7 @@ void mainBar::playToggled(bool checked){
 }
 
 void mainBar::resetPressed(){
-    if(playB->isChecked())
-        playB->toggle();
+    stop();
     emit reset();
 }
 

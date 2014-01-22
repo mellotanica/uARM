@@ -24,6 +24,9 @@
 
 #include "armProc/blockdev_params.h"
 
+#include "armProc/types.h"
+#include "armProc/const.h"
+
 // This class implements the block devices' 512 byte sectors/tape blocks.
 // Each object contains a single buffer; methods are provided to read/write
 // these blocks from/to real files and to access to the word-sized contents.
