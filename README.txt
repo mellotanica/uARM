@@ -10,6 +10,7 @@ To compile uarm you need the following packages:
 - gcc (g++)
 - libelf1
 - libelf-dev
+- libboost-dev
 
 To build the program run ./compile inside the main directory.
 
