@@ -81,7 +81,7 @@ for ARM7TDMI processor.
 Now you need to link the file against the system libraries:
 
 $> arm-none-eabi-ld \
-   -T /usr/include/uarm/ldscript/elf32ltsarm.h.uarmcore.x \
+   -T /usr/include/uarm/ldscripts/elf32ltsarm.h.uarmcore.x \
    -o helloWorld /usr/include/uarm/crtso.o \
    /usr/include/uarm/libuarm.o helloWorld.o
 

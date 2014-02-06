@@ -8,7 +8,7 @@ fi
 ICONSD="/usr/lib/uarm/icons"
 INCLUDED="/usr/include/uarm"
 TESTD="/usr/share/doc/uarm/examples"
-LDSCRIPTSD=INCLUDED"/ldscript"
+LDSCRIPTSD=INCLUDED"/ldscripts"
 DEFAULTD="/etc/default"
 BIND="/usr/bin"
 
