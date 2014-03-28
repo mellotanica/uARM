@@ -102,7 +102,7 @@ void HexView::Refresh()
         unsigned int wi = (addr - start) >> 2;
         if (wi && !(wi % kWordsPerRow)){ //no more bytes to print, add disassembly
             if(data != 0 && data){
-                buf += '   ';
+                buf += "   ";
                 arm_disass(addr,data,disass);
                 buf += QString(disass);
             }
@@ -161,32 +161,7 @@ void HexView::keyPressEvent(QKeyEvent* event)
 {
     switch (event->key()) {
     case Qt::Key_Left:
-        if (event->modifiers() & Qt::ControlModifier) {
-            setPoint(currentWord() - 1, currentByte(), currentNibble());
-        } else {
-            if (currentNibble() == COL_LO_NIBBLE)
-                moveCursor(QTextCursor::Left);
-            else{
-                moveCursor(QTextCursor::Left, 1 + kHorizontalSpacing);
-                moveCursor(QTextCursor::StartOfLine);
-                moveCursor(QTextCursor::Right, 11);
-            }
-        }
-        break;
-
     case Qt::Key_Right:
-        if (event->modifiers() & Qt::ControlModifier) {
-            setPoint(currentWord() + 1, currentByte(), currentNibble());
-        } else {
-            if (currentNibble() == COL_HI_NIBBLE)
-                moveCursor(QTextCursor::Right);
-            else{
-                moveCursor(QTextCursor::EndOfLine);
-                moveCursor(QTextCursor::Right, 1 + kHorizontalSpacing);
-            }
-        }
-        break;
-
     case Qt::Key_Up:
     case Qt::Key_Down:
     case Qt::Key_PageUp:
@@ -225,7 +200,6 @@ void HexView::keyPressEvent(QKeyEvent* event)
         } else {
             moveCursor(QTextCursor::Right, 1 + kHorizontalSpacing * nibble);
         }*/
-        QPlainTextEdit::keyPressEvent(event);
         break;
     }
 }
@@ -250,9 +224,6 @@ void HexView::updateMargin(const QRect& rect, int dy)
 
 void HexView::onCursorPositionChanged()
 {
-    if (currentNibble() == COL_SPACING)
-        setPoint(currentWord());
-
     highlightWord();
 }
 
