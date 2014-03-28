@@ -54,7 +54,8 @@ HEADERS += \
     qarm/terminal_view.h \
     qarm/flat_push_button.h \
     facilities/arch.h \
-    configUbuntu.h
+    configUbuntu.h \
+    services/disass.h
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -85,7 +86,8 @@ SOURCES += \
     qarm/terminal_window.cc \
     qarm/terminal_view.cc \
     qarm/flat_push_button.cc \
-    services/debug.cc
+    services/debug.cc \
+    services/disass.c
 
 OTHER_FILES += \
     compile \

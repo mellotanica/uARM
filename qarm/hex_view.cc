@@ -43,6 +43,10 @@
 #include "qarm/hex_view_priv.h"
 //#include "qmps/ui_utils.h"
 
+extern "C"{
+#include "services/disass.h"
+}
+
 HexView::HexView(Word start, Word end, machine *mac, QWidget* parent)
     : QPlainTextEdit(parent),
       start(start),
@@ -90,14 +94,21 @@ void HexView::Refresh()
     int vScrollValue = verticalScrollBar()->value();
 
     QString buf;
+    char *disass = new char[DBUFSIZE];
     buf.reserve(length * kCharsPerWord);
 
     for (Word addr = start; addr <= end && addr >= start; addr += WS) {
-        unsigned int wi = (addr - start) >> 2;
-        if (wi && !(wi % kWordsPerRow))
-            buf += '\n';
-
         Word data;
+        unsigned int wi = (addr - start) >> 2;
+        if (wi && !(wi % kWordsPerRow)){ //no more bytes to print, add disassembly
+            if(data != 0 && data){
+                buf += '   ';
+                arm_disass(addr,data,disass);
+                buf += QString(disass);
+            }
+            buf += '\n';
+        }
+
         if (mac->getBus()->readW(&addr, &data) != ABT_NOABT) {
             for (unsigned int bi = 0; bi < WS; bi++) {
                 if (bi > 0 || wi % kWordsPerRow)
@@ -155,8 +166,11 @@ void HexView::keyPressEvent(QKeyEvent* event)
         } else {
             if (currentNibble() == COL_LO_NIBBLE)
                 moveCursor(QTextCursor::Left);
-            else
+            else{
                 moveCursor(QTextCursor::Left, 1 + kHorizontalSpacing);
+                moveCursor(QTextCursor::StartOfLine);
+                moveCursor(QTextCursor::Right, 11);
+            }
         }
         break;
 
@@ -166,8 +180,10 @@ void HexView::keyPressEvent(QKeyEvent* event)
         } else {
             if (currentNibble() == COL_HI_NIBBLE)
                 moveCursor(QTextCursor::Right);
-            else
+            else{
+                moveCursor(QTextCursor::EndOfLine);
                 moveCursor(QTextCursor::Right, 1 + kHorizontalSpacing);
+            }
         }
         break;
 
@@ -209,6 +225,7 @@ void HexView::keyPressEvent(QKeyEvent* event)
         } else {
             moveCursor(QTextCursor::Right, 1 + kHorizontalSpacing * nibble);
         }*/
+        QPlainTextEdit::keyPressEvent(event);
         break;
     }
 }
@@ -347,10 +364,11 @@ void HexView::highlightWord()
     QTextEdit::ExtraSelection selection;
 
     QTextCursor cursor = textCursor();
+
     cursor.clearSelection();
 
-    cursor.movePosition(QTextCursor::Left, QTextCursor::MoveAnchor,
-                        currentByte() * N_COLS_PER_BYTE + currentNibble());
+    cursor.movePosition(QTextCursor::StartOfLine, QTextCursor::MoveAnchor, 1);
+
     cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor,
                         kCharsPerWord - 1);
 
