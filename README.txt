@@ -17,6 +17,10 @@ To build the program run ./compile inside the main directory.
 To install the program in the default system directories run
 ./install.sh inside the main directory.
 
+To install the program in a custom directory run ./install.sh -d [path]
+where path is the absolute path to the custom directory 
+(e.g. ./install.sh -d /usr/local).
+
 You will also need a cross-compile toolchain to build
 executables for ARM architecture.
 
@@ -122,3 +126,14 @@ the last working version of the toolchain released is based on
 Debian Squeeze, so if you are running a newer version you need
 to add squeeze's main/contrib/non-free repository to your sources
 list in addition to emdebian's one.
+
+###### UNINSTALL ######
+
+To uninstall the program use ./uninstall.sh script. 
+It works as install.sh script, -d option lets you specify a
+custom directory (selected during installation) to remove the 
+program from.
+
+The installation script creates a file in this directory
+named custom_install_directory containing the path to the
+custom installation if -d option was used during installation.

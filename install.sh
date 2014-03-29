@@ -5,12 +5,19 @@ if [ `id -u` != "0" ]; then
 	exit 1
 fi
 
-ICONSD="/usr/lib/uarm/icons"
-INCLUDED="/usr/include/uarm"
-TESTD="/usr/share/doc/uarm/examples"
-LDSCRIPTSD=INCLUDED"/ldscripts"
+PREF="/usr"
+
+if [ "$1" == "-d" ]; then
+  PREF="$2"
+  echo "$2" >> custom_install_directory
+fi
+
+ICONSD=$PREF"/lib/uarm/icons"
+INCLUDED=$PREF"/include/uarm"
+TESTD=$PREF"/share/doc/uarm/examples"
+LDSCRIPTSD=$INCLUDED"/ldscripts"
 DEFAULTD="/etc/default"
-BIND="/usr/bin"
+BIND=$PREF"/bin"
 
 mkdir -p "$ICONSD"
 mkdir -p "$INCLUDED"

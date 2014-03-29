@@ -125,11 +125,6 @@ mainBar::mainBar(QWidget *parent) :
     for (unsigned int i = 0; i < N_DEV_PER_IL; ++i)
         windowMenu->addAction(showTerminalActions[i]);
 
-    /*windowDropDown = new QMenuBar(windowB);
-    windowDropDown->addMenu(windowMenu);
-    windowDropDown->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Maximum);
-    windowDropDown->setVisible(false);*/
-
     utilsL->addWidget(ramB);
     utilsL->addWidget(windowB);
     utilsW->setLayout(utilsL);
