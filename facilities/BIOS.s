@@ -1,3 +1,5 @@
+.include "bios_const.h"
+
 .equ ROMSTACK_TOP, 0x8000
 .equ ROMSTACK_OFF, -0x10
 .equ EXCV_BASE, 0x7000
@@ -9,11 +11,12 @@
 .equ EXCV_SWI_NEW, 0x1DC	/* Syscall New */
 .equ DEV_BASE, 0x40
 
+
 .global _start
 _start:
 
 BOOT:
-    MOV r1, PC			/* populates exception vector */
+    MOV r1, pc			/* populates exception vector */
     SUB r1, r1, #0x8		/* _start address */
     MOV r0, #0			/* excv vec pointer */
     MOV r3, #0xEA000000		/* branch preamble */
@@ -22,43 +25,49 @@ BOOT:
     ORR r2, r3, r2		/* builds the branch instr */
     STR r2, [r0], #4		/* stores instr in excv vec */
 
-    ADD r2, r1, #UNDEF_H
-    SUB r2, r2, r0
-    MOV r2, r2, LSR #2
-    ORR r2, r3, r2
+    ADD r2, r1, #UNDEF_H	/* set r2 to handler address */
+    SUB r2, r2, r0		/* subtract exception vector address from r2 */
+    SUB r2, r2, #8		/* minus 2 words (ps is always 2 words forward) */
+    MOV r2, r2, LSR #2		/* shift right to get actual immediate value */
+    ORR r2, r3, r2		/* add branch preamble */
     STR r2, [r0], #4
 
     ADD r2, r1, #SWI_H
     SUB r2, r2, r0
+    SUB r2, r2, #8
     MOV r2, r2, LSR #2
     ORR r2, r3, r2
     STR r2, [r0], #4
 
     ADD r2, r1, #PREFABT_H
     SUB r2, r2, r0
+    SUB r2, r2, #8
     MOV r2, r2, LSR #2
     ORR r2, r3, r2
     STR r2, [r0], #4
 
     ADD r2, r1, #DATAABT_H
     SUB r2, r2, r0
+    SUB r2, r2, #8
     MOV r2, r2, LSR #2
     ORR r2, r3, r2
     STR r2, [r0], #8
 
     ADD r2, r1, #IRQ_H
     SUB r2, r2, r0
+    SUB r2, r2, #8
     MOV r2, r2, LSR #2
     ORR r2, r3, r2
     STR r2, [r0], #4
 
     ADD r2, r1, #FIQ_H
     SUB r2, r2, r0
+    SUB r2, r2, #8
     MOV r2, r2, LSR #2
     ORR r2, r3, r2
     STR r2, [r0]
 
-    /*each exception points to halt function by default*/
+    /*each exception points to panic function by default*/
     MOV r0, #EXCV_BASE
     ADD r8, r1, #PANIC
     ADD r2, r0, #EXCV_INT_NEW
@@ -124,16 +133,38 @@ SWI_H:
     MOV ip, #ROMSTACK_TOP
     ADD ip, ip, #ROMSTACK_OFF
     LDR lr, [ip, #4]!	/* recover lr value from stack and write it in pc slot*/
+    MOV r5, lr
     STR lr, [sp], #4
     LDR lr, [ip, #4]!	/* get old psr and store it in its slot */
     STR lr, [sp]
 
+    LDR r6, [r5, #-4]	/* get SWI instruction */
+    AND r6, r6, #0xFFFFFF
+    CMP r6, #BIOS_SRV_SYS    /* if syscall requested load kernel defined handler */
+    Bne SWI_H_Cont
+
+    MOV ip, #EXCV_BASE
+    ADD ip, ip, #EXCV_SWI_OLD
+    LDR r0, [ip]    /* recover syscall number */
     MOV ip, #EXCV_BASE
     ADD ip, ip, #EXCV_SWI_NEW
-    ADD sp, ip, #64	/* psr slot in new state, update status register */
+    STR r0, [ip]    /* place sysNum in r0 of handler function */
+    ADD sp, ip, #64	/* put psr slot in new state, update status register */
     LDR lr, [sp]
     MSR CPSR, lr
     LDMIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
+
+SWI_H_Cont:
+    CMP r6, #BIOS_SRV_HALT
+    Beq HALT
+
+    CMP r6, #BIOS_SRV_PANIC
+    Beq PANIC
+
+    CMP r6, #BIOS_SRV_LDST
+    Beq LDST
+
+    B UNKNOWN_SRV
 
 UNDEF_H:
 DATAABT_H:
@@ -208,47 +239,59 @@ FIQ_H:
     MSR CPSR, lr
     LDMIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
 
+/* Loads a processor state from given address *
+ * unsigned int LDST(void *addr);             */
+LDST:
+
+
 HALT:
-    MOV r0, pc
-    SUB r0, r0, #8  /* r0 = HALT */
-    SUB r0, r0, #HALT /* r0 = _start */
-    ADD r5, r0, #haltMess
+    MOV r5, pc
+    SUB r5, r5, #8  /* r5 = HALT */
+    SUB r5, r5, #HALT /* r5 = _start */
+    ADD r0, r5, #haltMess
     B PRINT
 
 PANIC:
-    MOV r0, pc
-    SUB r0, r0, #8  /* r0 = PANIC */
-    SUB r0, r0, #PANIC /* r0 = _start */
-    ADD r5, r0, #panicMess
+    MOV r5, pc
+    SUB r5, r5, #8  /* r5 = PANIC */
+    SUB r5, r5, #PANIC /* r5 = _start */
+    ADD r0, r5, #panicMess
+    B PRINT
+
+UNKNOWN_SRV:
+    MOV r5, pc
+    SUB r5, r5, #8  /* r5 = UNKNOWN_SRV */
+    SUB r5, r5, #UNKNOWN_SRV /* r5 = _start */
+    ADD r0, r5, #unknownMess
     B PRINT
 
 PRINT:
-    MOV r1, #4
-    MOV r2, #4
-    MUL r1, r2, r1  /* dev reg size */
-    MOV r2, #8
-    MUL r1, r2, r1  /* devices per interrupt line */
-    MOV r2, #4
-    MUL r1, r2, r1  /* interrupt lines before terminal */
-    ADD r1, r1, #DEV_BASE
-    ADD r0, r1, #8	/* term0.TRANSM_STATUS */
-    ADD r1, r1, #0xC	/* term0.TRANSM_COMMAND */
-    MOV r4, #0	/* string counter */
+    MOV r5, #4
+    MOV r6, #4
+    MUL r5, r6, r5  /* dev reg size */
+    MOV r6, #8
+    MUL r5, r6, r5  /* devices per interrupt line */
+    MOV r6, #4
+    MUL r5, r6, r5  /* interrupt lines before terminal */
+    ADD r5, r5, #DEV_BASE
+    ADD r4, r5, #8	/* term0.TRANSM_STATUS */
+    ADD r5, r5, #0xC	/* term0.TRANSM_COMMAND */
+    MOV r8, #0	/* string counter */
 
 PRINT_LOOP:
-    LDR r3, [r0]
-    AND r3, r3, #0xFF
-    CMP r3, #3
+    LDR r7, [r4]
+    AND r7, r7, #0xFF
+    CMP r7, #3
     Beq PRINT_LOOP
 
-    LDRB r3, [r5, r4]
-    CMP r3, #0
+    LDRB r7, [r0, r8]
+    CMP r7, #0
     Beq HALT_LOOP
 
-    MOV r3, r3, LSL #8	/* setup char */
-    ORR r3, r3, #2	/* add print command */
-    STR r3, [r1]
-    ADD r4, r4, #1
+    MOV r7, r7, LSL #8	/* setup char */
+    ORR r7, r7, #2	/* add print command */
+    STR r7, [r5]
+    ADD r8, r8, #1
     B PRINT_LOOP
 
 HALT_LOOP:
@@ -256,6 +299,9 @@ HALT_LOOP:
 
 haltMess:
     .asciz "SYSTEM HALTED.\0"
+
+unknownMess:
+    .asciz "UNKNOWN SERVICE.\nKERNEL PANIC!\0"
 
 panicMess:
     .asciz "KERNEL PANIC!\0"

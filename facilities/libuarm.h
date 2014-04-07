@@ -10,6 +10,13 @@ void HALT();
 /* prints PANIC message and terminates execution */
 void PANIC();
 
-//unsigned int LDST(void *addr);
+/* loads processor state stored at address *addr */
+void LDST(void *addr);
+
+/* stores current processor state at address *addr */
+void STST(void *addr);
+
+/* calls kernel system call handler passing sysNum in r0 */
+void SYS(int sysNum);
 
 #endif //UARM_LIBURAM_H

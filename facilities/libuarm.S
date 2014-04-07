@@ -1,3 +1,5 @@
+.include "bios_const.h"
+
 .equ TERMCOMMAND,	0xC
 .equ TERMSTATUS,	8
 .equ SENDCHAR,		2
@@ -52,39 +54,22 @@ tprint_exit:
 
 /* HALT and PANIC functions */
 
-.global HALT
+.global SYS
+SYS:
+    SWI BIOS_SRV_SYS
 
+.global HALT
 HALT:
-HALT_start:
-    MOV r1, pc
-    SUB r1, r1, #8  /* r0 = HALT */
-    SUB r1, r1, #HALT_start /* r0 = BOF */
-    ADD r0, r1, #haltMess
-    ADD lr, r1, #HALT_LOOP
-    B tprint
+    SWI BIOS_SRV_HALT
 
 .global PANIC
-
 PANIC:
-PANIC_start:
-    MOV r1, pc
-    SUB r1, r1, #8  /* r0 = PANIC */
-    SUB r1, r1, #PANIC_start /* r0 = BOF */
-    ADD r0, r1, #panicMess
-    ADD lr, r1, #HALT_LOOP
-    B tprint
+    SWI BIOS_SRV_PANIC
 
-HALT_LOOP:
-    B HALT_LOOP
+.global LDST
+LDST:
+    SWI BIOS_SRV_LDST
 
-haltMess:
-    .asciz "SYSTEM HALTED.\0"
+.global STST
+STST:
 
-panicMess:
-    .asciz "KERNEL PANIC!\0"
-
-
-/* Loads a processor state from given address *
- * unsigned int LDST(void *addr);             */
-
-/*LDST:*/

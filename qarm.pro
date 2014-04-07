@@ -55,7 +55,7 @@ HEADERS += \
     qarm/flat_push_button.h \
     facilities/arch.h \
     configUbuntu.h \
-    services/disass.h
+    services/disass.h \
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -101,6 +101,7 @@ OTHER_FILES += \
     icons/machine_settings-22.png \
     elf2uarm.pro \
     facilities/BIOS.s \
+    facilities/bios_const.h \
     facilities/libuarm.h \
     facilities/libuarm.o \
     facilities/crtso.S \
