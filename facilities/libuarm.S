@@ -10,6 +10,7 @@
 .equ DEVREGSIZE,	0x10
 .equ DEVS_PER_IL,	8
 .equ DEV_TERM_OFF,	4
+.equ STATE_T_REGISTERS,	16
 
 /* prints a 0-terminated string on terminal 0 *
  * void tprint(const char *s)                 */
@@ -70,6 +71,18 @@ PANIC:
 LDST:
     SWI BIOS_SRV_LDST
 
+/* void STST(state_t *st, void *addr) */
 .global STST
 STST:
-
+    push {r5, r6}
+    MOV r5, #0
+STST_LOOP:
+    LDR r6, [r0], #4
+    STR r6, [r1], #4
+    ADD r5, r5, #1
+    CMP r5, #STATE_T_REGISTERS
+    Bhi STST_EXIT
+    B STST_LOOP
+STST_EXIT:
+    pop {r5, r6}
+    Bx lr

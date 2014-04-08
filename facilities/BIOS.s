@@ -149,7 +149,7 @@ SWI_H:
     MOV ip, #EXCV_BASE
     ADD ip, ip, #EXCV_SWI_NEW
     STR r0, [ip]    /* place sysNum in r0 of handler function */
-    ADD sp, ip, #64	/* put psr slot in new state, update status register */
+    ADD sp, ip, #PSR_OFFSET	/* put psr slot in new state, update status register */
     LDR lr, [sp]
     MSR CPSR, lr
     LDMIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
@@ -198,7 +198,7 @@ PREFABT_H:
 
     MOV ip, #EXCV_BASE
     ADD ip, ip, #EXCV_PGMT_NEW
-    ADD sp, ip, #64	/* psr slot in new state, update status register */
+    ADD sp, ip, #PSR_OFFSET	/* psr slot in new state, update status register */
     LDR lr, [sp]
     MSR CPSR, lr
     LDMIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
@@ -234,7 +234,7 @@ FIQ_H:
 
     MOV ip, #EXCV_BASE
     ADD ip, ip, #EXCV_INT_NEW
-    ADD sp, ip, #64	/* psr slot in new state, update status register */
+    ADD sp, ip, #PSR_OFFSET	/* psr slot in new state, update status register */
     LDR lr, [sp]
     MSR CPSR, lr
     LDMIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
@@ -242,7 +242,11 @@ FIQ_H:
 /* Loads a processor state from given address *
  * unsigned int LDST(void *addr);             */
 LDST:
-
+    MOV ip, r0
+    ADD ip, #PSR_OFFSET
+    LDR r5, [ip]
+    MSR CPSR, r5
+    LDMIA r0, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
 
 HALT:
     MOV r5, pc

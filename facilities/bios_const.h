@@ -26,4 +26,6 @@
 .equ BIOS_SRV_PANIC, 2
 .equ BIOS_SRV_LDST, 3
 
+.equ PSR_OFFSET, 64
+
 #endif // BIOS_CONST_H
