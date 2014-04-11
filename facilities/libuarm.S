@@ -53,11 +53,13 @@ tprint_exit:
     pop {r5, r6, r7}
     BX lr
 
-/* HALT and PANIC functions */
-
+/* void SYSCALL(unsigned int sysNum, unsigned int arg1, unsigned int arg2, unsigned int arg3) */
 .global SYS
 SYS:
     SWI BIOS_SRV_SYS
+
+
+/* HALT and PANIC functions */
 
 .global HALT
 HALT:
@@ -67,22 +69,66 @@ HALT:
 PANIC:
     SWI BIOS_SRV_PANIC
 
+/* void LDST(void *addr) */
 .global LDST
 LDST:
     SWI BIOS_SRV_LDST
 
-/* void STST(state_t *st, void *addr) */
+/* void STST(void *addr) */
 .global STST
 STST:
-    push {r5, r6}
-    MOV r5, #0
-STST_LOOP:
-    LDR r6, [r0], #4
-    STR r6, [r1], #4
-    ADD r5, r5, #1
-    CMP r5, #STATE_T_REGISTERS
-    Bhi STST_EXIT
-    B STST_LOOP
-STST_EXIT:
-    pop {r5, r6}
+    STMIA r0, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
+
+    push {r5,r6}
+
+    ADD r5, r0, #PSR_OFFSET
+    MRS CPSR, r6
+    STR r6, [r5]
+
+    pop {r5,r6}
+
+    Bx lr
+
+/* void WAIT() */
+.global WAIT
+WAIT:
+    /* TODO: implement me */
+    Bx lr
+
+
+/* unsigned int getSTATUS() */
+.global getSTATUS
+getSTATUS:
+    MRS CPSR, r0
+    Bx lr
+
+/* unsigned int getCAUSE() */
+getCAUSE:
+    /* TODO: implement me */
+    Bx lr
+
+/* unsigned int getTIMER() */
+getTIMER:
+    push {r5}
+    MOV r5, #TIMER_ADDR
+    LDR r0, [r5]
+    pop {r5}
+    Bx lr
+
+/* unsigned int setSTATUS(unsigned int status) */
+.global setSTATUS
+setSTATUS:
+    /* TODO: implement me */
+    Bx lr
+
+/* unsigned int setCAUSE(unsigned int cause) */
+.global setCAUSE
+setCAUSE:
+    /* TODO: implement me */
+    Bx lr
+
+/* unsigned int setTIMER(unsigned int timer) */
+.global setTIMER
+setTIMER:
+    /* TODO: implement me */
     Bx lr

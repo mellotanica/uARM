@@ -30,13 +30,27 @@ void HALT();
 /* prints PANIC message and terminates execution */
 void PANIC();
 
+/* put the machine in idle state waiting for interrupts */
+void WAIT();
+
 /* loads processor state stored at address *addr */
 void LDST(void *addr);
 
 /* stores current processor state at address *addr */
-void STST(state_t *st, void *addr);
+void STST(void *addr);
 
-/* calls kernel system call handler passing sysNum in r0 */
-void SYS(int sysNum);
+/* call kernel system call handler */
+void SYSCALL(unsigned int sysNum, unsigned int arg1, unsigned int arg2, unsigned int arg3);
+
+/* access special registers */
+unsigned int getSTATUS();
+unsigned int getCAUSE();
+unsigned int getTIMER();
+
+/* set special registers value */
+unsigned int setSTATUS(unsigned int status);
+unsigned int setCAUSE(unsigned int cause);
+unsigned int setTIMER(unsigned int timer);
+
 
 #endif //UARM_LIBURAM_H
