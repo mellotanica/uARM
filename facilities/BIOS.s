@@ -95,8 +95,11 @@ BOOT:
     MOV r0, #0x1F
     MSR SPSR_cf, r0	/* sets the spsr to system mode, thumb disabled and all interrupts enabled */
     ADD r0, r1, #HALT	/* exit point */
-    MOV r2, #0x2D4	/* ramtop addr */
+    MOV r2, #RAMSIZE_INFO	/* ramtop addr */
     LDR r3, [r2]
+    MOV r2, #RAMBASE_INFO
+    LDR r1, [r2]
+    ADD r3, r3, r1
     SUB r2, r3, #8
     STR r3, [r2]
     STR r0, [r2, #4]
@@ -162,6 +165,9 @@ SWI_H_Cont:
 
     CMP r6, #BIOS_SRV_LDST
     Beq LDST
+
+    CMP r6, #BIOS_SRV_WAIT
+    Beq WAIT
 
     B UNKNOWN_SRV
 
@@ -267,6 +273,13 @@ PANIC:
     ADD r0, r5, #panicMess
     B PRINT
 
+WAIT:
+    MOV r5, pc
+    SUB r5, r5, #8
+    SUB r5, r5, #WAIT
+    ADD r0, r5, #waitMess
+    B PRINT
+
 UNKNOWN_SRV:
     MOV r5, pc
     SUB r5, r5, #8  /* r5 = UNKNOWN_SRV */
@@ -310,7 +323,10 @@ haltMess:
     .asciz "SYSTEM HALTED.\0"
 
 unknownMess:
-    .asciz "UNKNOWN SERVICE.\nKERNEL PANIC!\0"
+    .asciz "UNKNOWN SERVICE.\nKERNEL PANIC!            \0"
 
 panicMess:
-    .asciz "KERNEL PANIC!\0"
+    .asciz "KERNEL PANIC! \0"
+
+waitMess:   /* FIXME: only for testing purposes */
+    .asciz "WAITING\0"

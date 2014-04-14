@@ -18,6 +18,8 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
+#include "arch.h"
+
 #ifndef BIOS_CONST_H
 #define BIOS_CONST_H
 
@@ -25,8 +27,11 @@
 .equ BIOS_SRV_HALT, 1
 .equ BIOS_SRV_PANIC, 2
 .equ BIOS_SRV_LDST, 3
+.equ BIOS_SRV_WAIT, 4
 
 .equ PSR_OFFSET, 64
-.equ TIMER_ADDR, 0x20C /* FIXME: correct me!!! */
+.equ TIMER_INFO, 0x2E4      /* see arch.h */
+.equ RAMSIZE_INFO, 0x2D4
+.equ RAMBASE_INFO, 0x2D0
 
 #endif // BIOS_CONST_H

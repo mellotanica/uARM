@@ -152,12 +152,12 @@ void systemBus::reset(){
 }
 
 void systemBus::initInfo(){
-    Word addr = INFOBASEADDR;
+    Word addr = BUS_REG_RAM_BASE;
     writeW(&addr, RAMBASEADDR);
-    addr += 4;
+    addr = BUS_REG_RAM_SIZE;
     RAMTOP = ram->getRamSize();
     writeW(&addr, RAMTOP);
-    addr += 4;
+    addr = BUS_REG_DEV_BASE;
     writeW(&addr, DEVBASEADDR);
     addr = BUS_REG_TOD_HI;
     writeW(&addr, (Word) ((tod >> 32) & 0xFFFFFFFF));   //TOD Hi

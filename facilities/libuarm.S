@@ -58,9 +58,7 @@ tprint_exit:
 SYS:
     SWI BIOS_SRV_SYS
 
-
 /* HALT and PANIC functions */
-
 .global HALT
 HALT:
     SWI BIOS_SRV_HALT
@@ -92,8 +90,7 @@ STST:
 /* void WAIT() */
 .global WAIT
 WAIT:
-    /* TODO: implement me */
-    Bx lr
+    SWI BIOS_SRV_WAIT
 
 
 /* unsigned int getSTATUS() */
@@ -103,14 +100,16 @@ getSTATUS:
     Bx lr
 
 /* unsigned int getCAUSE() */
+.global getCAUSE
 getCAUSE:
-    /* TODO: implement me */
+    MRC p15, #0, r0, c15, c0
     Bx lr
 
 /* unsigned int getTIMER() */
+.global getTIMER
 getTIMER:
     push {r5}
-    MOV r5, #TIMER_ADDR
+    MOV r5, #TIMER_INFO
     LDR r0, [r5]
     pop {r5}
     Bx lr
@@ -118,17 +117,20 @@ getTIMER:
 /* unsigned int setSTATUS(unsigned int status) */
 .global setSTATUS
 setSTATUS:
-    /* TODO: implement me */
+    MSR CPSR, r0
     Bx lr
 
 /* unsigned int setCAUSE(unsigned int cause) */
 .global setCAUSE
 setCAUSE:
-    /* TODO: implement me */
+    MCR p15, #0, r0, c15, c0
     Bx lr
 
 /* unsigned int setTIMER(unsigned int timer) */
 .global setTIMER
 setTIMER:
-    /* TODO: implement me */
+    push {r5}
+    MOV r5, #TIMER_INFO
+    STR r0, [r5]
+    pop {r5}
     Bx lr
