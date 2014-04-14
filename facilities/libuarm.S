@@ -82,7 +82,7 @@ STST:
     push {r5,r6}
 
     ADD r5, r0, #PSR_OFFSET
-    MRS CPSR, r6
+    MRS r6, CPSR
     STR r6, [r5]
 
     pop {r5,r6}
@@ -99,7 +99,7 @@ WAIT:
 /* unsigned int getSTATUS() */
 .global getSTATUS
 getSTATUS:
-    MRS CPSR, r0
+    MRS r0, CPSR
     Bx lr
 
 /* unsigned int getCAUSE() */

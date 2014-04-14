@@ -110,33 +110,36 @@ BOOT:
     MOVS pc, lr			/* starts execution from ramBase in user mode */
 
 SWI_H:
-    MOV ip, #ROMSTACK_TOP	/* save sp and lr onto stack */
-    ADD ip, ip, #ROMSTACK_OFF
-    STR sp, [ip], #4
-    STR lr, [ip], #4
-    MRS lr, SPSR
-    STR lr, [ip], #4
-
-    AND lr, lr, #0x1F
-    CMP lr, #0x10	/* if precedent mode was user mode store user mode registers else switch to precedent mode and store registers*/
-    MRSne sp, CPSR
-    STRne sp, [ip]
-    BICne sp, sp, #0x1F
-    ADDne sp, sp, lr
-
-    MSRne CPSR_c, sp
-    MOV ip, #EXCV_BASE	/* conditional store */
-    ADD ip, ip, #EXCV_SWI_OLD
-    STMeqIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}^
-    STMneIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
-    ADD sp, ip, #60	/* pc slot, return value is held in lr */
-    MOV ip, #ROMSTACK_TOP
-    ADD ip, ip, #ROMSTACK_OFF
-    LDR lr, [ip, #4]!	/* recover lr value from stack and write it in pc slot*/
-    MOV r5, lr
+    MOV sp, #ROMSTACK_TOP	/* save lr, CPSR and r0 onto stack */
+    ADD sp, sp, #ROMSTACK_OFF
     STR lr, [sp], #4
-    LDR lr, [ip, #4]!	/* get old psr and store it in its slot */
-    STR lr, [sp]
+    MRS lr, CPSR
+    STR lr, [sp], #4
+    STR r0, [sp], #4
+
+    MRS lr, SPSR
+    AND lr, lr, #0x1F
+    CMP lr, #0x10
+    MRS lr, SPSR
+    ADDeq lr, lr, #0xF	/* if previus mode was user mode, switch to sys to backup registers */
+    MSR CPSR, lr
+
+    MOV r0, #EXCV_BASE	/* store registers */
+    ADD r0, r0, #EXCV_SWI_OLD
+    ADD r0, #4
+    STMIA r0, {r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
+    MOV sp, #ROMSTACK_TOP
+    ADD sp, sp, #ROMSTACK_OFF
+    ADD sp, sp, #8
+    LDR r5, [sp], #-4	/* recover r0 from stack and store it in its slot */
+    STR r5, [r0, #-4]!
+    LDR r5, [sp], #-4	/* recover CPRS from stack and enable it */
+    MSR CPSR, r5
+    MRS r5, SPSR    /* store SPSR in state_old CPSR slot */
+    ADD r0, r0, #PSR_OFFSET
+    STR r5, [r0], #-4
+    LDR r5, [sp, #-12]!	/* recover lr from stack and store it in old state pc slot */
+    STR r5, [r0]
 
     LDR r6, [r5, #-4]	/* get SWI instruction */
     AND r6, r6, #0xFFFFFF
@@ -144,13 +147,9 @@ SWI_H:
     Bne SWI_H_Cont
 
     MOV ip, #EXCV_BASE
-    ADD ip, ip, #EXCV_SWI_OLD
-    LDR r0, [ip]    /* recover syscall number */
-    MOV ip, #EXCV_BASE
     ADD ip, ip, #EXCV_SWI_NEW
-    STR r0, [ip]    /* place sysNum in r0 of handler function */
-    ADD sp, ip, #PSR_OFFSET	/* put psr slot in new state, update status register */
-    LDR lr, [sp]
+    ADD ip, ip, #PSR_OFFSET	/* put psr slot in new state, update status register */
+    LDR lr, [ip]
     MSR CPSR, lr
     LDMIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
 
@@ -169,32 +168,34 @@ SWI_H_Cont:
 UNDEF_H:
 DATAABT_H:
 PREFABT_H:
-    MOV ip, #ROMSTACK_TOP	/* save sp and lr onto stack */
-    ADD ip, ip, #ROMSTACK_OFF
-    STR sp, [ip], #4
-    STR lr, [ip], #4
-    MRS lr, SPSR
-    STR lr, [ip], #4
-
-    AND lr, lr, #0x1F
-    CMP lr, #0x10	/* if precedent mode was user mode store user mode registers else switch to precedent mode and store registers*/
-    MRSne sp, CPSR
-    STRne sp, [ip]
-    BICne sp, sp, #0x1F
-    ADDne sp, sp, lr
-
-    MSRne CPSR_c, sp
-    MOV ip, #EXCV_BASE	/* conditional store */
-    ADD ip, ip, #EXCV_PGMT_OLD
-    STMeqIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}^
-    STMneIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
-    ADD sp, ip, #60	/* pc slot, return value is held in lr */
-    MOV ip, #ROMSTACK_TOP
-    ADD ip, ip, #ROMSTACK_OFF
-    LDR lr, [ip, #4]!	/* recover lr value from stack and write it in pc slot*/
+    MOV sp, #ROMSTACK_TOP	/* save lr, CPSR and r0 onto stack */
+    ADD sp, sp, #ROMSTACK_OFF
     STR lr, [sp], #4
-    LDR lr, [ip, #4]!	/* get old psr and store it in its slot */
-    STR lr, [sp]
+    MRS lr, CPSR
+    STR lr, [sp], #4
+    STR r0, [sp], #4
+
+    MRS lr, SPSR
+    AND lr, lr, #0x1F
+    CMP lr, #0x10
+    MRS lr, SPSR
+    ADDeq lr, lr, #0xF	/* if previus mode was user mode, switch to sys to backup registers */
+    MSR CPSR, lr
+
+    MOV r0, #EXCV_BASE	/* store registers */
+    ADD r0, r0, #EXCV_SWI_OLD
+    ADD r0, #4
+    STMIA r0, {r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
+    LDR r5, [sp, #-4]!	/* recover r0 from stack and store it in its slot */
+    SUB r0, #4
+    STR r5, [r0]
+    LDR r5, [sp, #-4]!	/* recover CPRS from stack and enable it */
+    MSR CPSR, r5
+    MRS r5, SPSR    /* store SPSR in state_old CPSR slot */
+    ADD r0, r0, #PSR_OFFSET
+    STR r5, [r0], #-4
+    LDR r5, [sp, #-4]!	/* recover lr from stack and store it in old state pc slot */
+    STR r5, [r0]
 
     MOV ip, #EXCV_BASE
     ADD ip, ip, #EXCV_PGMT_NEW
@@ -205,32 +206,34 @@ PREFABT_H:
 
 IRQ_H:
 FIQ_H:
-    MOV ip, #ROMSTACK_TOP	/* save sp and lr onto stack */
-    ADD ip, ip, #ROMSTACK_OFF
-    STR sp, [ip], #4
-    STR lr, [ip], #4
-    MRS lr, SPSR
-    STR lr, [ip], #4
-
-    AND lr, lr, #0x1F
-    CMP lr, #0x10	/* if precedent mode was user mode store user mode registers else switch to precedent mode and store registers*/
-    MRSne sp, CPSR
-    STRne sp, [ip]
-    BICne sp, sp, #0x1F
-    ADDne sp, sp, lr
-
-    MSRne CPSR_c, sp
-    MOV ip, #EXCV_BASE	/* conditional store */
-    ADD ip, ip, #EXCV_INT_OLD
-    STMeqIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}^
-    STMneIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
-    ADD sp, ip, #60	/* pc slot, return value is held in lr */
-    MOV ip, #ROMSTACK_TOP
-    ADD ip, ip, #ROMSTACK_OFF
-    LDR lr, [ip, #4]!	/* recover lr value from stack and write it in pc slot*/
+    MOV sp, #ROMSTACK_TOP	/* save lr, CPSR and r0 onto stack */
+    ADD sp, sp, #ROMSTACK_OFF
     STR lr, [sp], #4
-    LDR lr, [ip, #4]!	/* get old psr and store it in its slot */
-    STR lr, [sp]
+    MRS lr, CPSR
+    STR lr, [sp], #4
+    STR r0, [sp], #4
+
+    MRS lr, SPSR
+    AND lr, lr, #0x1F
+    CMP lr, #0x10
+    MRS lr, SPSR
+    ADDeq lr, lr, #0xF	/* if previus mode was user mode, switch to sys to backup registers */
+    MSR CPSR, lr
+
+    MOV r0, #EXCV_BASE	/* store registers */
+    ADD r0, r0, #EXCV_SWI_OLD
+    ADD r0, #4
+    STMIA r0, {r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
+    LDR r5, [sp, #-4]!	/* recover r0 from stack and store it in its slot */
+    SUB r0, #4
+    STR r5, [r0]
+    LDR r5, [sp, #-4]!	/* recover CPRS from stack and enable it */
+    MSR CPSR, r5
+    MRS r5, SPSR    /* store SPSR in state_old CPSR slot */
+    ADD r0, r0, #PSR_OFFSET
+    STR r5, [r0], #-4
+    LDR r5, [sp, #-4]!	/* recover lr from stack and store it in old state pc slot */
+    STR r5, [r0]
 
     MOV ip, #EXCV_BASE
     ADD ip, ip, #EXCV_INT_NEW
@@ -242,7 +245,9 @@ FIQ_H:
 /* Loads a processor state from given address *
  * unsigned int LDST(void *addr);             */
 LDST:
-    MOV ip, r0
+    MOV ip, #EXCV_BASE
+    ADD ip, ip, #EXCV_SWI_OLD
+    LDR r0, [ip]
     ADD ip, ip, #PSR_OFFSET
     LDR r5, [ip]
     MSR CPSR, r5

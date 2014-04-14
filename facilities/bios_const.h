@@ -27,5 +27,6 @@
 .equ BIOS_SRV_LDST, 3
 
 .equ PSR_OFFSET, 64
+.equ TIMER_ADDR, 0x20C /* FIXME: correct me!!! */
 
 #endif // BIOS_CONST_H
