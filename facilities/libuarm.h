@@ -19,6 +19,10 @@ typedef struct{
     unsigned int lr;    //r14
     unsigned int pc;    //r15
     unsigned int cpsr;
+    unsigned int spsr;          //FIXME: add to STST and LDST
+    unsigned int CP15_Control;
+    unsigned int CP15_EntryHi;
+    unsigned int CP15_Cause;
 }state_t; //to be replaced with actual processor state structure
 
 /* prints a string *s 0-termianted on terminal 0 */
@@ -42,15 +46,20 @@ void STST(void *addr);
 /* call kernel system call handler */
 void SYSCALL(unsigned int sysNum, unsigned int arg1, unsigned int arg2, unsigned int arg3);
 
+/* rasie breakpoint exception */
+void BREAK(unsigned int arg0, unsigned int arg1, unsigned int arg2, unsigned int arg3);
+
 /* access special registers */
 unsigned int getSTATUS();
 unsigned int getCAUSE();
 unsigned int getTIMER();
+unsigned int getCONTROL();
 
 /* set special registers value */
 unsigned int setSTATUS(unsigned int status);
 unsigned int setCAUSE(unsigned int cause);
 unsigned int setTIMER(unsigned int timer);
+unsigned int setCONTROL(unsigned int control);
 
 
 #endif //UARM_LIBURAM_H

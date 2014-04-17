@@ -58,6 +58,10 @@ tprint_exit:
 SYS:
     SWI BIOS_SRV_SYS
 
+.global BREAK
+BREAK:
+    SWI BIOS_SRV_BP
+
 /* HALT and PANIC functions */
 .global HALT
 HALT:
@@ -77,13 +81,34 @@ LDST:
 STST:
     STMIA r0, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
 
-    push {r5,r6}
+    push {r5, r6, r7, r8}
 
     ADD r5, r0, #PSR_OFFSET
     MRS r6, CPSR
-    STR r6, [r5]
+    STR r6, [r5], #4
+    ADD r6, r6, #1
+    AND r6, r6, #0xF
+    CMP r6, #0   /* if processor mode does not have SPSR register */
+    Beq STST_NoSPSR /* do not try to access it and store #0 */
+    CMP r6, #1
+    Beq STST_NoSPSR
 
-    pop {r5,r6}
+STST_SPSR:
+    MRS r6, SPSR
+    B STST_CONT
+
+STST_NoSPSR:
+    MOV r6, #0
+
+STST_CONT:
+    STR r6, [r5], #4
+    MRC p15, #0, r6, c1, c0, #0	    /* CP15_Control */
+    MRC p15, #0, r7, c2, c0	    /* CP15_EntryHi */
+    MRC p15, #0, r8, c15, c0	    /* CP15_CAUSE */
+
+    STMIA r5, {r6, r7, r8}
+
+    pop {r5, r6, r7, r8}
 
     Bx lr
 
@@ -105,6 +130,12 @@ getCAUSE:
     MRC p15, #0, r0, c15, c0
     Bx lr
 
+/* unsigned int getCONTROL() */
+.global getCONTROL
+getCONTROL:
+    MRC p15, #0, r0, c1, c0, #0
+    Bx lr
+
 /* unsigned int getTIMER() */
 .global getTIMER
 getTIMER:
@@ -124,6 +155,12 @@ setSTATUS:
 .global setCAUSE
 setCAUSE:
     MCR p15, #0, r0, c15, c0
+    Bx lr
+
+/* unsigned int setCONTROL(unsigned int cause) */
+.global setCONTROL
+setCONTROL:
+    MCR p15, #0, r0, c1, c0, #0
     Bx lr
 
 /* unsigned int setTIMER(unsigned int timer) */

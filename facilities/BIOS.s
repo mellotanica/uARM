@@ -5,6 +5,8 @@
 .equ EXCV_BASE, 0x7000
 .equ EXCV_INT_OLD, 0x0		/* Interrupt Old */
 .equ EXCV_INT_NEW, 0x44		/* Interrupt New */
+.equ EXCV_TLB_OLD, 0x88		/* TLB Exception Old */
+.equ EXCV_TLB_NEW, 0xCC		/* TLB Exception New */
 .equ EXCV_PGMT_OLD, 0x110	/* Program Trap Old */
 .equ EXCV_PGMT_NEW, 0x154	/* Program Trap New */
 .equ EXCV_SWI_OLD, 0x198	/* Syscall Old */
@@ -172,6 +174,42 @@ SWI_H_Cont:
     B UNKNOWN_SRV
 
 UNDEF_H:
+    MOV sp, #ROMSTACK_TOP	/* save lr, CPSR and r0 onto stack */
+    ADD sp, sp, #ROMSTACK_OFF
+    STR lr, [sp], #4
+    MRS lr, CPSR
+    STR lr, [sp], #4
+    STR r0, [sp], #4
+
+    MRS lr, SPSR
+    AND lr, lr, #0x1F
+    CMP lr, #0x10
+    MRS lr, SPSR
+    ADDeq lr, lr, #0xF	/* if previus mode was user mode, switch to sys to backup registers */
+    MSR CPSR, lr
+
+    MOV r0, #EXCV_BASE	/* store registers */
+    ADD r0, r0, #EXCV_PGMT_OLD
+    ADD r0, #4
+    STMIA r0, {r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
+    LDR r5, [sp, #-4]!	/* recover r0 from stack and store it in its slot */
+    SUB r0, #4
+    STR r5, [r0]
+    LDR r5, [sp, #-4]!	/* recover CPRS from stack and enable it */
+    MSR CPSR, r5
+    MRS r5, SPSR    /* store SPSR in state_old CPSR slot */
+    ADD r0, r0, #PSR_OFFSET
+    STR r5, [r0], #-4
+    LDR r5, [sp, #-4]!	/* recover lr from stack and store it in old state pc slot */
+    STR r5, [r0]
+
+    MOV ip, #EXCV_BASE
+    ADD ip, ip, #EXCV_PGMT_NEW
+    ADD sp, ip, #PSR_OFFSET	/* psr slot in new state, update status register */
+    LDR lr, [sp]
+    MSR CPSR, lr
+    LDMIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
+
 DATAABT_H:
 PREFABT_H:
     MOV sp, #ROMSTACK_TOP	/* save lr, CPSR and r0 onto stack */
@@ -189,7 +227,7 @@ PREFABT_H:
     MSR CPSR, lr
 
     MOV r0, #EXCV_BASE	/* store registers */
-    ADD r0, r0, #EXCV_SWI_OLD
+    ADD r0, r0, #EXCV_TLB_OLD
     ADD r0, #4
     STMIA r0, {r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
     LDR r5, [sp, #-4]!	/* recover r0 from stack and store it in its slot */
@@ -204,7 +242,7 @@ PREFABT_H:
     STR r5, [r0]
 
     MOV ip, #EXCV_BASE
-    ADD ip, ip, #EXCV_PGMT_NEW
+    ADD ip, ip, #EXCV_TLB_NEW
     ADD sp, ip, #PSR_OFFSET	/* psr slot in new state, update status register */
     LDR lr, [sp]
     MSR CPSR, lr
@@ -248,17 +286,6 @@ FIQ_H:
     MSR CPSR, lr
     LDMIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
 
-/* Loads a processor state from given address *
- * unsigned int LDST(void *addr);             */
-LDST:
-    MOV ip, #EXCV_BASE
-    ADD ip, ip, #EXCV_SWI_OLD
-    LDR r0, [ip]
-    ADD ip, ip, #PSR_OFFSET
-    LDR r5, [ip]
-    MSR CPSR, r5
-    LDMIA r0, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
-
 HALT:
     MOV r5, pc
     SUB r5, r5, #8  /* r5 = HALT */
@@ -286,6 +313,39 @@ UNKNOWN_SRV:
     SUB r5, r5, #UNKNOWN_SRV /* r5 = _start */
     ADD r0, r5, #unknownMess
     B PRINT
+
+/* Loads a processor state from given address *
+ * unsigned int LDST(void *addr);             */
+LDST:
+    MOV ip, #EXCV_BASE
+    ADD ip, ip, #EXCV_SWI_OLD
+    LDR r0, [ip]
+    ADD ip, ip, #PSR_OFFSET
+    LDR r5, [ip], #4    /* r5 contains current psr */
+    LDR r6, [ip], #4	/* r6 contains saved psr */
+
+    LDR r7, [ip], #4	/* restore coprocessor registers */
+    MCR p15, #0, r7, c1, c0, #0
+    LDR r7, [ip], #4
+    MCR p15, #0, r7, c2, c0, #0
+    MCR p15, #0, r7, c2, c0, #1
+    LDR r7, [ip]
+    MCR p15, #0, r9, c15, c0
+    MCR p15, #1, r9, c15, c0
+
+    ADD r7, r5, #1
+    AND r7, r7, #0xF
+    CMP r7, #0
+    Beq LDST_CONT
+    CMP r7, #1
+    Beq LDST_CONT
+
+    MSR SPSR, r6    /* if stored state had SPSR register restore it */
+
+LDST_CONT:
+    MSR CPSR, r5
+    LDMIA r0, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
+
 
 PRINT:
     MOV r5, #4
@@ -319,11 +379,14 @@ PRINT_LOOP:
 HALT_LOOP:
     B HALT_LOOP
 
+padding:
+    .asciz "padding pad"
+
 haltMess:
     .asciz "SYSTEM HALTED.\0"
 
 unknownMess:
-    .asciz "UNKNOWN SERVICE.\nKERNEL PANIC!            \0"
+    .asciz "UNKNOWN SERVICE.\nKERNEL PANIC!\0"
 
 panicMess:
     .asciz "KERNEL PANIC! \0"

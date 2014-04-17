@@ -116,8 +116,8 @@
 #define CP15_REGISTERS_NUM 13
 
 #define CP15_REG0_IDC    0   // ID codes (processor, cache, tightly coupled memory and TLB)
-#define CP15_REG1_SCB    1   // System Configuration Bits
-#define CP15_REG1_CCB    2   // System Configuration Bits
+#define CP15_REG1_SCB    1   // System Control Register
+#define CP15_REG1_CCB    2   // Coprocessor Access Register
 /*
 #define CP15_REG2_PTC    3   // Page Table Control
 #define CP15_REG3_DAC    4   // Domain Access Control

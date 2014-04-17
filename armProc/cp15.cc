@@ -121,10 +121,12 @@ void cp15::register0(Word *cpureg, Byte opcode, Byte operand, Byte info, bool to
 void cp15::register1(Word *cpureg, Byte info, bool toCoproc){
     if(toCoproc){   //write
         switch(info){
-            case 0b000: break;  //control register
+            case 0b000: //control register
+                cp15_registers[CP15_REG1_SCB] = *cpureg;
+                break;
             case 0b001: break;  //aux control register
             case 0b010:         //coprocessor access register
-            cp15_registers[CP15_REG1_CCB] = *cpureg & reg1CPmask;
+                cp15_registers[CP15_REG1_CCB] = *cpureg & reg1CPmask;
                 break;
         }
     } else {        //read
