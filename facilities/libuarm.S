@@ -145,6 +145,24 @@ getTIMER:
     pop {r5}
     Bx lr
 
+/* unsigned int getTODHI() */
+.global getTODHI
+getTODHI:
+    push {r5}
+    MOV r5, #TOD_HI_INFO
+    LDR r0, [r5]
+    pop {r5}
+    Bx lr
+
+/* unsigned int getTODLO() */
+.global getTODLO
+getTODLO:
+    push {r5}
+    MOV r5, #TOD_LO_INFO
+    LDR r0, [r5]
+    pop {r5}
+    Bx lr
+
 /* unsigned int setSTATUS(unsigned int status) */
 .global setSTATUS
 setSTATUS:

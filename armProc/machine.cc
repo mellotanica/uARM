@@ -35,9 +35,6 @@ machine::~machine(){
         delete sysbus;
 }
 
-void machine::initMac(){
-}
-
 void machine::reset(){
     sysbus->reset();
     emit updateStatus(status2QString());
@@ -46,6 +43,7 @@ void machine::reset(){
 void machine::step(){
     processor *cpu = sysbus->getProcessor(0);
     if(cpu->getStatus() != PS_HALTED){
+        sysbus->ClockTick();
         if(cpu->branchHappened()){
             cpu->prefetch();
         } else {

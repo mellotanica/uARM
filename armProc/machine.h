@@ -60,8 +60,6 @@ private:
     unsigned int refreshRate = 1;
     unsigned int ticksFromUpdate = 0;
 
-    void initMac();
-
     QString status2QString();
 
     systemBus *sysbus;

@@ -53,6 +53,8 @@ void BREAK(unsigned int arg0, unsigned int arg1, unsigned int arg2, unsigned int
 unsigned int getSTATUS();
 unsigned int getCAUSE();
 unsigned int getTIMER();
+unsigned int getTODHI();
+unsigned int getTODLO();
 unsigned int getCONTROL();
 
 /* set special registers value */

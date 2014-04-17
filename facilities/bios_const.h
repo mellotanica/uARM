@@ -34,5 +34,7 @@
 .equ TIMER_INFO, 0x2E4      /* see arch.h */
 .equ RAMSIZE_INFO, 0x2D4
 .equ RAMBASE_INFO, 0x2D0
+.equ TOD_HI_INFO, 0x2DC
+.equ TOD_LO_INFO, 0x2E0
 
 #endif // BIOS_CONST_H

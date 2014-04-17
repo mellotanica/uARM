@@ -159,10 +159,12 @@ void systemBus::initInfo(){
     writeW(&addr, RAMTOP);
     addr = BUS_REG_DEV_BASE;
     writeW(&addr, DEVBASEADDR);
+    tod = 0;
     addr = BUS_REG_TOD_HI;
     writeW(&addr, (Word) ((tod >> 32) & 0xFFFFFFFF));   //TOD Hi
     addr = BUS_REG_TOD_LO;
     writeW(&addr, (Word) (tod & 0xFFFFFFFF));           //TOD Low
+    timer = 0xFFFFFFFF;
     addr = BUS_REG_TIMER;
     writeW(&addr, timer);
 }
@@ -226,7 +228,6 @@ void systemBus::Skip(uint32_t cycles)
 }
 
 bool systemBus::prefetch(Word addr){ //fetches one instruction per execution from exact given address
-    ClockTick();
     pipeline[PIPELINE_EXECUTE] = pipeline[PIPELINE_DECODE];
     pipeline[PIPELINE_DECODE] = pipeline[PIPELINE_FETCH];
     if(readW(&addr, &pipeline[PIPELINE_FETCH]) != ABT_NOABT)
@@ -235,7 +236,6 @@ bool systemBus::prefetch(Word addr){ //fetches one instruction per execution fro
 }
 
 bool systemBus::fetch(Word pc, bool armMode){
-    ClockTick();
     Word addr = pc - (armMode ? 8 : 4);
     if(readW(&addr, &pipeline[PIPELINE_EXECUTE]) != ABT_NOABT)
         return false;
@@ -418,7 +418,7 @@ bool systemBus::readRomB(Word *address, Byte *dest){
     if(addr < DEVTOP && addr >= DEVBASEADDR){   //read device register
         DeviceAreaAddress da(addr);
         Device* device = devTable[da.line()][da.device()];
-        *dest = (Byte) ((device->ReadDevReg(da.field())) >> ((*address % 4) * 8)) & 0xFF;
+        *dest = (Byte) ((device->ReadDevReg(da.field())) >> ((*address % 4) * 8)) & 0xFF;   
     } else {
         if(!getRomVector(address, &romptr))
             return false;
@@ -527,8 +527,16 @@ bool systemBus::getRomVector(Word *address, Byte **romptr){
         else
             return false;
     }
-    else if(*address < INFOTOP && *address >= INFOBASEADDR)
-        *romptr = info + (offset - INFOBASEADDR);
+    else if(*address < INFOTOP && *address >= INFOBASEADDR){
+        if(*address < BUS_REG_TIMER+4 && *address >= BUS_REG_TIMER)
+            *romptr = (Byte *) &timer + offset - BUS_REG_TIMER;
+        else if(*address < BUS_REG_TOD_HI+4 && *address >= BUS_REG_TOD_HI)
+            *romptr = (Byte *) &tod + 4 + offset - BUS_REG_TOD_HI;
+        else if(*address < BUS_REG_TOD_LO+4 && *address >= BUS_REG_TOD_LO)
+            *romptr = (Byte *) &tod + offset - BUS_REG_TOD_LO;
+        else
+            *romptr = info + (offset - INFOBASEADDR);
+    }
     else if(*address < ROMFRAMETOP && *address >= ROMFRAMEBASE)
         *romptr = romFrame + (offset - ROMFRAMEBASE);
     else
