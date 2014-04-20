@@ -144,7 +144,16 @@ SWI_H:
     ADD r0, r0, #PSR_OFFSET
     STR r5, [r0], #-4
     LDR r5, [sp, #-12]!	/* recover lr from stack and store it in old state pc slot */
-    STR r5, [r0]
+    STR r5, [r0], #8
+
+    ADD r0, #4 /* FIXME: SPSR slot... do we need it? */
+
+    MRC p15, #0, r6, c1, c0, #0	    /* CP15_Control */
+    STR r6, [r0], #4
+    MRC p15, #0, r6, c2, c0	    /* CP15_EntryHi */
+    STR r6, [r0], #4
+    MRC p15, #0, r6, c15, c0	    /* CP15_CAUSE */
+    STR r6, [r0], #4
 
     LDR r6, [r5, #-4]	/* get SWI instruction */
     AND r6, r6, #0xFFFFFF
@@ -201,7 +210,16 @@ UNDEF_H:
     ADD r0, r0, #PSR_OFFSET
     STR r5, [r0], #-4
     LDR r5, [sp, #-4]!	/* recover lr from stack and store it in old state pc slot */
-    STR r5, [r0]
+    STR r5, [r0], #8
+
+    ADD r0, #4 /* FIXME: SPSR slot... do we need it? */
+
+    MRC p15, #0, r6, c1, c0, #0	    /* CP15_Control */
+    STR r6, [r0], #4
+    MRC p15, #0, r6, c2, c0	    /* CP15_EntryHi */
+    STR r6, [r0], #4
+    MRC p15, #0, r6, c15, c0	    /* CP15_CAUSE */
+    STR r6, [r0], #4
 
     MOV ip, #EXCV_BASE
     ADD ip, ip, #EXCV_PGMT_NEW
@@ -239,7 +257,16 @@ PREFABT_H:
     ADD r0, r0, #PSR_OFFSET
     STR r5, [r0], #-4
     LDR r5, [sp, #-4]!	/* recover lr from stack and store it in old state pc slot */
-    STR r5, [r0]
+    STR r5, [r0], #8
+
+    ADD r0, #4 /* FIXME: SPSR slot... do we need it? */
+
+    MRC p15, #0, r6, c1, c0, #0	    /* CP15_Control */
+    STR r6, [r0], #4
+    MRC p15, #0, r6, c2, c0	    /* CP15_EntryHi */
+    STR r6, [r0], #4
+    MRC p15, #0, r6, c15, c0	    /* CP15_CAUSE */
+    STR r6, [r0], #4
 
     MOV ip, #EXCV_BASE
     ADD ip, ip, #EXCV_TLB_NEW
@@ -277,7 +304,16 @@ FIQ_H:
     ADD r0, r0, #PSR_OFFSET
     STR r5, [r0], #-4
     LDR r5, [sp, #-4]!	/* recover lr from stack and store it in old state pc slot */
-    STR r5, [r0]
+    STR r5, [r0], #8
+
+    ADD r0, #4 /* FIXME: SPSR slot... do we need it? */
+
+    MRC p15, #0, r6, c1, c0, #0	    /* CP15_Control */
+    STR r6, [r0], #4
+    MRC p15, #0, r6, c2, c0	    /* CP15_EntryHi */
+    STR r6, [r0], #4
+    MRC p15, #0, r6, c15, c0	    /* CP15_CAUSE */
+    STR r6, [r0], #4
 
     MOV ip, #EXCV_BASE
     ADD ip, ip, #EXCV_INT_NEW

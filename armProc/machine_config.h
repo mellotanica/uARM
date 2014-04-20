@@ -81,6 +81,9 @@ public:
     void setLoadCoreEnabled(bool setting) { loadCoreFile = setting | true; }
     bool isLoadCoreEnabled() const { return loadCoreFile; }
 
+    void setStopOnException(bool setting) { stopOnException = setting; }
+    bool isStopOnException() const { return stopOnException; }
+
     void setRamSize(Word size);
     Word getRamSize() const { return ramSize; }
 
@@ -122,6 +125,7 @@ private:
     std::string fileName;
 
     bool loadCoreFile;
+    bool stopOnException;
 
     Word ramSize;
     unsigned int cpus;

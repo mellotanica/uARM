@@ -50,6 +50,7 @@ signals:
 public slots:
     void step();
     void refreshData();
+    void refreshData(bool force);
 
 private slots:
     void run();

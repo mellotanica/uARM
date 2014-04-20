@@ -57,7 +57,11 @@ void machine::step(){
 }
 
 void machine::refreshData(){
-    if(!fullUIupdate){
+    refreshData(false);
+}
+
+void machine::refreshData(bool force){
+    if(!fullUIupdate && !force){
         if(ticksFromUpdate < refreshRate){
             ticksFromUpdate++;
             return;
@@ -69,7 +73,6 @@ void machine::refreshData(){
     emit updateStatus(status2QString());
     QString mnem = QString::fromStdString(cpu->mnemonicOPcode) + (cpu->isOPcodeARM ? "(ARM)" : "(Thumb)" );
     emit dataReady(cpu->getRegList(), cpu->getCP15()->getRegList() , sysbus->pipeline, sysbus->getToDHI(), sysbus->getToDLO(), sysbus->getTimer(), mnem);
-
 }
 
 QString machine::status2QString(){

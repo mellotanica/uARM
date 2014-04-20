@@ -109,6 +109,10 @@ QWidget* MachineConfigDialog::createGeneralTab()
     ramSizeSpinner->setValue(config->getRamSize());
     layout->addWidget(ramSizeSpinner, 4, 3);
 
+    stopOnInterruptBox = new QCheckBox("Pause execution on Exception");
+    stopOnInterruptBox->setChecked(config->isStopOnException());
+    layout->addWidget(stopOnInterruptBox, 5, 1, 1, 3);
+
     QSignalMapper* fileChooserMapper = new QSignalMapper(this);
     connect(fileChooserMapper, SIGNAL(mapped(int)), this, SLOT(getROMFileName(int)));
     QPushButton* fileChooserButton;
@@ -293,6 +297,7 @@ void MachineConfigDialog::saveConfigChanges()
                    QFile::encodeName(romFileInfo[ROM_TYPE_STAB].lineEdit->text()).constData());
 
     config->setLoadCoreEnabled(coreBootCheckBox->isChecked());
+    config->setStopOnException(stopOnInterruptBox->isChecked());
     config->setSymbolTableASID(stabAsidEdit->getAsid());
 }
 
