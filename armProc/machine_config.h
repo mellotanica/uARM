@@ -49,7 +49,7 @@ class MachineConfig {
 public:
     static const Word MIN_RAM = 8;
     static const Word MAX_RAM = 1024;
-    static const Word DEFAUlT_RAM_SIZE = 256;
+    static const Word DEFAULT_RAM_SIZE = 256;
 
     // STATIC: only one cpu...
     static const unsigned int MIN_CPUS = 1;
@@ -63,6 +63,8 @@ public:
     static const unsigned int MIN_REFRESH_RATE = 1;
     static const unsigned int MAX_REFRESH_RATE = 1000;
     static const unsigned int DEFAULT_REFRESH_RATE = 70;
+
+    static const bool DEFAULT_STOP_ON_EXCEPTION = false;
 
     static const Word MIN_ASID = 1;
     static const Word MAX_ASID = 256;
@@ -82,7 +84,7 @@ public:
     bool isLoadCoreEnabled() const { return loadCoreFile; }
 
     void setStopOnException(bool setting) { stopOnException = setting; }
-    bool isStopOnException() const { return stopOnException; }
+    bool getStopOnException() const { return stopOnException; }
 
     void setRamSize(Word size);
     Word getRamSize() const { return ramSize; }

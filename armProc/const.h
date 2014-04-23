@@ -243,6 +243,9 @@
 // DMA transfer time
 #define DMATICKS	BLOCKSIZE
 
+#define WAITCPINSTR 0xEEF00F21 // CDP p15, 0xF, c0, c0, c1, 1
+#define HALTCPINSTR 0xEEF00F01 // CDP p15, 0xF, c0, c0, c1, 0
+
 enum AbortType {
     ABT_NOABT   = 0,
     ABT_MEMERR  = 1,

@@ -70,10 +70,17 @@ public:
 	void prefetch();
     bool branchHappened();
 
+    void suspend() { status = PS_IDLE; }
+    void halt() { status = PS_HALTED; }
+
     //STATIC: only one processor at this time..
     Word getId() const { return 0; }
     Word Id() const { return 0; }
 	
+    bool interruptsEnabled() { return !(bool)((cpu_registers[REG_CPSR] >> I_POS) & 1);}
+    bool timerEnabled() { return !(bool)((cpu_registers[REG_CPSR] >> F_POS) & 1);}
+    bool exceptionRaised() { return wasException; }
+
     //coprocessor_interface *getCopInt() {return cpint;}
     cp15* getCP15() {return coproc;}
 	
@@ -90,13 +97,7 @@ public:
     systemBus *getBus() {return bus;}
 	
     // processor could abort the execution cycle of coprocessors in case of interrupts or traps
-    void cycle() {
-        branch_happened = false;
-		fetch();
-		decode();
-		setOP("Unknown", true);
-		execute();
-    }
+    void cycle();
 	
     void AssertIRQ(unsigned int il);
     void DeassertIRQ(unsigned int il);
@@ -118,6 +119,8 @@ private:
     bool branch_happened;
 	bool shifter_carry_out;
     bool BIGEND_sig;
+
+    bool wasException;
 	
 	ARMisa *execARM;
 	Thumbisa *execThumb;
@@ -141,7 +144,7 @@ private:
 	void unpredictable();
     bool checkAbort(AbortType memSig);
 
-    void fetch() {}
+    void fetch();
     void decode() {}
 	void execute();
 	

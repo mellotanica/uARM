@@ -134,7 +134,8 @@ void qarm::step(){
         }
     }
     mac->step();
-    if(*(mac->getBus()->getProcessor(0)->getPC()) <= EXC_FIQ && MC_Holder::getInstance()->getConfig()->isStopOnException()){
+    if(mac->getBus()->getProcessor(0)->exceptionRaised() && MC_Holder::getInstance()->getConfig()->getStopOnException() ||   //STATIC: refer to processor n if multiprocessor is implemented
+            mac->getBus()->getProcessor(0)->getStatus() == PS_HALTED){
         mac->refreshData(true);
         emit stop();
         return;
@@ -164,7 +165,7 @@ void qarm::showRam(){
     if(initialized){
         ramView *ramWindow = new ramView(mac, this);
         connect(this, SIGNAL(resetMachine()), ramWindow, SLOT(update()));
-        connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,bool,QString)), ramWindow, SLOT(update()));
+        connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), ramWindow, SLOT(update()));
         ramWindow->show();
     } else {
         QMessageBox::warning(this, "Warning", "Machine not initialized,\ncannot display memory contents.", QMessageBox::Ok);

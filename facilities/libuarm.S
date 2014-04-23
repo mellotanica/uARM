@@ -86,22 +86,7 @@ STST:
     ADD r5, r0, #PSR_OFFSET
     MRS r6, CPSR
     STR r6, [r5], #4
-    ADD r6, r6, #1
-    AND r6, r6, #0xF
-    CMP r6, #0   /* if processor mode does not have SPSR register */
-    Beq STST_NoSPSR /* do not try to access it and store #0 */
-    CMP r6, #1
-    Beq STST_NoSPSR
 
-STST_SPSR:
-    MRS r6, SPSR
-    B STST_CONT
-
-STST_NoSPSR:
-    MOV r6, #0
-
-STST_CONT:
-    STR r6, [r5], #4
     MRC p15, #0, r6, c1, c0, #0	    /* CP15_Control */
     MRC p15, #0, r7, c2, c0	    /* CP15_EntryHi */
     MRC p15, #0, r8, c15, c0	    /* CP15_CAUSE */
@@ -115,7 +100,7 @@ STST_CONT:
 /* void WAIT() */
 .global WAIT
 WAIT:
-    SWI BIOS_SRV_WAIT
+    CDP p15, 0xF, c0, c0, c1, 1
 
 
 /* unsigned int getSTATUS() */

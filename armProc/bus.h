@@ -151,18 +151,18 @@ private:
     Word BIOSTOP;
     Word RAMTOP;
 
-    Byte* excVector;
-    Byte* devRegs;
+    Byte* excVector = NULL;
+    Byte* devRegs = NULL;
     Byte* bios = NULL;
-    Byte* info;
-    Byte *romFrame;
+    Byte* info = NULL;
+    Byte* romFrame = NULL;
 
     scoped_ptr<InterruptController> pic;
 
     //scoped_ptr<MPController> mpController;
 
     // device events queue
-    EventQueue * eventQ;
+    EventQueue * eventQ = NULL;
 
     // device handling & interrupt generation tables
     Device* devTable[DEVINTUSED][DEVPERINT];

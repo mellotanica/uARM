@@ -97,6 +97,8 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
             config->setRefreshRate(root->Get("refresh-rate")->AsNumber());
         if (root->HasMember("num-ram-frames"))
             config->setRamSize(root->Get("num-ram-frames")->AsNumber());
+        if (root->HasMember("pause-on-exc"))
+            config->setStopOnException(root->Get("pause-on-exc")->AsBool());
 
         if (root->HasMember("boot")) {
             JsonObject* bootOpt = root->Get("boot")->AsObject();
@@ -163,6 +165,7 @@ void MachineConfig::Save()
     root->Set("refresh-rate", (int) getRefreshRate());
     root->Set("tlb-size", (int) getTLBSize());
     root->Set("num-ram-frames", (int) getRamSize());
+    root->Set("pause-on-exc", getStopOnException());
 
     JsonObject* bootOpt = new JsonObject;
     bootOpt->Set("load-core-file", isLoadCoreEnabled());
@@ -320,7 +323,8 @@ void MachineConfig::resetToFactorySettings()
     setNumProcessors(DEFAULT_NUM_CPUS);
     setClockRate(DEFAULT_CLOCK_RATE);
     setRefreshRate(DEFAULT_REFRESH_RATE);
-    setRamSize(DEFAUlT_RAM_SIZE);
+    setRamSize(DEFAULT_RAM_SIZE);
+    setStopOnException(DEFAULT_STOP_ON_EXCEPTION);
 
     // STATIC: this is a temp bios, there needs to be a more complete one..
     setROM(ROM_TYPE_BIOS, "/usr/include/uarm/BIOS.rom.uarm");

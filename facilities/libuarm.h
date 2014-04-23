@@ -19,7 +19,6 @@ typedef struct{
     unsigned int lr;    //r14
     unsigned int pc;    //r15
     unsigned int cpsr;
-    unsigned int spsr;          //FIXME: add to STST and LDST
     unsigned int CP15_Control;
     unsigned int CP15_EntryHi;
     unsigned int CP15_Cause;

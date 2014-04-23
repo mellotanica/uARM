@@ -4,15 +4,14 @@
 .equ ROMSTACK_OFF, -0x10
 .equ EXCV_BASE, 0x7000
 .equ EXCV_INT_OLD, 0x0		/* Interrupt Old */
-.equ EXCV_INT_NEW, 0x44		/* Interrupt New */
-.equ EXCV_TLB_OLD, 0x88		/* TLB Exception Old */
-.equ EXCV_TLB_NEW, 0xCC		/* TLB Exception New */
-.equ EXCV_PGMT_OLD, 0x110	/* Program Trap Old */
-.equ EXCV_PGMT_NEW, 0x154	/* Program Trap New */
-.equ EXCV_SWI_OLD, 0x198	/* Syscall Old */
-.equ EXCV_SWI_NEW, 0x1DC	/* Syscall New */
+.equ EXCV_INT_NEW, 0x54		/* Interrupt New */
+.equ EXCV_TLB_OLD, 0xA8		/* TLB Exception Old */
+.equ EXCV_TLB_NEW, 0xFC		/* TLB Exception New */
+.equ EXCV_PGMT_OLD, 0x150	/* Program Trap Old */
+.equ EXCV_PGMT_NEW, 0x1A4	/* Program Trap New */
+.equ EXCV_SWI_OLD, 0x1F8	/* Syscall Old */
+.equ EXCV_SWI_NEW, 0x24C	/* Syscall New */
 .equ DEV_BASE, 0x40
-
 
 .global _start
 _start:
@@ -75,27 +74,33 @@ BOOT:
     ADD r2, r0, #EXCV_INT_NEW
     ADD r2, r2, #60 /* skip to r15 */
     STR r8, [r2], #4
-    MOV r9, #0x12
+    MOV r9, #0xD2
     STR r9, [r2]
 
     ADD r2, r0, #EXCV_PGMT_NEW
     ADD r2, r2, #60
     STR r8, [r2], #4
-    MOV r9, #0x17
+    MOV r9, #0xDB
     STR r9, [r2]
 
     ADD r2, r0, #EXCV_SWI_NEW
     ADD r2, r2, #60
     STR r8, [r2], #4
-    MOV r9, #0x13
+    MOV r9, #0xD3
+    STR r9, [r2]
+
+    ADD r2, r0, #EXCV_TLB_NEW
+    ADD r2, r2, #60
+    STR r8, [r2], #4
+    MOV r9, #0xD7
     STR r9, [r2]
 
     MOV r3, #0x8000	/*retrieve entry point*/
     ADD r3, r3, #4
     LDR r2, [r3]
     MOV lr, r2		/* sets lr to entry point */
-    MOV r0, #0x1F
-    MSR SPSR_cf, r0	/* sets the spsr to system mode, thumb disabled and all interrupts enabled */
+    MOV r0, #0xDF
+    MSR SPSR_cf, r0	/* sets the spsr to system mode, thumb disabled and all interrupts disabled */
     ADD r0, r1, #HALT	/* exit point */
     MOV r2, #RAMSIZE_INFO	/* ramtop addr */
     LDR r3, [r2]
@@ -117,55 +122,29 @@ BOOT:
 SWI_H:
     MOV sp, #ROMSTACK_TOP	/* save lr, CPSR and r0 onto stack */
     ADD sp, sp, #ROMSTACK_OFF
-    STR lr, [sp], #4
-    MRS lr, CPSR
-    STR lr, [sp], #4
     STR r0, [sp], #4
-
-    MRS lr, SPSR
-    AND lr, lr, #0x1F
-    CMP lr, #0x10
-    MRS lr, SPSR
-    ADDeq lr, lr, #0xF	/* if previus mode was user mode, switch to sys to backup registers */
-    MSR CPSR, lr
+    STR lr, [sp], #4
+    MRS r0, CPSR
+    STR r0, [sp]
 
     MOV r0, #EXCV_BASE	/* store registers */
     ADD r0, r0, #EXCV_SWI_OLD
-    ADD r0, #4
-    STMIA r0, {r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
+
+    BL SAVE_OLD_STATE
+
     MOV sp, #ROMSTACK_TOP
     ADD sp, sp, #ROMSTACK_OFF
-    ADD sp, sp, #8
-    LDR r5, [sp], #-4	/* recover r0 from stack and store it in its slot */
-    STR r5, [r0, #-4]!
-    LDR r5, [sp], #-4	/* recover CPRS from stack and enable it */
-    MSR CPSR, r5
-    MRS r5, SPSR    /* store SPSR in state_old CPSR slot */
-    ADD r0, r0, #PSR_OFFSET
-    STR r5, [r0], #-4
-    LDR r5, [sp, #-12]!	/* recover lr from stack and store it in old state pc slot */
-    STR r5, [r0], #8
+    ADD sp, sp, #4
+    LDR lr, [sp]
 
-    ADD r0, #4 /* FIXME: SPSR slot... do we need it? */
-
-    MRC p15, #0, r6, c1, c0, #0	    /* CP15_Control */
-    STR r6, [r0], #4
-    MRC p15, #0, r6, c2, c0	    /* CP15_EntryHi */
-    STR r6, [r0], #4
-    MRC p15, #0, r6, c15, c0	    /* CP15_CAUSE */
-    STR r6, [r0], #4
-
-    LDR r6, [r5, #-4]	/* get SWI instruction */
+    LDR r6, [lr, #-4]	/* get SWI instruction */
     AND r6, r6, #0xFFFFFF
     CMP r6, #BIOS_SRV_SYS    /* if syscall requested load kernel defined handler */
     Bne SWI_H_Cont
 
-    MOV ip, #EXCV_BASE
-    ADD ip, ip, #EXCV_SWI_NEW
-    ADD ip, ip, #PSR_OFFSET	/* put psr slot in new state, update status register */
-    LDR lr, [ip]
-    MSR CPSR, lr
-    LDMIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
+    MOV r0, #EXCV_BASE
+    ADD r0, r0, #EXCV_SWI_NEW
+    B LDST
 
 SWI_H_Cont:
     CMP r6, #BIOS_SRV_HALT
@@ -185,203 +164,86 @@ SWI_H_Cont:
 UNDEF_H:
     MOV sp, #ROMSTACK_TOP	/* save lr, CPSR and r0 onto stack */
     ADD sp, sp, #ROMSTACK_OFF
-    STR lr, [sp], #4
-    MRS lr, CPSR
-    STR lr, [sp], #4
     STR r0, [sp], #4
-
-    MRS lr, SPSR
-    AND lr, lr, #0x1F
-    CMP lr, #0x10
-    MRS lr, SPSR
-    ADDeq lr, lr, #0xF	/* if previus mode was user mode, switch to sys to backup registers */
-    MSR CPSR, lr
+    STR lr, [sp], #4
+    MRS r0, CPSR
+    STR r0, [sp]
 
     MOV r0, #EXCV_BASE	/* store registers */
     ADD r0, r0, #EXCV_PGMT_OLD
-    ADD r0, #4
-    STMIA r0, {r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
-    LDR r5, [sp, #-4]!	/* recover r0 from stack and store it in its slot */
-    SUB r0, #4
-    STR r5, [r0]
-    LDR r5, [sp, #-4]!	/* recover CPRS from stack and enable it */
-    MSR CPSR, r5
-    MRS r5, SPSR    /* store SPSR in state_old CPSR slot */
-    ADD r0, r0, #PSR_OFFSET
-    STR r5, [r0], #-4
-    LDR r5, [sp, #-4]!	/* recover lr from stack and store it in old state pc slot */
-    STR r5, [r0], #8
 
-    ADD r0, #4 /* FIXME: SPSR slot... do we need it? */
+    BL SAVE_OLD_STATE
 
-    MRC p15, #0, r6, c1, c0, #0	    /* CP15_Control */
-    STR r6, [r0], #4
-    MRC p15, #0, r6, c2, c0	    /* CP15_EntryHi */
-    STR r6, [r0], #4
-    MRC p15, #0, r6, c15, c0	    /* CP15_CAUSE */
-    STR r6, [r0], #4
-
-    MOV ip, #EXCV_BASE
-    ADD ip, ip, #EXCV_PGMT_NEW
-    ADD sp, ip, #PSR_OFFSET	/* psr slot in new state, update status register */
-    LDR lr, [sp]
-    MSR CPSR, lr
-    LDMIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
+    MOV r0, #EXCV_BASE
+    ADD r0, r0, #EXCV_PGMT_NEW
+    B LDST
 
 DATAABT_H:
 PREFABT_H:
     MOV sp, #ROMSTACK_TOP	/* save lr, CPSR and r0 onto stack */
     ADD sp, sp, #ROMSTACK_OFF
-    STR lr, [sp], #4
-    MRS lr, CPSR
-    STR lr, [sp], #4
     STR r0, [sp], #4
-
-    MRS lr, SPSR
-    AND lr, lr, #0x1F
-    CMP lr, #0x10
-    MRS lr, SPSR
-    ADDeq lr, lr, #0xF	/* if previus mode was user mode, switch to sys to backup registers */
-    MSR CPSR, lr
+    STR lr, [sp], #4
+    MRS r0, CPSR
+    STR r0, [sp]
 
     MOV r0, #EXCV_BASE	/* store registers */
     ADD r0, r0, #EXCV_TLB_OLD
-    ADD r0, #4
-    STMIA r0, {r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
-    LDR r5, [sp, #-4]!	/* recover r0 from stack and store it in its slot */
-    SUB r0, #4
-    STR r5, [r0]
-    LDR r5, [sp, #-4]!	/* recover CPRS from stack and enable it */
-    MSR CPSR, r5
-    MRS r5, SPSR    /* store SPSR in state_old CPSR slot */
-    ADD r0, r0, #PSR_OFFSET
-    STR r5, [r0], #-4
-    LDR r5, [sp, #-4]!	/* recover lr from stack and store it in old state pc slot */
-    STR r5, [r0], #8
 
-    ADD r0, #4 /* FIXME: SPSR slot... do we need it? */
+    BL SAVE_OLD_STATE
 
-    MRC p15, #0, r6, c1, c0, #0	    /* CP15_Control */
-    STR r6, [r0], #4
-    MRC p15, #0, r6, c2, c0	    /* CP15_EntryHi */
-    STR r6, [r0], #4
-    MRC p15, #0, r6, c15, c0	    /* CP15_CAUSE */
-    STR r6, [r0], #4
-
-    MOV ip, #EXCV_BASE
-    ADD ip, ip, #EXCV_TLB_NEW
-    ADD sp, ip, #PSR_OFFSET	/* psr slot in new state, update status register */
-    LDR lr, [sp]
-    MSR CPSR, lr
-    LDMIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
+    MOV r0, #EXCV_BASE
+    ADD r0, r0, #EXCV_TLB_NEW
+    B LDST
 
 IRQ_H:
 FIQ_H:
     MOV sp, #ROMSTACK_TOP	/* save lr, CPSR and r0 onto stack */
     ADD sp, sp, #ROMSTACK_OFF
-    STR lr, [sp], #4
-    MRS lr, CPSR
-    STR lr, [sp], #4
     STR r0, [sp], #4
-
-    MRS lr, SPSR
-    AND lr, lr, #0x1F
-    CMP lr, #0x10
-    MRS lr, SPSR
-    ADDeq lr, lr, #0xF	/* if previus mode was user mode, switch to sys to backup registers */
-    MSR CPSR, lr
+    STR lr, [sp], #4
+    MRS r0, CPSR
+    STR r0, [sp]
 
     MOV r0, #EXCV_BASE	/* store registers */
-    ADD r0, r0, #EXCV_SWI_OLD
-    ADD r0, #4
-    STMIA r0, {r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
-    LDR r5, [sp, #-4]!	/* recover r0 from stack and store it in its slot */
-    SUB r0, #4
-    STR r5, [r0]
-    LDR r5, [sp, #-4]!	/* recover CPRS from stack and enable it */
-    MSR CPSR, r5
-    MRS r5, SPSR    /* store SPSR in state_old CPSR slot */
-    ADD r0, r0, #PSR_OFFSET
-    STR r5, [r0], #-4
-    LDR r5, [sp, #-4]!	/* recover lr from stack and store it in old state pc slot */
-    STR r5, [r0], #8
+    ADD r0, r0, #EXCV_INT_OLD
 
-    ADD r0, #4 /* FIXME: SPSR slot... do we need it? */
+    BL SAVE_OLD_STATE
 
-    MRC p15, #0, r6, c1, c0, #0	    /* CP15_Control */
-    STR r6, [r0], #4
-    MRC p15, #0, r6, c2, c0	    /* CP15_EntryHi */
-    STR r6, [r0], #4
-    MRC p15, #0, r6, c15, c0	    /* CP15_CAUSE */
-    STR r6, [r0], #4
-
-    MOV ip, #EXCV_BASE
-    ADD ip, ip, #EXCV_INT_NEW
-    ADD sp, ip, #PSR_OFFSET	/* psr slot in new state, update status register */
-    LDR lr, [sp]
-    MSR CPSR, lr
-    LDMIA ip, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
+    MOV r0, #EXCV_BASE
+    ADD r0, r0, #EXCV_INT_NEW
+    B LDST
 
 HALT:
     MOV r5, pc
     SUB r5, r5, #8  /* r5 = HALT */
     SUB r5, r5, #HALT /* r5 = _start */
     ADD r0, r5, #haltMess
-    B PRINT
+    Bl PRINT
+    CDP p15, 0xF, c0, c0, c1, 0
+    NOP
+    NOP
 
 PANIC:
     MOV r5, pc
     SUB r5, r5, #8  /* r5 = PANIC */
     SUB r5, r5, #PANIC /* r5 = _start */
     ADD r0, r5, #panicMess
-    B PRINT
-
-WAIT:
-    MOV r5, pc
-    SUB r5, r5, #8
-    SUB r5, r5, #WAIT
-    ADD r0, r5, #waitMess
-    B PRINT
+    Bl PRINT
+    B HALT_LOOP
+    NOP
+    NOP
 
 UNKNOWN_SRV:
     MOV r5, pc
     SUB r5, r5, #8  /* r5 = UNKNOWN_SRV */
     SUB r5, r5, #UNKNOWN_SRV /* r5 = _start */
     ADD r0, r5, #unknownMess
-    B PRINT
+    Bl PRINT
+    B HALT_LOOP
 
-/* Loads a processor state from given address *
- * unsigned int LDST(void *addr);             */
-LDST:
-    MOV ip, #EXCV_BASE
-    ADD ip, ip, #EXCV_SWI_OLD
-    LDR r0, [ip]
-    ADD ip, ip, #PSR_OFFSET
-    LDR r5, [ip], #4    /* r5 contains current psr */
-    LDR r6, [ip], #4	/* r6 contains saved psr */
-
-    LDR r7, [ip], #4	/* restore coprocessor registers */
-    MCR p15, #0, r7, c1, c0, #0
-    LDR r7, [ip], #4
-    MCR p15, #0, r7, c2, c0, #0
-    MCR p15, #0, r7, c2, c0, #1
-    LDR r7, [ip]
-    MCR p15, #0, r9, c15, c0
-    MCR p15, #1, r9, c15, c0
-
-    ADD r7, r5, #1
-    AND r7, r7, #0xF
-    CMP r7, #0
-    Beq LDST_CONT
-    CMP r7, #1
-    Beq LDST_CONT
-
-    MSR SPSR, r6    /* if stored state had SPSR register restore it */
-
-LDST_CONT:
-    MSR CPSR, r5
-    LDMIA r0, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
-
+HALT_LOOP:
+    B HALT_LOOP
 
 PRINT:
     MOV r5, #4
@@ -404,7 +266,7 @@ PRINT_LOOP:
 
     LDRB r7, [r0, r8]
     CMP r7, #0
-    Beq HALT_LOOP
+    BXeq lr
 
     MOV r7, r7, LSL #8	/* setup char */
     ORR r7, r7, #2	/* add print command */
@@ -412,11 +274,66 @@ PRINT_LOOP:
     ADD r8, r8, #1
     B PRINT_LOOP
 
-HALT_LOOP:
-    B HALT_LOOP
+/* Loads a processor state from given address *
+ * unsigned int LDST(void *addr);             */
+LDST:
+    MOV ip, r0
+    ADD ip, ip, #PSR_OFFSET
+    LDR r5, [ip], #4    /* r5 contains current psr */
 
-padding:
-    .asciz "padding pad"
+    LDR r7, [ip], #4	/* restore coprocessor registers */
+    MCR p15, #0, r7, c1, c0, #0
+    LDR r7, [ip], #4
+    MCR p15, #0, r7, c2, c0, #0
+    MCR p15, #0, r7, c2, c0, #1
+    LDR r7, [ip]
+    MCR p15, #0, r7, c15, c0
+    MCR p15, #1, r7, c15, c0
+
+    MSR CPSR, r5
+    LDMIA r0, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
+
+/* r0 contains state_old addr, lr points to caller and sp to stack with old lr, CPSR and r0 */
+SAVE_OLD_STATE:
+    MRS sp, SPSR
+
+    AND sp, sp, #0xF
+    CMP sp, #0
+    MRS sp, SPSR
+    ADDeq sp, sp, #0xF
+    ADD sp, sp, #0xC0
+
+    MSR CPSR, sp
+
+    ADD r0, r0, #4
+    STMIA r0, {r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
+    SUB r0, r0, #4
+
+    MOV sp, #ROMSTACK_TOP
+    ADD sp, sp, #ROMSTACK_OFF
+
+    LDR r1, [sp], #4	/* r0 */
+    STR r1, [r0]
+
+    LDR r2, [sp], #4	/* pc */
+    ADD r0, r0, #PSR_OFFSET
+    SUB r0, r0, #4
+    STR r2, [r0], #4
+
+    LDR r3, [sp]    /* cpsr */
+    MSR CPSR, r3
+
+    MRS r3, SPSR
+    STR r3, [r0], #4
+
+    MRC p15, #0, r6, c1, c0, #0	    /* CP15_Control */
+    MRC p15, #0, r7, c2, c0	    /* CP15_EntryHi */
+    MRC p15, #0, r8, c15, c0	    /* CP15_CAUSE */
+    STMIA r0, {r6, r7, r8}
+
+    BX lr   /*FIXME!!*/
+
+    .asciz "pad"
 
 haltMess:
     .asciz "SYSTEM HALTED.\0"
@@ -425,7 +342,5 @@ unknownMess:
     .asciz "UNKNOWN SERVICE.\nKERNEL PANIC!\0"
 
 panicMess:
-    .asciz "KERNEL PANIC! \0"
+    .asciz "KERNEL PANIC!\0"
 
-waitMess:   /* FIXME: only for testing purposes */
-    .asciz "WAITING\0"

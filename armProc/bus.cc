@@ -59,25 +59,18 @@ private:
 };
 
 systemBus::systemBus(machine *mac) :
-    mac(mac),
-    pic(new InterruptController(this))
+    mac(mac)
 {
     if(ram == NULL)
         ram = new ramMemory();
     cpus = new processor*[MachineConfig::MAX_CPUS];
-    excVector = new Byte[EXCVTOP];
-    memset(excVector, 0, EXCVTOP);
-    devRegs = new Byte[(DEVTOP - DEVBASEADDR)];
-    memset(devRegs, 0, (DEVTOP - DEVBASEADDR));
-    info = new Byte[(INFOTOP - INFOBASEADDR)];
-    memset(info, 0, (INFOTOP - INFOBASEADDR));
-    romFrame = new Byte[(ROMFRAMETOP - ROMFRAMEBASE)];
-    memset(romFrame, 0, (ROMFRAMETOP - ROMFRAMEBASE));
+
     for (unsigned intl = 0; intl < N_EXT_IL; intl++) {
         for (unsigned int devNo = 0; devNo < N_DEV_PER_IL; devNo++) {
             devTable[intl][devNo] = NULL;
         }
     }
+
     reset();
 }
 
@@ -104,12 +97,37 @@ systemBus::~systemBus(){
 }
 
 void systemBus::reset(){
+    pic.reset(new InterruptController(this));
+
     if(bios != NULL)
         delete [] bios;
     bios = NULL;
     tod = UINT64_C(0);
     timer = MAXWORDVAL;
+    if(eventQ != NULL)
+        delete eventQ;
     eventQ = new EventQueue();
+
+    if(excVector != NULL)
+        delete [] excVector;
+    excVector = new Byte[EXCVTOP];
+    memset(excVector, 0, EXCVTOP);
+
+    if(devRegs != NULL)
+        delete [] devRegs;
+    devRegs = new Byte[(DEVTOP - DEVBASEADDR)];
+    memset(devRegs, 0, (DEVTOP - DEVBASEADDR));
+
+    if(info != NULL)
+        delete [] info;
+    info = new Byte[(INFOTOP - INFOBASEADDR)];
+    memset(info, 0, (INFOTOP - INFOBASEADDR));
+
+    if(romFrame != NULL)
+        delete [] romFrame;
+    romFrame = new Byte[(ROMFRAMETOP - ROMFRAMEBASE)];
+    memset(romFrame, 0, (ROMFRAMETOP - ROMFRAMEBASE));
+
 
     ram->reset(MC_Holder::getInstance()->getConfig()->getRamSize());
     if(activeCpus != MC_Holder::getInstance()->getConfig()->getNumProcessors()){
@@ -182,8 +200,9 @@ void systemBus::ClockTick(){
 
 
     // Update interval timer
-    if (UnsSub(&timer, timer, 1))
+    if (UnsSub(&timer, timer, 1)){
         pic->StartIRQ(IL_TIMER);
+    }
     HandleBusAccess(BUS_REG_TIMER, WRITE, NULL);
     addr = BUS_REG_TIMER;
     writeW(&addr, timer);
@@ -191,9 +210,6 @@ void systemBus::ClockTick(){
     // Scan the event queue
     while (!eventQ->IsEmpty() && eventQ->nextDeadline() <= tod) {
         (eventQ->nextCallback())();
-
-        //EDIT: this needs to be done if pauseOnInterrupt is enabled
-        //debugSignaler::getInstance()->pauseExec();
 
         eventQ->RemoveHead();
     }

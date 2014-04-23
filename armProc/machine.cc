@@ -42,16 +42,13 @@ void machine::reset(){
 
 void machine::step(){
     processor *cpu = sysbus->getProcessor(0);
+
     if(cpu->getStatus() != PS_HALTED){
         sysbus->ClockTick();
-        if(cpu->branchHappened()){
-            cpu->prefetch();
-        } else {
-            cpu->nextCycle();
-        }
-    }
-    if(cpu->getStatus() != PS_HALTED){
-        cpu->cycle();
+
+        if(cpu->getStatus() != PS_IDLE)
+            cpu->cycle();
+
         refreshData();
     }
 }

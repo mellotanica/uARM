@@ -341,10 +341,10 @@ void processor::nextCycle() {
 }
 
 void processor::prefetch() {
-    if(*getPC() == 0x14){
+    /*if(*getPC() == 0x14){
         status = PS_HALTED;
         return;
-    }
+    }*/
     Word tpc = *getPC();
     prefetchFault[PIPELINE_EXECUTE] = !bus->prefetch(tpc);
     tpc += 4;
@@ -387,6 +387,30 @@ void processor::AssertIRQ(unsigned int il)
 void processor::DeassertIRQ(unsigned int il)
 {
     *(coproc->getIPCauseRegister()) &= ~CAUSE_IP(il);
+}
+
+void processor::cycle() {
+    wasException = false;
+    Word intm = bus->getPendingInt(0);  //STATIC: you must pass cpu id to get the right interrupts if multiprocessor is implemented
+    if(intm){
+        if(((intm >> 10) & 1) && timerEnabled()) // Fast interrupt!
+            fastInterruptTrap();
+        else if(interruptsEnabled())
+            interruptTrap();
+    }
+    fetch();
+    branch_happened = false;
+    decode();
+    setOP("Unknown", true);
+    execute();
+}
+
+void processor::fetch(){
+    if(branchHappened()){
+        prefetch();
+    } else {
+        nextCycle();
+    }
 }
 
 /* *************************** *
@@ -479,11 +503,13 @@ void processor::execTrap(ExceptionMode exception){
 		cpu_registers[spsr] = *cpsr;	//spsr contains old cpsr
 	*cpsr &= 0xFFFFFFE0;
 	
+    resetBitReg(cpsr, T_POS);	//execute in arm state
+    setBitReg(cpsr, I_POS);	//disable normal interrupts
+    setBitReg(cpsr, F_POS); //disable fast interrupts
+
 	switch(exception){	//enter privileged mode and edit status register as needed
 		case EXC_SWI:
 			*cpsr |= MODE_SUPERVISOR;
-            resetBitReg(cpsr, 5);	//execute in arm state
-            setBitReg(cpsr, 7);	//disable normal interrupts
 			break;
 		case EXC_UNDEF:
 			*cpsr |= MODE_UNDEFINED;
@@ -492,8 +518,7 @@ void processor::execTrap(ExceptionMode exception){
             *cpsr |= MODE_ABORT;
 			break;
 		case EXC_RESET:
-			*cpsr |= MODE_SUPERVISOR | I_MASK | F_MASK;
-            *cpsr &= INVERT_W(T_MASK);
+            *cpsr |= MODE_SUPERVISOR;
             status = PS_RUNNING;
 			break;
 		case EXC_PREFABT:
@@ -509,6 +534,8 @@ void processor::execTrap(ExceptionMode exception){
 	
     *getPC() = exception;
     old_pc = 0xFFFFFFFF;
+
+    wasException = true;
 }
 
 void processor::unpredictable(){
@@ -581,7 +608,12 @@ void processor::coprocessorOperation(){
 	Byte rm = pipeline[PIPELINE_EXECUTE] & 0xF;
 	Byte rd = (pipeline[PIPELINE_EXECUTE] >> 12) & 0xF;
 	Byte info = (pipeline[PIPELINE_EXECUTE] >> 5) & 7;
-	cp->executeOperation(opcode, rm, rn, rd, info);
+    if(pipeline[PIPELINE_EXECUTE] == WAITCPINSTR)
+        suspend();
+    else if(pipeline[PIPELINE_EXECUTE] == HALTCPINSTR)
+        halt();
+    else
+        cp->executeOperation(opcode, rm, rn, rd, info);
 }
 
 void processor::coprocessorTransfer(bool memAcc, bool toCoproc){

@@ -110,7 +110,7 @@ QWidget* MachineConfigDialog::createGeneralTab()
     layout->addWidget(ramSizeSpinner, 4, 3);
 
     stopOnInterruptBox = new QCheckBox("Pause execution on Exception");
-    stopOnInterruptBox->setChecked(config->isStopOnException());
+    stopOnInterruptBox->setChecked(config->getStopOnException());
     layout->addWidget(stopOnInterruptBox, 5, 1, 1, 3);
 
     QSignalMapper* fileChooserMapper = new QSignalMapper(this);
