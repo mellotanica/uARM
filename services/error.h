@@ -7,6 +7,7 @@
 
 #include <stdexcept>
 #include <string>
+#include <QString>
 
 class Error : public std::runtime_error {
 public:

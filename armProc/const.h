@@ -135,9 +135,9 @@
 
 // interrupt handling related constants
 
-#define CAUSE_IP_MASK          0x0000ff00
-#define CAUSE_IP(line)         (1U << (8 + (line)))
-#define CAUSE_IP_BIT(line)     (8 + (line))
+#define CAUSE_IP_MASK          0xff000000
+#define CAUSE_IP(line)         (1U << (24 + (line)))
+#define CAUSE_IP_BIT(line)     (24 + (line))
 
 // timer interrupt line
 #define TIMERINT	2

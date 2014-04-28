@@ -22,7 +22,7 @@ typedef struct{
     unsigned int CP15_Control;
     unsigned int CP15_EntryHi;
     unsigned int CP15_Cause;
-}state_t; //to be replaced with actual processor state structure
+}state_t;
 
 /* prints a string *s 0-termianted on terminal 0 */
 void tprint(char *s);

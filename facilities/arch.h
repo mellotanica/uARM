@@ -101,7 +101,7 @@
 #define IDEV_BITMAP_END         (IDEV_BITMAP_BASE + N_EXT_IL * WS)
 #define IDEV_BITMAP_ADDR(line)  (IDEV_BITMAP_BASE + ((line) - DEV_IL_START) * WS)
 
-/* Interrupting devices bitmap */
+/* Interrupting devices bitmap */   //FIXME: this should be somewere and should be working..
 #define CDEV_BITMAP_BASE        0x1000003C
 #define CDEV_BITMAP_END         (CDEV_BITMAP_BASE + N_EXT_IL * WS)
 #define CDEV_BITMAP_ADDR(line)  (CDEV_BITMAP_BASE + ((line) - DEV_IL_START) * WS)

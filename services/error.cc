@@ -23,7 +23,6 @@
 #define BASE_ERROR_CC
 
 #include <QMessageBox>
-#include <QString>
 #include "armProc/machine_config.h"
 
 void Panic(const char* message)

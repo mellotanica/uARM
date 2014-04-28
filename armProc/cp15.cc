@@ -151,11 +151,11 @@ void cp15::register15(Word *cpureg, Byte opcode, bool toCoproc){
         Word mask = 0;
         switch(opcode){
             case 0: //Cause.ExcpCase
-                mask = 0xFFFFFF;
+                mask = INVERT_W(CAUSE_IP_MASK);
                 value = *cpureg & mask;
                 break;
             case 1: //Cause.IP
-                mask = 0xFF000000;
+                mask = CAUSE_IP_MASK;
                 value = *cpureg & mask;
                 break;
         }
@@ -167,7 +167,7 @@ void cp15::register15(Word *cpureg, Byte opcode, bool toCoproc){
 }
 
 Word* cp15::getIPCauseRegister(){
-    return cp15_registers + CP15_REG15_IP_CAUSE;
+    return cp15_registers + CP15_REG15_CAUSE;
 }
 
 void cp15::EntryHi(Word *cpureg, Byte opcode, bool toCoproc){

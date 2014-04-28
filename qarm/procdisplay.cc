@@ -118,10 +118,9 @@ procDisplay::procDisplay(QWidget *parent) :
     cp15Reg[1][1]->setText("ID (r0):");
     cp15Reg[2][1]->setText("SCB (r1):");
     cp15Reg[3][1]->setText("CCB (r1):");
-    cp15Reg[0][3]->setText("PTE_Hi (r2):");
-    cp15Reg[1][3]->setText("PTE_Low (r2):");
-    cp15Reg[2][3]->setText("Exc (r15):");
-    cp15Reg[3][3]->setText("Int (r15):");
+    cp15Reg[1][3]->setText("PTE_Hi (r2):");
+    cp15Reg[2][3]->setText("PTE_Low (r2):");
+    cp15Reg[3][3]->setText("Cause (r15):");
     infoReg[0][0]->setText("BUS Info:");
     infoReg[1][1]->setText("TOD_Hi:");
     infoReg[2][1]->setText("TOD_Low:");
@@ -180,7 +179,6 @@ void procDisplay::reset(){
     cp15Reg[1][2]->setText(convertHex(0));
     cp15Reg[2][2]->setText(convertHex(0));
     cp15Reg[3][2]->setText(convertHex(0));
-    cp15Reg[0][4]->setText(convertHex(0));
     cp15Reg[1][4]->setText(convertHex(0));
     cp15Reg[2][4]->setText(convertHex(0));
     cp15Reg[3][4]->setText(convertHex(0));
@@ -217,10 +215,9 @@ void procDisplay::updateVals(Word *cpu, Word *cp15, Word *ppln, Word todH, Word 
     cp15Reg[1][2]->setText(convertHex(cp15[0]));
     cp15Reg[2][2]->setText(convertHex(cp15[1]));
     cp15Reg[3][2]->setText(convertHex(cp15[2]));
-    cp15Reg[0][4]->setText(convertHex(cp15[3]));
-    cp15Reg[1][4]->setText(convertHex(cp15[4]));
-    cp15Reg[2][4]->setText(convertHex(cp15[5]));
-    cp15Reg[3][4]->setText(convertHex(cp15[6]));
+    cp15Reg[1][4]->setText(convertHex(cp15[3]));
+    cp15Reg[2][4]->setText(convertHex(cp15[4]));
+    cp15Reg[3][4]->setText(convertHex(cp15[5]));
 
     infoReg[1][2]->setText(convertHex(todH));
     infoReg[2][2]->setText(convertHex(todL));

@@ -1,16 +1,17 @@
 .include "bios_const.h"
 
+.equ STATE_T_SIZE, 80
 .equ ROMSTACK_TOP, 0x8000
 .equ ROMSTACK_OFF, -0x10
 .equ EXCV_BASE, 0x7000
-.equ EXCV_INT_OLD, 0x0		/* Interrupt Old */
-.equ EXCV_INT_NEW, 0x54		/* Interrupt New */
-.equ EXCV_TLB_OLD, 0xA8		/* TLB Exception Old */
-.equ EXCV_TLB_NEW, 0xFC		/* TLB Exception New */
-.equ EXCV_PGMT_OLD, 0x150	/* Program Trap Old */
-.equ EXCV_PGMT_NEW, 0x1A4	/* Program Trap New */
-.equ EXCV_SWI_OLD, 0x1F8	/* Syscall Old */
-.equ EXCV_SWI_NEW, 0x24C	/* Syscall New */
+.equ EXCV_INT_OLD, 0	/* Interrupt Old */
+.equ EXCV_INT_NEW, STATE_T_SIZE	/* Interrupt New */
+.equ EXCV_TLB_OLD, 2 * STATE_T_SIZE	/* TLB Exception Old */
+.equ EXCV_TLB_NEW, 3 * STATE_T_SIZE	/* TLB Exception New */
+.equ EXCV_PGMT_OLD, 4 * STATE_T_SIZE	/* Program Trap Old */
+.equ EXCV_PGMT_NEW, 5 * STATE_T_SIZE	/* Program Trap New */
+.equ EXCV_SWI_OLD, 6 * STATE_T_SIZE	/* Syscall Old */
+.equ EXCV_SWI_NEW, 7 * STATE_T_SIZE	/* Syscall New */
 .equ DEV_BASE, 0x40
 
 .global _start
@@ -72,25 +73,29 @@ BOOT:
     MOV r0, #EXCV_BASE
     ADD r8, r1, #PANIC
     ADD r2, r0, #EXCV_INT_NEW
-    ADD r2, r2, #60 /* skip to r15 */
+    ADD r2, r2, #PSR_OFFSET /* skip to r15 */
+    SUB r2, r2, #4
     STR r8, [r2], #4
     MOV r9, #0xD2
     STR r9, [r2]
 
     ADD r2, r0, #EXCV_PGMT_NEW
-    ADD r2, r2, #60
+    ADD r2, r2, #PSR_OFFSET /* skip to r15 */
+    SUB r2, r2, #4
     STR r8, [r2], #4
     MOV r9, #0xDB
     STR r9, [r2]
 
     ADD r2, r0, #EXCV_SWI_NEW
-    ADD r2, r2, #60
+    ADD r2, r2, #PSR_OFFSET /* skip to r15 */
+    SUB r2, r2, #4
     STR r8, [r2], #4
     MOV r9, #0xD3
     STR r9, [r2]
 
     ADD r2, r0, #EXCV_TLB_NEW
-    ADD r2, r2, #60
+    ADD r2, r2, #PSR_OFFSET /* skip to r15 */
+    SUB r2, r2, #4
     STR r8, [r2], #4
     MOV r9, #0xD7
     STR r9, [r2]
@@ -147,6 +152,10 @@ SWI_H:
     B LDST
 
 SWI_H_Cont:
+    MOV sp, #EXCV_BASE
+    ADD sp, sp, #EXCV_SWI_OLD
+    LDM sp, {r0, r1, r2, r3}
+
     CMP r6, #BIOS_SRV_HALT
     Beq HALT
 
@@ -158,6 +167,9 @@ SWI_H_Cont:
 
     CMP r6, #BIOS_SRV_WAIT
     Beq WAIT
+
+    CMP r6, #BIOS_SRV_BP
+    Beq UNKNOWN_SRV /* FIXME: implement BREAK*/
 
     B UNKNOWN_SRV
 
@@ -301,7 +313,7 @@ SAVE_OLD_STATE:
     CMP sp, #0
     MRS sp, SPSR
     ADDeq sp, sp, #0xF
-    ADD sp, sp, #0xC0
+    ORR sp, sp, #0xC0
 
     MSR CPSR, sp
 
@@ -339,7 +351,7 @@ haltMess:
     .asciz "SYSTEM HALTED.\0"
 
 unknownMess:
-    .asciz "UNKNOWN SERVICE.\nKERNEL PANIC!\0"
+    .asciz "UNKNOWN SERVICE.\nKERNEL PANIC!            \0"
 
 panicMess:
     .asciz "KERNEL PANIC!\0"

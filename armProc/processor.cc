@@ -26,6 +26,7 @@
 #include "services/util.h"
 #include "armProc/ARMisa.h"
 #include "armProc/Thumbisa.h"
+#include "services/error.h"
 
 processor::processor(systemBus *bus) : pu(bus) {
     //cpint = new coprocessor_interface(bus);
@@ -128,7 +129,7 @@ Word *processor::getVisibleRegister(Byte num){
 			return &cpu_registers[REG_UNDEF_BASE+(num-13)];
 			break;
 		default:
-			return NULL;
+        Panic("Invalid Processor Mode\n");
 			break;
 	}
 	return NULL;
@@ -380,7 +381,6 @@ void processor::AssertIRQ(unsigned int il)
     // If in standby mode, go back to being a power hog.
     if (status == PS_IDLE){
         status = PS_RUNNING;
-        // WARN: do we need to notify someone here??
     }
 }
 
@@ -882,7 +882,7 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 			bool firstChecked = false;
             for(unsigned i = 0; i < (sizeof(HalfWord) * 8); i++){
 				if(list & (1<<i)){		// if register i is marked store it
-					if(!firstChecked){	// if first register to be stored is base address register
+                    if(!firstChecked){	// if first register to be stored is base address register
 						firstChecked = true;
                         if(!checkAbort(bus->writeW(&address, *getVisibleRegister(i)))){   // store the initial value before writing back return address
                             dataAbortTrap();
@@ -891,11 +891,12 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 						if(W)
                             *rn += (U ? 1 : -1) * (regn * 4);
 					}
-					else
+                    else
                         if(!checkAbort(bus->writeW(&address, *getVisibleRegister(i)))){
                             dataAbortTrap();
                             return;
                         }
+
 					address += 4;
 				}
 			}
@@ -928,6 +929,7 @@ void processor::accessPSR(bool load){
 			unpredictable();
 			return;
 		}
+
 		Word operand;
         if(checkBit(pipeline[PIPELINE_EXECUTE], 25)){	//immediate value
 			Word val = pipeline[PIPELINE_EXECUTE] & 0xFF;
@@ -942,10 +944,16 @@ void processor::accessPSR(bool load){
 				return;
 			}
 		}
+
 		if((operand & PSR_UNALLOC_MASK) != 0){	//attempt to set reserved bits
 			unpredictable();
 			return;
 		}
+
+        if(checkBit(coproc->getRegister(CP15_REG1_SCB), CP15_REG1_L4POS)){   //T bit modifications are ignored
+            copyBitFromReg(&operand, T_POS, psr, T_POS);
+        }
+
         Word mask = 0xFF000000 | (checkBit(pipeline[PIPELINE_EXECUTE], 16) ? 0xFF : 0);
 		if(spsr)
 			mask &= (PSR_USER_MASK | PSR_PRIV_MASK | PSR_STATE_MASK);
