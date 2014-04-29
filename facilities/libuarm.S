@@ -54,8 +54,8 @@ tprint_exit:
     BX lr
 
 /* void SYSCALL(unsigned int sysNum, unsigned int arg1, unsigned int arg2, unsigned int arg3) */
-.global SYS
-SYS:
+.global SYSCALL
+SYSCALL:
     SWI BIOS_SRV_SYS
 
 .global BREAK
@@ -174,3 +174,4 @@ setTIMER:
     STR r0, [r5]
     pop {r5}
     Bx lr
+

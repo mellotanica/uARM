@@ -94,7 +94,6 @@
 #define BUS_REG_TOD_LO          0x000002E0
 #define BUS_REG_TIMER           0x000002E4
 #define BUS_REG_TIME_SCALE      0x000002E8
-#define BUS_REG_TIME_SCALE      0x000002E8
 
 /* Installed devices bitmap */
 #define IDEV_BITMAP_BASE        0x00000020

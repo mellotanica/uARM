@@ -58,6 +58,7 @@ void machine::refreshData(){
 }
 
 void machine::refreshData(bool force){
+    processor *cpu;
     if(!fullUIupdate && !force){
         if(ticksFromUpdate < refreshRate){
             ticksFromUpdate++;
@@ -65,8 +66,18 @@ void machine::refreshData(bool force){
         } else {
             ticksFromUpdate = 0;
         }
+        cpu = sysbus->getProcessor(0);
+        if(cpu->getStatus() == PS_IDLE){
+            if(idleNotified)
+                return;
+            else
+                idleNotified = true;
+        } else {
+            idleNotified = false;
+        }
     }
-    processor *cpu = sysbus->getProcessor(0);
+    else
+        cpu = sysbus->getProcessor(0);
     emit updateStatus(status2QString());
     QString mnem = QString::fromStdString(cpu->mnemonicOPcode) + (cpu->isOPcodeARM ? "(ARM)" : "(Thumb)" );
     emit dataReady(cpu->getRegList(), cpu->getCP15()->getRegList() , sysbus->pipeline, sysbus->getToDHI(), sysbus->getToDLO(), sysbus->getTimer(), mnem);

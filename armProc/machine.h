@@ -60,6 +60,7 @@ private:
     bool fullUIupdate = true;
     unsigned int refreshRate = 1;
     unsigned int ticksFromUpdate = 0;
+    bool idleNotified = false;
 
     QString status2QString();
 
