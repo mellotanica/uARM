@@ -36,7 +36,7 @@ public:
     DeviceAreaAddress(Word paddr)
         : pa(paddr)
     {
-        assert(MMIO_BASE <= paddr && paddr < MMIO_END);
+        assert(DEVBASEADDR <= paddr && paddr < DEVTOP);
     }
 
     DeviceAreaAddress(unsigned int line, unsigned int device, unsigned int field)
@@ -84,6 +84,7 @@ systemBus::~systemBus(){
     delete [] devRegs;
     delete [] info;
     delete [] romFrame;
+    delete [] intBitmap;
     if(bios != NULL){
         delete [] bios;
         bios = NULL;
@@ -128,6 +129,10 @@ void systemBus::reset(){
     romFrame = new Byte[(ROMFRAMETOP - ROMFRAMEBASE)];
     memset(romFrame, 0, (ROMFRAMETOP - ROMFRAMEBASE));
 
+    if(intBitmap != NULL)
+        delete [] intBitmap;
+    intBitmap = new Byte[(CDEV_BITMAP_END - CDEV_BITMAP_BASE)];
+    memset(intBitmap, 0, (CDEV_BITMAP_END - CDEV_BITMAP_BASE));
 
     ram->reset(MC_Holder::getInstance()->getConfig()->getRamSize());
     if(activeCpus != MC_Holder::getInstance()->getConfig()->getNumProcessors()){
@@ -185,6 +190,8 @@ void systemBus::initInfo(){
     timer = 0xFFFFFFFF;
     addr = BUS_REG_TIMER;
     writeW(&addr, timer);
+    addr = BUS_REG_TIME_SCALE;
+    writeW(&addr, 1);   //STATIC: timer scale now is fixed to 1 Mz
 }
 
 void systemBus::ClockTick(){
@@ -555,6 +562,10 @@ bool systemBus::getRomVector(Word *address, Byte **romptr){
     }
     else if(*address < ROMFRAMETOP && *address >= ROMFRAMEBASE)
         *romptr = romFrame + (offset - ROMFRAMEBASE);
+    else if(*address < IDEV_BITMAP_END && *address >= IDEV_BITMAP_BASE)
+        *romptr = (Byte*) instDevTable + (offset - IDEV_BITMAP_BASE);
+    else if(*address < CDEV_BITMAP_END && *address >= CDEV_BITMAP_BASE)
+        *romptr = intBitmap + (offset - CDEV_BITMAP_BASE);
     else
         return false;
     return true;

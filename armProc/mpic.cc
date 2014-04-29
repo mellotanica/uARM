@@ -31,6 +31,8 @@
 #include "armProc/bus.h"
 #include "armProc/processor.h"
 
+#include "facilities/arch.h"
+
 InterruptController::InterruptController(systemBus* bus)
     : bus(bus),
       arbiter(0),
@@ -70,8 +72,14 @@ void InterruptController::StartIRQ(unsigned int il, unsigned int devNo)
 
     // For shared int. lines, also set the appropriate bit in the
     // interrupting devices bitmap
-    if (il >= kSharedILBase)
-        cpuData[target].idb[il - kSharedILBase] |= 1U << devNo;
+    if (il >= kSharedILBase){
+        Word addr = CDEV_BITMAP_ADDR(il+kBaseIL);
+        Word tmp;
+        bus->readW(&addr, &tmp);
+        tmp |= 1U << devNo;
+        bus->writeW(&addr, tmp);
+        //cpuData[target].idb[il - kSharedILBase] |= 1U << devNo;
+    }
 
     bus->AssertIRQ(kBaseIL + il, target);
 }
@@ -89,8 +97,13 @@ void InterruptController::EndIRQ(unsigned int il, unsigned int devNo)
 
     // Deassert IP signals and IDB bits
     if (il >= kSharedILBase) {
-        cpuData[target].idb[il - kSharedILBase] &= ~(1U << devNo);
-        if (!cpuData[target].idb[il - kSharedILBase]) {
+        Word addr = CDEV_BITMAP_ADDR(il+kBaseIL);
+        Word tmp;
+        bus->readW(&addr, &tmp);
+        tmp &= INVERT_W(1U << devNo);
+        bus->writeW(&addr, tmp);
+        //cpuData[target].idb[il - kSharedILBase] &= ~(1U << devNo);
+        if (!tmp) {
             cpuData[target].ipMask &= ~(1U << (kBaseIL + il));
             bus->DeassertIRQ(kBaseIL + il, target);
         }
@@ -102,6 +115,8 @@ void InterruptController::EndIRQ(unsigned int il, unsigned int devNo)
     sources[il][devNo].lastTarget = kInvalidCpuId;
 }
 
+
+/*
 Word InterruptController::Read(Word addr, const processor* cpu) const
 {
     if (CDEV_BITMAP_BASE <= addr && addr < CDEV_BITMAP_END)
@@ -215,6 +230,6 @@ void InterruptController::deliverIPI(unsigned int origin, Word outbox)
             }
         }
     }
-}
+}*/
 
 #endif //UARM_MPIC_CC

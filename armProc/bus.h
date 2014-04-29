@@ -41,7 +41,7 @@
 #define DEVBASEADDR  0x00000040
 #define DEVTOP       0x000002C0
 #define INFOBASEADDR 0x000002D0
-#define INFOTOP      0x000002E8
+#define INFOTOP      0x000002EA
 #define BIOSBASEADDR 0x00000300
 #define ROMFRAMEBASE 0x00007000
 #define ROMFRAMETOP  0x00008000
@@ -156,6 +156,7 @@ private:
     Byte* bios = NULL;
     Byte* info = NULL;
     Byte* romFrame = NULL;
+    Byte* intBitmap = NULL;
 
     scoped_ptr<InterruptController> pic;
 

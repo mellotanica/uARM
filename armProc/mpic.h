@@ -41,8 +41,8 @@ public:
     void StartIRQ(unsigned int il, unsigned int devNo = 0);
     void EndIRQ(unsigned int il, unsigned int devNo = 0);
 
-    Word Read(Word addr, const processor* cpu) const;
-    void Write(Word addr, Word data, const processor* cpu);
+    //Word Read(Word addr, const processor* cpu) const;
+    //void Write(Word addr, Word data, const processor* cpu);
 
     Word GetIP(Word cpuId) const { return cpuData[cpuId].ipMask << CAUSE_IP_BIT(0); }
 
@@ -93,7 +93,7 @@ private:
         Word biosReserved[2];
     };
 
-    void deliverIPI(unsigned int origin, Word outbox);
+    //void deliverIPI(unsigned int origin, Word outbox);
 
     systemBus* const bus;
 
