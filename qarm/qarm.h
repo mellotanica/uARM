@@ -24,10 +24,12 @@
 
 #include "armProc/machine.h"
 #include "qarm/mainbar.h"
+#include "services/debug_session.h"
 #include "qarm/procdisplay.h"
 #include "qarm/guiConst.h"
 #include "qarm/ramview.h"
 #include "qarm/QLine.h"
+#include "qarm/breakpoint_window.h"
 #include "terminal_window.h"
 #include <QMainWindow>
 #include <QWidget>
@@ -44,6 +46,7 @@ class qarm : public QMainWindow{
 public:
     qarm(QApplication *app);
     machine *getMachine() {return mac;}
+    MachineConfig *getMachineConfig() {return MC_Holder::getInstance()->getConfig();}
 
 protected:
     virtual void closeEvent(QCloseEvent* event);
@@ -73,6 +76,8 @@ private:
     machine *mac;
     bool dataLoaded = false, biosLoaded = false, initialized = false, doReset = true;
     QString coreF, biosF;
+
+    breakpoint_window *bpWindow;
 
     QWidget *mainWidget;
     procDisplay *display;

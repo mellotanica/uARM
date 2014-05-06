@@ -56,6 +56,8 @@ signals:
     void showRam();
     void showConfig();
     void showTerminal(unsigned int devNo);
+    void showBPW();
+    void hideBPW();
 
 private slots:
     void poweron();
@@ -69,10 +71,13 @@ private slots:
     void updateStatus(QString state);
     void setTerminalEnabled(unsigned int devNo, bool enabled);
     void showTerminalClicked();
+    void uncheckBPB();
+    void toggleBPButton(bool checked);
 
 private:
-    styledButton *playB, *resetB, *stepB, *ramB, *plusB, *minusB, *configB, *windowB;   //interactions
+    styledButton *playB, *resetB, *stepB, *ramB, *plusB, *minusB, *configB, *windowB, *breakpB;   //interactions
     QVBoxLayout *plusMinusL, *scrollerL, *utilsL;
+    QHBoxLayout *utilsUpperL, *utilsLowerL;
     QWidget *plusMinusW, *scrollerW, *utilsW;
     const QIcon *playIco, *pauseIco;
     QSlider *speedSl;

@@ -53,9 +53,14 @@ HEADERS += \
     qarm/terminal_window.h \
     qarm/terminal_view.h \
     qarm/flat_push_button.h \
+    qarm/breakpoint_window.h \
     facilities/arch.h \
     configUbuntu.h \
     services/disass.h \
+    qarm/symbol_table_model.h \
+    qarm/add_breakpoint_dialog.h \
+    services/symbol_table.h \
+    services/debug_session.h
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -87,7 +92,12 @@ SOURCES += \
     qarm/terminal_view.cc \
     qarm/flat_push_button.cc \
     services/debug.cc \
-    services/disass.c
+    services/disass.c \
+    qarm/breakpoint_window.cc \
+    qarm/symbol_table_model.cc \
+    qarm/add_breakpoint_dialog.cc \
+    services/symbol_table.cc \
+    services/debug_session.cc
 
 OTHER_FILES += \
     compile \

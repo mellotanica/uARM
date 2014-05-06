@@ -178,9 +178,9 @@ QWidget* MachineConfigDialog::createGeneralTab()
     layout->setRowStretch(17, 1);
     layout->setColumnStretch(4, 1);
 
-    //STATIC: debug not active yet
-    romFileInfo[ROM_TYPE_STAB].lineEdit->setEnabled(false);
-    fileChooserButton->setEnabled(false);
+    romFileInfo[ROM_TYPE_STAB].lineEdit->setEnabled(true);
+    fileChooserButton->setEnabled(true);
+    //STATIC: no VM right now..
     stabAsidEdit->setEnabled(false);
 
     return tabWidget;

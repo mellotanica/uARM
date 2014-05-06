@@ -104,6 +104,8 @@ mainBar::mainBar(QWidget *parent) :
 
     utilsW = new QWidget;
     utilsL = new QVBoxLayout;
+    utilsUpperL = new QHBoxLayout;
+    utilsLowerL = new QHBoxLayout;
 
     ramB = new styledButton();
     ramB->setToolButtonStyle(Qt::ToolButtonTextOnly);
@@ -125,8 +127,17 @@ mainBar::mainBar(QWidget *parent) :
     for (unsigned int i = 0; i < N_DEV_PER_IL; ++i)
         windowMenu->addAction(showTerminalActions[i]);
 
-    utilsL->addWidget(ramB);
-    utilsL->addWidget(windowB);
+    breakpB = new styledButton();
+    breakpB->setText("Breakpoints");
+    breakpB->setCheckable(true);
+    breakpB->setEnabled(true);
+
+    utilsUpperL->addWidget(breakpB);
+    utilsUpperL->addWidget(ramB);
+    utilsLowerL->addWidget(windowB);
+
+    utilsL->addLayout(utilsUpperL);
+    utilsL->addLayout(utilsLowerL);
     utilsW->setLayout(utilsL);
 
     addWidget(configB);
@@ -148,6 +159,7 @@ mainBar::mainBar(QWidget *parent) :
     connect(minusB, SIGNAL(clicked()), this, SLOT(minus()));
     connect(configB, SIGNAL(clicked()), this, SIGNAL(showConfig()));
     connect(windowB, SIGNAL(clicked()), this, SLOT(showDropDownMenu()));
+    connect(breakpB, SIGNAL(toggled(bool)), this, SLOT(toggleBPButton(bool)));
 
     debugSignaler *debugger = debugSignaler::getInstance();
     connect(debugger, SIGNAL(pause()), this, SLOT(stop()));
@@ -235,6 +247,17 @@ void mainBar::showTerminalClicked(){
     QAction* action = static_cast<QAction*>(sender());
     unsigned int devNo = action->data().toUInt();
     emit showTerminal(devNo);
+}
+
+void mainBar::toggleBPButton(bool checked){
+    if(checked)
+        emit showBPW();
+    else
+        emit hideBPW();
+}
+
+void mainBar::uncheckBPB(){
+    breakpB->setChecked(false);
 }
 
 #endif //QARM_MAINBAR_CC

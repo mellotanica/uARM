@@ -43,6 +43,13 @@ qarm::qarm(QApplication *app):
             QMessageBox::critical(this, "Fatal", "Cannot create .uarm folder in home directory.\nCheck HOME environment variable.");
             app->exit();
         }
+
+    DebugSession *debugger;
+    if((debugger = DebuggerHolder::getInstance()->getDebugSession()) == NULL){
+        debugger = new DebugSession(application, this);
+        DebuggerHolder::getInstance()->setDebugSession(debugger);
+    }
+
     std::string defaultFName = defaultPath->absolutePath().toStdString()+"/"+DEFAULT_CONFIG_FILE;
     MC_Holder::getInstance()->setConfig(MachineConfig::LoadFromFile(defaultFName, error, app));
     if(MC_Holder::getInstance()->getConfig() == NULL)
@@ -70,6 +77,8 @@ qarm::qarm(QApplication *app):
 
     clock = new QTimer(this);
 
+    bpWindow = new breakpoint_window(this);
+
     connect(toolbar, SIGNAL(play(int)), this, SLOT(start(int)));
     connect(toolbar, SIGNAL(speedChanged(int)), this, SLOT(speedChanged(int)));
     connect(toolbar, SIGNAL(pause()), this, SLOT(stop()));
@@ -79,6 +88,11 @@ qarm::qarm(QApplication *app):
     connect(toolbar, SIGNAL(showConfig()), this, SLOT(showConfigDialog()));
     connect(toolbar, SIGNAL(showTerminal(uint)), this, SLOT(showTerminal(uint)));
     connect(this, SIGNAL(setTerminalEnabled(uint,bool)), toolbar, SLOT(setTerminalEnabled(uint,bool)));
+
+    connect(toolbar, SIGNAL(showBPW()), bpWindow, SLOT(show()));
+    connect(toolbar, SIGNAL(hideBPW()), bpWindow, SLOT(hide()));
+    connect(bpWindow, SIGNAL(hiding()), toolbar, SLOT(uncheckBPB()));
+    connect(this, SIGNAL(resetMachine()), bpWindow, SLOT(reset()));
 
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
 
@@ -91,6 +105,9 @@ qarm::qarm(QApplication *app):
     connect(this, SIGNAL(stopSig()), toolbar, SLOT(stop()));
 
     connect(mac, SIGNAL(updateStatus(QString)), toolbar, SLOT(updateStatus(QString)));
+
+    connect(this, SIGNAL(resetMachine()), debugger, SLOT(resetSymbolTable()));
+    connect(debugger, SIGNAL(stabUpdated()), bpWindow, SLOT(updateContent()));
 
     setCentralWidget(mainWidget);
 }
