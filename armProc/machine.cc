@@ -24,10 +24,18 @@
 
 #include "armProc/machine.h"
 #include "armProc/processor.h"
+#include "services/debug.h"
 //#include "armProc/coprocessor_interface.h"
 
-machine::machine(QObject *parent) : QObject(parent){
+machine::machine(StoppointSet* breakpoints,
+                 StoppointSet* suspects,
+                 StoppointSet* tracepoints)
+    : breakpoints(breakpoints),
+      suspects(suspects),
+      tracepoints(tracepoints)
+{
     sysbus = new systemBus(this);
+    clearCause();
 }
 
 machine::~machine(){
@@ -42,7 +50,7 @@ void machine::reset(){
 
 void machine::step(){
     processor *cpu = sysbus->getProcessor(0);
-
+    stopRequested = false;
     if(cpu->getStatus() != PS_HALTED){
         sysbus->ClockTick();
 
@@ -96,6 +104,84 @@ QString machine::status2QString(){
 void machine::run(){
     while(sysbus->getProcessor(0)->getStatus() != PS_HALTED)
 		step();
+}
+
+void machine::HandleBusAccess(Word pAddr, Word access, processor* cpu)
+{
+    // Check for breakpoints and suspects
+    switch (access) {
+    case READ:
+    case WRITE:
+        if (stopMask & SC_SUSPECT) {
+            Stoppoint* suspect = suspects->Probe(MAXASID, pAddr,
+                                                 (access == READ) ? AM_READ : AM_WRITE,
+                                                 cpu);
+            if (suspect != NULL) {
+                stopCause |= SC_SUSPECT;
+                suspectId = suspect->getId();
+                stopRequested = true;
+            }
+        }
+        break;
+
+    case EXEC:
+        if (stopMask & SC_BREAKPOINT) {
+            //STATIC: revert to maxasid or proper value when VM will be effective..
+            Stoppoint* breakpoint = breakpoints->Probe(MC_Holder::getInstance()->getConfig()->getSymbolTableASID(), pAddr, AM_EXEC, cpu);
+            if (breakpoint != NULL) {
+                stopCause |= SC_BREAKPOINT;
+                breakpointId = breakpoint->getId();
+                stopRequested = true;
+            }
+        }
+        break;
+
+    default:
+        AssertNotReached();
+    }
+
+    // Check for traced ranges
+    if (access == WRITE) {
+        Stoppoint* tracepoint = tracepoints->Probe(MAXASID, pAddr, AM_WRITE, cpu);
+        (void) tracepoint;
+    }
+}
+
+void machine::HandleVMAccess(Word asid, Word vaddr, Word access, processor* cpu)
+{
+    switch (access) {
+    case READ:
+    case WRITE:
+        if (stopMask & SC_SUSPECT) {
+            Stoppoint* suspect = suspects->Probe(asid, vaddr,
+                                                 (access == READ) ? AM_READ : AM_WRITE,
+                                                 cpu);
+            if (suspect != NULL) {
+                stopCause |= SC_SUSPECT;
+                suspectId = suspect->getId();
+                stopRequested = true;
+            }
+        }
+        break;
+
+    case EXEC:
+        if (stopMask & SC_BREAKPOINT) {
+            Stoppoint* breakpoint = breakpoints->Probe(asid, vaddr, AM_EXEC, cpu);
+            if (breakpoint != NULL) {
+                stopCause |= SC_BREAKPOINT;
+                breakpointId = breakpoint->getId();
+                stopRequested = true;
+            }
+        }
+        break;
+
+    default:
+        AssertNotReached();
+    }
+}
+
+void machine::clearCause(){
+    stopCause = 0;
 }
 
 #endif //UARM_MACHINE_CC

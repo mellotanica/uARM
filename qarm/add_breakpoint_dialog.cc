@@ -3,6 +3,7 @@
  * uMPS - A general purpose computer system simulator
  *
  * Copyright (C) 2010 Tomislav Jonjic
+ * Copyright (C) 2014 Marco Melletti
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -34,8 +35,7 @@
 #include "qarm/symbol_table_model.h"
 
 AddBreakpointDialog::AddBreakpointDialog(QWidget* parent)
-    : QWidget(parent),
-      stab(DebuggerHolder::getInstance()->getDebugSession()->getSymbolTable())
+    : QWidget(parent)
 {
     QGridLayout* layout = new QGridLayout(this);
 
@@ -60,11 +60,6 @@ AddBreakpointDialog::AddBreakpointDialog(QWidget* parent)
 
     updateContent();
 
-    connect(symbolTableView->selectionModel(),
-            SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)),
-            this,
-            SLOT(onSelectionChanged(const QItemSelection&)));
-
     layout->addWidget(symbolTableView, 1, 0, 1, 5);
 
     setWindowTitle("Add Breakpoint");
@@ -85,13 +80,23 @@ Word AddBreakpointDialog::getASID() const
 
 void AddBreakpointDialog::updateContent(){
     if(DebuggerHolder::getInstance()->getDebugSession()->getSymbolTable() != NULL){
+        stab = DebuggerHolder::getInstance()->getDebugSession()->getSymbolTable();
         QAbstractTableModel* stabModel = new SymbolTableModel(this);
         proxyModel = new SortFilterSymbolTableModel(Symbol::TYPE_FUNCTION, this);
         proxyModel->setSourceModel(stabModel);
 
         symbolTableView->setModel(proxyModel);
-    } else
+
+        disconnect(this, SLOT(onSelectionChanged(QItemSelection)));
+        connect(symbolTableView->selectionModel(),
+                SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)),
+                this,
+                SLOT(onSelectionChanged(const QItemSelection&)));
+    } else {
         symbolTableView->setModel(new EmptySymbolTableModel);
+        disconnect(this, SLOT(onSelectionChanged(QItemSelection)));
+        stab = NULL;
+    }
 }
 
 void AddBreakpointDialog::onSelectionChanged(const QItemSelection& selected)

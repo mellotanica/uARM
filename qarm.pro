@@ -60,7 +60,10 @@ HEADERS += \
     qarm/symbol_table_model.h \
     qarm/add_breakpoint_dialog.h \
     services/symbol_table.h \
-    services/debug_session.h
+    services/debug_session.h \
+    qarm/stoppoint_list_model.h \
+    armProc/stoppoint.h \
+    qarm/ui_utils.h
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -97,7 +100,10 @@ SOURCES += \
     qarm/symbol_table_model.cc \
     qarm/add_breakpoint_dialog.cc \
     services/symbol_table.cc \
-    services/debug_session.cc
+    services/debug_session.cc \
+    qarm/stoppoint_list_model.cc \
+    armProc/stoppoint.cc \
+    qarm/ui_utils.cc
 
 OTHER_FILES += \
     compile \

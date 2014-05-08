@@ -3,6 +3,7 @@
  * uMPS - A general purpose computer system simulator
  *
  * Copyright (C) 2010 Tomislav Jonjic
+ * Copyright (C) 2014 Marco Melletti
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -28,11 +29,11 @@
 
 #include "services/lang.h"
 #include "services/symbol_table.h"
+#include "armProc/stoppoint.h"
 //STATIC: only breakpoints are available right now..
-/*#include "umps/stoppoint.h"
-#include "armProc/machine.h"
+/*#include "armProc/machine.h"
 #include "qmps/cpu_status_map.h"
-#include "qmps/stoppoint_list_model.h"
+#include "qarm/stoppoint_list_model.h"
 
 enum MachineStatus {
     MS_HALTED,
@@ -75,12 +76,13 @@ public:
 
     Machine* getMachine() const { return machine.get(); }*/
     SymbolTable* getSymbolTable() { return symbolTable.get(); }
-/*
+
     StoppointSet* getBreakpoints() { return &breakpoints; }
-    StoppointListModel* getBreakpointListModel() { return bplModel.get(); }
 
     StoppointSet* getSuspects() { return &suspects; }
     StoppointSet* getTracepoints() { return &tracepoints; }
+/*
+    StoppointListModel* getBreakpointListModel() { return bplModel.get(); }
 
     const CpuStatusMap* getCpuStatusMap() const { return cpuStatusMap.get(); }
 
@@ -104,11 +106,13 @@ public Q_SLOTS:
 */
 Q_SIGNALS:
     void stabUpdated();
+    void MachineRan();
+    void stabUnavavilable();
+
 /*
     void StatusChanged();
     void MachineStarted();
     void MachineStopped();
-    void MachineRan();
     void MachineHalted();
     void MachineReset();
     void DebugIterationCompleted();
@@ -128,11 +132,11 @@ private:
     void runStepIteration();
     void runContIteration();
 
-    void relocateStoppoints(const SymbolTable* newTable, StoppointSet& set);
-
     MachineStatus status;
     scoped_ptr<Machine> machine;
 */
+    void relocateStoppoints(const SymbolTable* newTable, StoppointSet* set);
+
     QMainWindow *mainW;
     QApplication *app;
     scoped_ptr<SymbolTable> symbolTable;
@@ -145,11 +149,12 @@ private:
     static const unsigned int kIterCycles[kNumSpeedLevels];
     static const unsigned int kIterInterval[kNumSpeedLevels];
 
-    StoppointSet breakpoints;
     scoped_ptr<StoppointListModel> bplModel;
+*/
+    StoppointSet breakpoints;
     StoppointSet suspects;
     StoppointSet tracepoints;
-
+/*
     scoped_ptr<CpuStatusMap> cpuStatusMap;
 
     bool stoppedByUser;

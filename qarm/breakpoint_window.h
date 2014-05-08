@@ -25,10 +25,12 @@
 #include <QMainWindow>
 #include <QVBoxLayout>
 #include <QDialogButtonBox>
+#include <QToolButton>
 #include "armProc/const.h"
 #include "qarm/add_breakpoint_dialog.h"
+#include "qarm/stoppoint_list_model.h"
 
-#include <QLabel>
+#include <QAction>
 
 class breakpoint_window : public QMainWindow
 {
@@ -36,8 +38,6 @@ class breakpoint_window : public QMainWindow
 public:
     breakpoint_window(QWidget * parent = 0, Qt::WindowFlags flags = 0);
     ~breakpoint_window();
-    bool isBPactive(Word addr, Word asid);
-    bool isBPactive(Word addr) { return isBPactive(addr, 0); }
 
 public slots:
     void reset();
@@ -50,14 +50,18 @@ signals:
 
 private slots:
     void updateContent();
+    void symtabReady();
+    void symtabMissing();
+    void onRemoveBreakpoint();
+    void onAddBreakpoint();
 
 private:
-    QWidget *mainWidget;
-    QVBoxLayout *mainLayout;
-    AddBreakpointDialog *addWidget;
-    QDialogButtonBox *buttons;
+    QAction *removeBreakpointAction;
 
-    QLabel *scritta;
+    AddBreakpointDialog *addWidget;
+    QToolButton *add, *remove;
+    StoppointListModel *stoppointList;
+    QTreeView *breakpointView;
 
     void addBP(Word addr, Word asid);
     void addBP(Word addr) { addBP(addr, 0); }

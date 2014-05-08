@@ -55,7 +55,7 @@ qarm::qarm(QApplication *app):
     if(MC_Holder::getInstance()->getConfig() == NULL)
         MC_Holder::getInstance()->setConfig(MachineConfig::Create(defaultFName, app));
 
-    mac = new machine;
+    mac = new machine(debugger->getBreakpoints(),debugger->getSuspects(),debugger->getTracepoints());
 
     setWindowTitle("uARM");
     setWindowIcon(QIcon(LIB_PREF"/icons/window_default-48.png"));
@@ -108,6 +108,7 @@ qarm::qarm(QApplication *app):
 
     connect(this, SIGNAL(resetMachine()), debugger, SLOT(resetSymbolTable()));
     connect(debugger, SIGNAL(stabUpdated()), bpWindow, SLOT(updateContent()));
+    connect(this, SIGNAL(resumeExec()), debugger, SIGNAL(MachineRan()));
 
     setCentralWidget(mainWidget);
 }
@@ -136,6 +137,7 @@ bool qarm::initialize(){
 
 void qarm::stop(){
     emit stopSig();
+    resuming = true;
     mac->setUIupdate(0);
 }
 
@@ -150,9 +152,15 @@ void qarm::step(){
             return;
         }
     }
+    if(resuming){
+        emit resumeExec();
+        mac->clearCause();
+        resuming = false;
+    }
     mac->step();
     if(mac->getBus()->getProcessor(0)->exceptionRaised() && MC_Holder::getInstance()->getConfig()->getStopOnException() ||   //STATIC: refer to processor n if multiprocessor is implemented
-            mac->getBus()->getProcessor(0)->getStatus() == PS_HALTED){
+            mac->getBus()->getProcessor(0)->getStatus() == PS_HALTED ||
+            mac->isStopRequested()){
         mac->refreshData(true);
         emit stop();
         return;

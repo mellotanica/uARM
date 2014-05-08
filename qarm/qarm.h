@@ -56,6 +56,7 @@ signals:
     void resetMachine();
     void stopSig();
     void setTerminalEnabled(unsigned int devNo, bool enabled);
+    void resumeExec();
 
 private slots:
     void start(int speed);
@@ -74,7 +75,7 @@ private slots:
 private:
     QApplication *application;
     machine *mac;
-    bool dataLoaded = false, biosLoaded = false, initialized = false, doReset = true;
+    bool dataLoaded = false, biosLoaded = false, initialized = false, doReset = true, resuming = true;
     QString coreF, biosF;
 
     breakpoint_window *bpWindow;

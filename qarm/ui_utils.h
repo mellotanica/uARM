@@ -3,7 +3,6 @@
  * uMPS - A general purpose computer system simulator
  *
  * Copyright (C) 2010 Tomislav Jonjic
- * Copyright (C) 2014 Marco Melletti
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -20,45 +19,24 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef QMPS_ADD_BREAKPOINT_DIALOG_H
-#define QMPS_ADD_BREAKPOINT_DIALOG_H
+#ifndef QMPS_UI_UTILS_H
+#define QMPS_UI_UTILS_H
 
-#include <QWidget>
-#include <QItemSelection>
-#include <QTreeView>
+#include <QString>
 
 #include "armProc/types.h"
 
-class AddressLineEdit;
-class AsidLineEdit;
 class SymbolTable;
-class SortFilterSymbolTableModel;
+class QTreeView;
 
-class AddBreakpointDialog : public QWidget {
-    Q_OBJECT
+const char* GetSymbolicAddress(const SymbolTable* symbolTable,
+                               Word               asid,
+                               Word               address,
+                               bool               onlyFunctions,
+                               SWord*             offset);
 
-public:
-    AddBreakpointDialog(QWidget* parent = 0);
+QString FormatAddress(Word address);
 
-    Word getStartAddress() const;
-    Word getASID() const;
+void SetFirstColumnSpanned(QTreeView* treeView, bool setting = true);
 
-public slots:
-    void updateContent();
-
-private:
-    static const int kInitialWidth = 380;
-    static const int kInitialHeight = 340;
-
-    AsidLineEdit* asidEditor;
-    AddressLineEdit* addressEditor;
-    QTreeView *symbolTableView;
-
-    const SymbolTable* stab;
-    SortFilterSymbolTableModel* proxyModel;
-
-private Q_SLOTS:
-    void onSelectionChanged(const QItemSelection& selected);
-};
-
-#endif // QMPS_ADD_BREAKPOINT_DIALOG_H
+#endif // QMPS_UI_UTILS_H

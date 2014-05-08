@@ -29,19 +29,40 @@
 #include "services/util.h"
 #include "armProc/const.h"
 #include "armProc/bus.h"
+#include "armProc/stoppoint.h"
 #include <QObject>
 
+enum StopCause {
+    SC_USER         = 1 << 0,
+    SC_BREAKPOINT   = 1 << 1,
+    SC_SUSPECT      = 1 << 2,
+    SC_EXCEPTION    = 1 << 3,
+    SC_UTLB_KERNEL  = 1 << 4,
+    SC_UTLB_USER    = 1 << 5
+};
 
 class machine : public QObject{
     Q_OBJECT
 public:
-    machine(QObject *parent = 0);
+    machine(StoppointSet* breakpoints, StoppointSet* suspects, StoppointSet* tracepoints);
 	~machine();
 
     //if refRate equals 0 the ui is updated at each instruction, else refRate specifies the amount of instructions to skip
     void setUIupdate(unsigned int refRate){refreshRate = refRate; fullUIupdate = !refRate;}
 
     systemBus *getBus() {return sysbus;}
+
+    unsigned int getStopCause() const {return stopCause;}
+    unsigned int getActiveBreakpoint() const {return breakpointId;}
+    unsigned int getActiveSuspect() const {return suspectId;}
+
+    void setStopMask(unsigned int mask) {stopMask = mask;}
+    unsigned int getStopMask() const {return stopMask;}
+
+    bool isStopRequested() const {return stopRequested;}
+
+    void HandleBusAccess(Word pAddr, Word access, processor* cpu);
+    void HandleVMAccess(Word asid, Word vaddr, Word access, processor* cpu);
 
 signals:
     void dataReady(Word *cpu, Word *cp15, Word *pipeline, Word todH, Word todL, Word timer, QString mnemonic);
@@ -51,6 +72,7 @@ public slots:
     void step();
     void refreshData();
     void refreshData(bool force);
+    void clearCause();
 
 private slots:
     void run();
@@ -61,10 +83,21 @@ private:
     unsigned int refreshRate = 1;
     unsigned int ticksFromUpdate = 0;
     bool idleNotified = false;
+    bool stopRequested = false;
 
     QString status2QString();
 
     systemBus *sysbus;
+
+    unsigned int stopMask;
+    //STATIC: only one processor to track..
+    unsigned int stopCause;
+    unsigned int breakpointId;
+    unsigned int suspectId;
+
+    StoppointSet* breakpoints;
+    StoppointSet* suspects;
+    StoppointSet* tracepoints;
 };
 
 #endif //UARM_MACHINE_CC

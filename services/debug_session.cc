@@ -3,6 +3,7 @@
  * uMPS - A general purpose computer system simulator
  *
  * Copyright (C) 2010, 2011 Tomislav Jonjic
+ * Copyright (C) 2014 Marco Melletti
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -90,12 +91,11 @@ void DebugSession::resetSymbolTable(){
         return;
     }
 
-    //STATIC: no VM support right now
-    /*if (symbolTable && stab->getASID() == symbolTable->getASID()) {
-        relocateStoppoints(stab, breakpoints);
-        relocateStoppoints(stab, suspects);
-        relocateStoppoints(stab, tracepoints);
-    }*/
+    if (symbolTable && stab->getASID() == symbolTable->getASID()) {
+        relocateStoppoints(stab, &breakpoints);
+        relocateStoppoints(stab, &suspects);
+        relocateStoppoints(stab, &tracepoints);
+    }
     symbolTable.reset(stab);
     emit stabUpdated();
 }
@@ -288,6 +288,7 @@ void DebugSession::initializeMachine()
 */
 void DebugSession::onMachineConfigChanged()
 {
+    emit stabUnavavilable();
     resetSymbolTable();
 /*    if (Appl()->getConfig() != NULL)
         startMachineAction->setEnabled(true);
@@ -457,11 +458,12 @@ void DebugSession::skip()
     Q_EMIT DebugIterationCompleted();
 }
 
-void DebugSession::relocateStoppoints(const SymbolTable* newTable, StoppointSet& set)
+*/
+void DebugSession::relocateStoppoints(const SymbolTable* newTable, StoppointSet* set)
 {
     StoppointSet rset;
 
-    foreach (Stoppoint::Ptr sp, set) {
+    foreach (Stoppoint::Ptr sp, *set) {
         const AddressRange& origin = sp->getRange();
         const Symbol* symbol = symbolTable->Probe(origin.getASID(), origin.getStart(), true);
         if (symbol != NULL) {
@@ -477,9 +479,9 @@ void DebugSession::relocateStoppoints(const SymbolTable* newTable, StoppointSet&
         rset.Add(origin, sp->getAccessMode(), sp->getId(), sp->IsEnabled());
     }
 
-    set = rset;
+    set = &rset;
 }
-*/
+
 
 DebuggerHolder* DebuggerHolder::instance = NULL;
 DebugSession* DebuggerHolder::session = NULL;

@@ -251,6 +251,8 @@ void systemBus::Skip(uint32_t cycles)
 }
 
 bool systemBus::prefetch(Word addr){ //fetches one instruction per execution from exact given address
+    //STATIC: should check if accessing VM not bus
+    HandleBusAccess(addr, EXEC, NULL);
     pipeline[PIPELINE_EXECUTE] = pipeline[PIPELINE_DECODE];
     pipeline[PIPELINE_DECODE] = pipeline[PIPELINE_FETCH];
     if(readW(&addr, &pipeline[PIPELINE_FETCH]) != ABT_NOABT)
@@ -259,6 +261,8 @@ bool systemBus::prefetch(Word addr){ //fetches one instruction per execution fro
 }
 
 bool systemBus::fetch(Word pc, bool armMode){
+    //STATIC: should check if accessing VM not bus
+    HandleBusAccess(pc, EXEC, NULL);
     Word addr = pc - (armMode ? 8 : 4);
     if(readW(&addr, &pipeline[PIPELINE_EXECUTE]) != ABT_NOABT)
         return false;
@@ -724,13 +728,12 @@ void systemBus::setTimer(Word time)
     timer = time;
 }
 
-//FIXME: implement everything!
 void systemBus::HandleBusAccess(Word pAddr, Word access, processor* cpu){
-
+    mac->HandleBusAccess(pAddr, access, cpu);
 }
 
 void systemBus::HandleVMAccess(Word asid, Word vaddr, Word access, processor* cpu){
-
+    mac->HandleVMAccess(asid, vaddr, access, cpu);
 }
 
 #endif //UARM_SYSTEMBUS_CC

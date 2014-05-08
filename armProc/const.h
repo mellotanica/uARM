@@ -234,6 +234,9 @@
 // KB per frame
 #define FRAMEKB	4
 
+// number of ASIDs
+#define MAXASID 256
+
 // block device size in words
 #define BLOCKSIZE	FRAMESIZE
 
