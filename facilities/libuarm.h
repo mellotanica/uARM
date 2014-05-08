@@ -42,6 +42,8 @@ typedef struct{
     unsigned int CP15_Control;
     unsigned int CP15_EntryHi;
     unsigned int CP15_Cause;
+    unsigned int TOD_Hi;
+    unsigned int TOD_Low;
 }state_t;
 
 /* prints a string *s 0-termianted on terminal 0 */

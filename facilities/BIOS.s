@@ -20,7 +20,7 @@
 
 .include "bios_const.h"
 
-.equ STATE_T_SIZE, 80
+.equ STATE_T_SIZE, 88
 .equ ROMSTACK_TOP, 0x8000
 .equ ROMSTACK_OFF, -0x10
 .equ EXCV_BASE, 0x7000
@@ -363,15 +363,21 @@ SAVE_OLD_STATE:
     MRC p15, #0, r8, c15, c0	    /* CP15_CAUSE */
     STMIA r0, {r6, r7, r8}
 
-    BX lr   /*FIXME!!*/
+    MOV r6, #TOD_HI_INFO    /*save TOD*/
+    LDR r7, [r6]
+    MOV r6, #TOD_LO_INFO
+    LDR r8, [r6]
+    STMIA r0, {r7, r8}
 
-    .asciz "pad"
+    BX lr
+
+    .asciz "paddingpadd"
 
 haltMess:
     .asciz "SYSTEM HALTED.\0"
 
 unknownMess:
-    .asciz "UNKNOWN SERVICE.\nKERNEL PANIC!            \0"
+    .asciz "UNKNOWN SERVICE.\nKERNEL PANIC!\0"
 
 panicMess:
     .asciz "KERNEL PANIC!\0"

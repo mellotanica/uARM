@@ -113,6 +113,13 @@ STST:
 
     STMIA r5, {r6, r7, r8}
 
+    MOV r6, #TOD_HI_INFO
+    LDR r7, [r6]
+    MOV r6, #TOD_LO_INFO
+    LDR r8, [r6]
+
+    STMIA r5, {r7, r8}
+
     pop {r5, r6, r7, r8}
 
     Bx lr
