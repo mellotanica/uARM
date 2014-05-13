@@ -88,7 +88,7 @@
 #define MEM_SIZE_H 536870912 //2^29
 //#define MEM_SIZE_W 268435456 //2^28
 
-#define BYTES_PER_MEGABYTE 1048576
+#define BYTES_PER_FRAME 4096
 
 #define SIGNMASK	0x80000000UL
 
@@ -138,9 +138,6 @@
 #define CAUSE_IP_MASK          0xff000000
 #define CAUSE_IP(line)         (1U << (24 + (line)))
 #define CAUSE_IP_BIT(line)     (24 + (line))
-
-// timer interrupt line
-#define TIMERINT	2
 
 // device starting interrupt line
 #define DEVINTBASE	3

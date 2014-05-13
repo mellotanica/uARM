@@ -77,8 +77,10 @@ public slots:
 private slots:
     void run();
     void reset();
+    void toggleBP(bool status);
 
 private:
+    bool breakpointStatus = true;
     bool fullUIupdate = true;
     unsigned int refreshRate = 1;
     unsigned int ticksFromUpdate = 0;

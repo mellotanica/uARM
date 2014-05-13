@@ -77,7 +77,7 @@ qarm::qarm(QApplication *app):
 
     clock = new QTimer(this);
 
-    bpWindow = new breakpoint_window(this);
+    bpWindow = new breakpoint_window(mac, this);
 
     connect(toolbar, SIGNAL(play(int)), this, SLOT(start(int)));
     connect(toolbar, SIGNAL(speedChanged(int)), this, SLOT(speedChanged(int)));

@@ -125,7 +125,7 @@ void machine::HandleBusAccess(Word pAddr, Word access, processor* cpu)
         break;
 
     case EXEC:
-        if (stopMask & SC_BREAKPOINT) {
+        if (breakpointStatus) {
             //STATIC: revert to maxasid or proper value when VM will be effective..
             Stoppoint* breakpoint = breakpoints->Probe(MC_Holder::getInstance()->getConfig()->getSymbolTableASID(), pAddr, AM_EXEC, cpu);
             if (breakpoint != NULL) {
@@ -165,7 +165,7 @@ void machine::HandleVMAccess(Word asid, Word vaddr, Word access, processor* cpu)
         break;
 
     case EXEC:
-        if (stopMask & SC_BREAKPOINT) {
+        if (breakpointStatus) {
             Stoppoint* breakpoint = breakpoints->Probe(asid, vaddr, AM_EXEC, cpu);
             if (breakpoint != NULL) {
                 stopCause |= SC_BREAKPOINT;
@@ -178,6 +178,10 @@ void machine::HandleVMAccess(Word asid, Word vaddr, Word access, processor* cpu)
     default:
         AssertNotReached();
     }
+}
+
+void machine::toggleBP(bool status){
+    breakpointStatus = status;
 }
 
 void machine::clearCause(){

@@ -26,7 +26,7 @@
 #include "qarm/QLine.h"
 #include "services/debug_session.h"
 
-breakpoint_window::breakpoint_window(QWidget * parent, Qt::WindowFlags flags):
+breakpoint_window::breakpoint_window(machine *mac, QWidget * parent, Qt::WindowFlags flags):
     QMainWindow(parent, flags)
 {
     QWidget *mainWidget = new QWidget(this);
@@ -56,6 +56,10 @@ breakpoint_window::breakpoint_window(QWidget * parent, Qt::WindowFlags flags):
 
     remove->setText("Remove");
 
+    breakpointsActive = new QCheckBox("Stop on Breakpoint", buttonsW);
+    connect(breakpointsActive, SIGNAL(toggled(bool)), mac, SLOT(toggleBP(bool)));
+    breakpointsActive->setChecked(true);
+
     buttonsLeftL->addWidget(add, 0, 0);
     buttonsLeftL->addWidget(new QFLine(false), 1, 0);
     buttonsLeftW->setLayout(buttonsLeftL);
@@ -65,6 +69,7 @@ breakpoint_window::breakpoint_window(QWidget * parent, Qt::WindowFlags flags):
     buttonsRightW->setLayout(buttonsRightL);
 
     buttonsL->addWidget(buttonsLeftW);
+    buttonsL->addWidget(breakpointsActive);
     buttonsL->addWidget(buttonsRightW);
 
     buttonsW->setLayout(buttonsL);
@@ -93,6 +98,7 @@ breakpoint_window::breakpoint_window(QWidget * parent, Qt::WindowFlags flags):
     connect(DebuggerHolder::getInstance()->getDebugSession(), SIGNAL(stabUnavavilable()), this, SLOT(symtabMissing()));
 
     setCentralWidget(mainWidget);
+    setWindowTitle("Breakpoints");
 }
 
 breakpoint_window::~breakpoint_window(){
@@ -106,7 +112,8 @@ void breakpoint_window::closeEvent(QCloseEvent *event){
 }
 
 void breakpoint_window::reset(){
-    clearBPs();
+    if(DebuggerHolder::getInstance()->getDebugSession()->getSymbolTable() != activeStab)
+        clearBPs();
 }
 
 void breakpoint_window::clearBPs(){
@@ -132,6 +139,7 @@ void breakpoint_window::symtabReady(){
     stoppointList = new StoppointListModel(DebuggerHolder::getInstance()->getDebugSession()->getBreakpoints(),
                                            "Breakpoints", 'B', this);
     breakpointView->setModel(stoppointList);
+    activeStab = DebuggerHolder::getInstance()->getDebugSession()->getSymbolTable();
 }
 
 void breakpoint_window::symtabMissing(){
@@ -141,6 +149,7 @@ void breakpoint_window::symtabMissing(){
     if(breakpointView->selectionModel() != NULL)
         breakpointView->selectionModel()->clear();
     delete stoppointList;
+    activeStab = NULL;
 }
 
 void breakpoint_window::updateContent(){

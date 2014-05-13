@@ -152,29 +152,31 @@ SWI_H:
     MRS r0, CPSR
     STR r0, [sp]
 
+    LDR r0, [lr, #-4]	/* get SWI instruction */
+    AND r0, r0, #0xFFFFFF
+    CMP r0, #BIOS_SRV_SYS    /* if syscall requested load kernel defined handler */
+    Beq SWI_H_Cont
+
+    CMP r0, #BIOS_SRV_BP
+    Beq UNKNOWN_SRV /* FIXME: implement BREAK*/
+
+    B BIOS_SRV_EXEC
+
+SWI_H_Cont:
     MOV r0, #EXCV_BASE	/* store registers */
     ADD r0, r0, #EXCV_SWI_OLD
 
     BL SAVE_OLD_STATE
 
-    MOV sp, #ROMSTACK_TOP
-    ADD sp, sp, #ROMSTACK_OFF
-    ADD sp, sp, #4
-    LDR lr, [sp]
-
-    LDR r6, [lr, #-4]	/* get SWI instruction */
-    AND r6, r6, #0xFFFFFF
-    CMP r6, #BIOS_SRV_SYS    /* if syscall requested load kernel defined handler */
-    Bne SWI_H_Cont
-
     MOV r0, #EXCV_BASE
     ADD r0, r0, #EXCV_SWI_NEW
     B LDST
 
-SWI_H_Cont:
-    MOV sp, #EXCV_BASE
-    ADD sp, sp, #EXCV_SWI_OLD
-    LDM sp, {r0, r1, r2, r3}
+BIOS_SRV_EXEC:
+    MOV r6, r0
+    MOV sp, #ROMSTACK_TOP
+    ADD sp, sp, #ROMSTACK_OFF
+    LDR r0, [sp]
 
     CMP r6, #BIOS_SRV_HALT
     Beq HALT
@@ -184,12 +186,6 @@ SWI_H_Cont:
 
     CMP r6, #BIOS_SRV_LDST
     Beq LDST
-
-    CMP r6, #BIOS_SRV_WAIT
-    Beq WAIT
-
-    CMP r6, #BIOS_SRV_BP
-    Beq UNKNOWN_SRV /* FIXME: implement BREAK*/
 
     B UNKNOWN_SRV
 
@@ -318,12 +314,30 @@ LDST:
     LDR r7, [ip], #4
     MCR p15, #0, r7, c2, c0, #0
     MCR p15, #0, r7, c2, c0, #1
-    LDR r7, [ip]
-    MCR p15, #0, r7, c15, c0
-    MCR p15, #1, r7, c15, c0
 
-    MSR CPSR, r5
-    LDMIA r0, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}
+    MSR SPSR, r5
+    AND r1, r5, #0xF
+    CMP r1, #0
+    Beq LDST_u
+    CMP r1, #0xF
+    Beq LDST_u
+
+    LDR r3, [r0]
+    ADD r2, r0, #PSR_OFFSET
+    SUB r2, r2, #4
+    LDR r4, [r2]
+    MOV r1, #ROMSTACK_TOP
+    ADD r1, r1, #ROMSTACK_OFF
+    STMIA r1, {r3, r4}
+
+    ADD r1, r0, #4
+    LDMIA r1, {r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
+    MOV r0, #ROMSTACK_TOP
+    ADD r0, r0, #ROMSTACK_OFF
+    LDMIA r0, {r0, r15}^
+
+LDST_u:
+    LDMIA r0, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}^
 
 /* r0 contains state_old addr, lr points to caller and sp to stack with old lr, CPSR and r0 */
 SAVE_OLD_STATE:
@@ -361,17 +375,17 @@ SAVE_OLD_STATE:
     MRC p15, #0, r6, c1, c0, #0	    /* CP15_Control */
     MRC p15, #0, r7, c2, c0	    /* CP15_EntryHi */
     MRC p15, #0, r8, c15, c0	    /* CP15_CAUSE */
-    STMIA r0, {r6, r7, r8}
+    STMIA r0!, {r6, r7, r8}
 
     MOV r6, #TOD_HI_INFO    /*save TOD*/
     LDR r7, [r6]
     MOV r6, #TOD_LO_INFO
     LDR r8, [r6]
-    STMIA r0, {r7, r8}
+    STMIA r0!, {r7, r8}
 
     BX lr
 
-    .asciz "paddingpadd"
+    .asciz "pad"
 
 haltMess:
     .asciz "SYSTEM HALTED.\0"

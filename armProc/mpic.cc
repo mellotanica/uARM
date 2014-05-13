@@ -105,10 +105,12 @@ void InterruptController::EndIRQ(unsigned int il, unsigned int devNo)
         //cpuData[target].idb[il - kSharedILBase] &= ~(1U << devNo);
         if (!tmp) {
             cpuData[target].ipMask &= ~(1U << (kBaseIL + il));
+            *(bus->getProcessor(0)->getCP15()->getIPCauseRegister()) &= ~(CAUSE_IP(kBaseIL+il));
             bus->DeassertIRQ(kBaseIL + il, target);
         }
     } else {
         cpuData[target].ipMask &= ~(1U << (kBaseIL + il));
+        *(bus->getProcessor(0)->getCP15()->getIPCauseRegister()) &= ~(CAUSE_IP(kBaseIL+il));
         bus->DeassertIRQ(kBaseIL + il, target);
     }
 

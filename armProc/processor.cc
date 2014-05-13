@@ -391,9 +391,9 @@ void processor::DeassertIRQ(unsigned int il)
 
 void processor::cycle() {
     wasException = false;
-    Word intm = bus->getPendingInt(0);  //STATIC: you must pass cpu id to get the right interrupts if multiprocessor is implemented
-    if(intm){
-        if(((intm >> 10) & 1) && timerEnabled()) // Fast interrupt!
+    Word intm = bus->getPendingInt(this);  //STATIC: you must pass cpu id to get the right interrupts if multiprocessor is implemented
+    if(CAUSE_IP_MASK & intm){
+        if(((intm >> 24 + IL_TIMER) & 1) && timerEnabled()) // Fast interrupt!
             fastInterruptTrap();
         else if(interruptsEnabled())
             interruptTrap();

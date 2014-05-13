@@ -26,7 +26,9 @@
 #include <QVBoxLayout>
 #include <QDialogButtonBox>
 #include <QToolButton>
+#include <QCheckBox>
 #include "armProc/const.h"
+#include "armProc/machine.h"
 #include "qarm/add_breakpoint_dialog.h"
 #include "qarm/stoppoint_list_model.h"
 
@@ -36,7 +38,7 @@ class breakpoint_window : public QMainWindow
 {
     Q_OBJECT
 public:
-    breakpoint_window(QWidget * parent = 0, Qt::WindowFlags flags = 0);
+    breakpoint_window(machine *mac, QWidget * parent = 0, Qt::WindowFlags flags = 0);
     ~breakpoint_window();
 
 public slots:
@@ -62,6 +64,9 @@ private:
     QToolButton *add, *remove;
     StoppointListModel *stoppointList;
     QTreeView *breakpointView;
+    QCheckBox *breakpointsActive;
+
+    SymbolTable *activeStab;
 
     void addBP(Word addr, Word asid);
     void addBP(Word addr) { addBP(addr, 0); }

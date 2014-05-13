@@ -151,6 +151,7 @@ private:
 
     scoped_ptr<StoppointListModel> bplModel;
 */
+
     StoppointSet breakpoints;
     StoppointSet suspects;
     StoppointSet tracepoints;

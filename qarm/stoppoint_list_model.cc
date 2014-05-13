@@ -321,7 +321,9 @@ void StoppointListModel::onEnabledChanged(size_t spIndex)
 void StoppointListModel::onMachineRan()
 {
     for (unsigned int i = 0; i < stoppoints->Size(); i++) {
-        if (victims[i]) {
+        if(victims.size() <= i)
+            StoppointAdded();
+        if(victims[i]) {
             victims[i] = 0;
             QModelIndex idIndex = index(i, COLUMN_STOPPOINT_ID);
             Q_EMIT dataChanged(idIndex, idIndex);

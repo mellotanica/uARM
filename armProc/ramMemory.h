@@ -48,13 +48,13 @@ public:
     bool getMemLock() { return LOCK_sig; }
 
     void reset(Word sz){
-        sz *= BYTES_PER_MEGABYTE;
+        sz *= BYTES_PER_FRAME;
         if(memVector == NULL || sz != ramSize){
             ready = false;
             ramSize = sz;
             if(memVector != NULL)
                 delete [] memVector;
-            memVector = new Byte[((DoubleWord)ramSize * 4)];
+            memVector = new Byte[ramSize];
             ready = true;
         }
     }

@@ -77,10 +77,12 @@ tprint_exit:
 .global SYSCALL
 SYSCALL:
     SWI BIOS_SRV_SYS
+    BX lr
 
 .global BREAK
 BREAK:
     SWI BIOS_SRV_BP
+    BX lr
 
 /* HALT and PANIC functions */
 .global HALT
@@ -95,6 +97,7 @@ PANIC:
 .global LDST
 LDST:
     SWI BIOS_SRV_LDST
+    BX lr   /* probably useless... */
 
 /* void STST(void *addr) */
 .global STST
