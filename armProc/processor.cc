@@ -74,7 +74,7 @@ void processor::reset(){
     coproc->reset();
 
     Word address = 0;
-    bus->writeW(&address, INITIAL_BRANCH);
+    bus->writeW(&address, INITIAL_BRANCH, true);
 }
 
 /* ******************** *
@@ -645,7 +645,7 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
                     }
 				}
 				else{			//store
-                    if(!checkAbort(bus->writeW(&address, *cpReg))){
+                    if(!checkAbort(bus->writeW(&address, *cpReg, true))){
                         dataAbortTrap();
                         return;
                     }
@@ -664,7 +664,7 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
                     }
 				}
 				else{			//store
-                    if(!checkAbort(bus->writeW(&address, *cpReg))){
+                    if(!checkAbort(bus->writeW(&address, *cpReg, true))){
                         dataAbortTrap();
                         return;
                     }
@@ -870,7 +870,7 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 			}
             for(unsigned i = 0; i < (sizeof(HalfWord) * 8); i++){
 				if(list & (1<<i)){		// if register i is marked store it
-                    if(!checkAbort(bus->writeW(&address, cpu_registers[i]))){
+                    if(!checkAbort(bus->writeW(&address, cpu_registers[i], true))){
                         dataAbortTrap();
                         return;
                     }
@@ -884,7 +884,7 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 				if(list & (1<<i)){		// if register i is marked store it
                     if(!firstChecked){	// if first register to be stored is base address register
 						firstChecked = true;
-                        if(!checkAbort(bus->writeW(&address, *getVisibleRegister(i)))){   // store the initial value before writing back return address
+                        if(!checkAbort(bus->writeW(&address, *getVisibleRegister(i), true))){   // store the initial value before writing back return address
                             dataAbortTrap();
                             return;
                         }
@@ -892,7 +892,7 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
                             *rn += (U ? 1 : -1) * (regn * 4);
 					}
                     else
-                        if(!checkAbort(bus->writeW(&address, *getVisibleRegister(i)))){
+                        if(!checkAbort(bus->writeW(&address, *getVisibleRegister(i), true))){
                             dataAbortTrap();
                             return;
                         }
@@ -1065,7 +1065,7 @@ void processor::halfwordDataTransfer(Word *rd, Word *rn, Word *rm, Word offs, bo
                 }
                 *rd = readwd;
 			} else {	//store val
-                if(!checkAbort(bus->writeH(&address, (HalfWord) (*rd & 0xFFFF)))){
+                if(!checkAbort(bus->writeH(&address, (HalfWord) (*rd & 0xFFFF), true))){
                     dataAbortTrap();
                     return;
                 }
@@ -1118,7 +1118,7 @@ void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, 
                 *srcDst = read;
             }
             else{
-                if(!checkAbort(bus->writeB(&address, ((Byte) *srcDst & 0xFF)))){
+                if(!checkAbort(bus->writeB(&address, ((Byte) *srcDst & 0xFF), true))){
                     dataAbortTrap();
                     return;
                 }
@@ -1131,7 +1131,7 @@ void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, 
                 }
             }
             else{
-                if(!checkAbort(bus->writeW(&address, *srcDst))){
+                if(!checkAbort(bus->writeW(&address, *srcDst, true))){
                     dataAbortTrap();
                     return;
                 }
@@ -1152,7 +1152,7 @@ void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, 
                 *srcDst = read;
             }
             else{
-                if(!checkAbort(bus->writeB(base, ((Byte) *srcDst & 0xFF)))){
+                if(!checkAbort(bus->writeB(base, ((Byte) *srcDst & 0xFF), true))){
                     dataAbortTrap();
                     return;
                 }
@@ -1165,7 +1165,7 @@ void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, 
                 }
             }
             else{
-                if(!checkAbort(bus->writeW(&address, *srcDst))){
+                if(!checkAbort(bus->writeW(&address, *srcDst, true))){
                     dataAbortTrap();
                     return;
                 }

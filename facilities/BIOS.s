@@ -307,7 +307,7 @@ PRINT_LOOP:
 LDST:
     MOV ip, r0
     ADD ip, ip, #PSR_OFFSET
-    LDR r5, [ip], #4    /* r5 contains current psr */
+    LDR r6, [ip], #4    /* r5 contains current psr */
 
     LDR r7, [ip], #4	/* restore coprocessor registers */
     MCR p15, #0, r7, c1, c0, #0
@@ -315,25 +315,38 @@ LDST:
     MCR p15, #0, r7, c2, c0, #0
     MCR p15, #0, r7, c2, c0, #1
 
-    MSR SPSR, r5
-    AND r1, r5, #0xF
+    MSR SPSR, r6
+    AND r1, r6, #0xF
     CMP r1, #0
     Beq LDST_u
     CMP r1, #0xF
     Beq LDST_u
 
-    LDR r3, [r0]
+    LDR r4, [r0]
     ADD r2, r0, #PSR_OFFSET
     SUB r2, r2, #4
-    LDR r4, [r2]
+    LDR r5, [r2]
     MOV r1, #ROMSTACK_TOP
     ADD r1, r1, #ROMSTACK_OFF
-    STMIA r1, {r3, r4}
+    MRS r3, CPSR
+    STMIA r1, {r3, r4, r5}  /*CPSR, r0_new, pc_new*/
+    AND r2, r6, #0xF
+    CMP r2, #0
+    ADDeq r6, r6, #0xF
+    ORR r6, r6, #0xC0
+
+    MSR CPSR, r6
 
     ADD r1, r0, #4
     LDMIA r1, {r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
     MOV r0, #ROMSTACK_TOP
     ADD r0, r0, #ROMSTACK_OFF
+    LDR r0, [r0]
+    MSR CPSR, r0
+
+    MOV r0, #ROMSTACK_TOP
+    ADD r0, r0, #ROMSTACK_OFF
+    ADD r0, r0, #4
     LDMIA r0, {r0, r15}^
 
 LDST_u:
@@ -373,8 +386,12 @@ SAVE_OLD_STATE:
     STR r3, [r0], #4
 
     MRC p15, #0, r6, c1, c0, #0	    /* CP15_Control */
-    MRC p15, #0, r7, c2, c0	    /* CP15_EntryHi */
-    MRC p15, #0, r8, c15, c0	    /* CP15_CAUSE */
+    MRC p15, #0, r7, c2, c0, #0	    /* CP15_EntryHi */
+    MRC p15, #0, r9, c2, c0, #1
+    MRC p15, #0, r8, c15, c0, #0    /* CP15_CAUSE */
+    MRC p15, #0, r10, c15, c0, #1
+    ORR r7, r7, r9
+    ORR r8, r8, r10
     STMIA r0!, {r6, r7, r8}
 
     MOV r6, #TOD_HI_INFO    /*save TOD*/
@@ -385,7 +402,7 @@ SAVE_OLD_STATE:
 
     BX lr
 
-    .asciz "pad"
+    .asciz "padding"
 
 haltMess:
     .asciz "SYSTEM HALTED.\0"

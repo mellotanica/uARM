@@ -76,6 +76,10 @@ public:
     AbortType readW(Word *address, Word *dest);
     AbortType writeW(Word *address, Word data);
 
+    AbortType writeB(Word *address, Byte data, bool fromProc);
+    AbortType writeH(Word *address, HalfWord data, bool fromProc);
+    AbortType writeW(Word *address, Word data, bool fromProc);
+
     // This method increments system clock and decrements interval
     // timer; on timer underflow (0 -> FFFFFFFF transition) a interrupt
     // is generated.  Event queue is checked against the current clock
@@ -185,6 +189,8 @@ private:
     bool writeRomH(Word *address, HalfWord data);
     bool readRomW(Word *address, Word *dest);
     bool writeRomW(Word *address, Word data);
+
+    bool initRomW(Word *address, Word data);
 
     bool getRomVector(Word *address, Byte **romptr);
 

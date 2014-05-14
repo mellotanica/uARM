@@ -333,10 +333,22 @@ bool systemBus::loadRAM(char *buffer, Word size, bool kernel){
     }
 }
 
+AbortType systemBus::writeB(Word *address, Byte data){
+    return writeB(address, data, false);
+}
+
+AbortType systemBus::writeH(Word *address, HalfWord data){
+    return writeH(address, data, false);
+}
+
+AbortType systemBus::writeW(Word *address, Word data){
+    return writeW(address, data, false);
+}
 
 AbortType systemBus::readB(Word *addr, Byte *dest){
     Word address = *addr;
     AbortType cause = checkAddress(&address);
+    HandleBusAccess(address, READ, NULL);
     if(cause != ABT_NOABT && cause != NOABT_ROM)
         return cause;
     if(cause == ABT_NOABT){
@@ -349,9 +361,13 @@ AbortType systemBus::readB(Word *addr, Byte *dest){
     return ABT_NOABT;
 }
 
-AbortType systemBus::writeB(Word *addr, Byte data){
+AbortType systemBus::writeB(Word *addr, Byte data, bool fromProc){
     Word address = *addr;
     AbortType cause = checkAddress(&address);
+    HandleBusAccess(address, WRITE, NULL);
+    if(fromProc && address >= BUS_REG_TIMER && address < BUS_REG_TIMER+4){
+        pic->EndIRQ(IL_TIMER, 0);   //STATIC: if multiprocessor is implemented this must search for the right cpu
+    }
     if(cause != ABT_NOABT && cause != NOABT_ROM)
         return cause;
     if(cause == ABT_NOABT){
@@ -367,6 +383,7 @@ AbortType systemBus::writeB(Word *addr, Byte data){
 AbortType systemBus::readH(Word *addr, HalfWord *dest){
     Word address = *addr;
     AbortType cause = checkAddress(&address);
+    HandleBusAccess(address, READ, NULL);
     if(cause != ABT_NOABT && cause != NOABT_ROM)
         return cause;
     if(cause == ABT_NOABT){
@@ -379,9 +396,13 @@ AbortType systemBus::readH(Word *addr, HalfWord *dest){
     return ABT_NOABT;
 }
 
-AbortType systemBus::writeH(Word *addr, HalfWord data){
+AbortType systemBus::writeH(Word *addr, HalfWord data, bool fromProc){
     Word address = *addr;
     AbortType cause = checkAddress(&address);
+    HandleBusAccess(address, WRITE, NULL);
+    if(fromProc && address >= BUS_REG_TIMER && address < BUS_REG_TIMER+4){
+        pic->EndIRQ(IL_TIMER, 0);   //STATIC: if multiprocessor is implemented this must search for the right cpu
+    }
     if(cause != ABT_NOABT && cause != NOABT_ROM)
         return cause;
     if(cause == ABT_NOABT){
@@ -397,6 +418,7 @@ AbortType systemBus::writeH(Word *addr, HalfWord data){
 AbortType systemBus::readW(Word *addr, Word *dest){
     Word address = *addr;
     AbortType cause = checkAddress(&address);
+    HandleBusAccess(address, READ, NULL);
     if(cause != ABT_NOABT && cause != NOABT_ROM)
         return cause;
     if(cause == ABT_NOABT){
@@ -409,9 +431,13 @@ AbortType systemBus::readW(Word *addr, Word *dest){
     return ABT_NOABT;
 }
 
-AbortType systemBus::writeW(Word *addr, Word data){
+AbortType systemBus::writeW(Word *addr, Word data, bool fromProc){
     Word address = *addr;
     AbortType cause = checkAddress(&address);
+    HandleBusAccess(address, WRITE, NULL);
+    if(fromProc && address >= BUS_REG_TIMER && address < BUS_REG_TIMER+4){
+        pic->EndIRQ(IL_TIMER, 0);   //STATIC: if multiprocessor is implemented this must search for the right cpu
+    }
     if(cause != ABT_NOABT && cause != NOABT_ROM)
         return cause;
     if(cause == ABT_NOABT){
@@ -650,11 +676,13 @@ Word systemBus::getPendingInt(const processor* cpu){
 }
 
 void systemBus::AssertIRQ(unsigned int il, unsigned int target){
-    getProcessor(target)->AssertIRQ(il);
+    if(cpus != NULL)
+        getProcessor(target)->AssertIRQ(il);
 }
 
 void systemBus::DeassertIRQ(unsigned int il, unsigned int target){
-    getProcessor(target)->DeassertIRQ(il);
+    if(cpus != NULL)
+        getProcessor(target)->DeassertIRQ(il);
 }
 
 // This method returns the Device object with given "coordinates"
