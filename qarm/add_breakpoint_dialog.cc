@@ -41,6 +41,7 @@ AddBreakpointDialog::AddBreakpointDialog(QWidget* parent)
 
     layout->addWidget(new QLabel("ASID:"), 0, 0);
     asidEditor = new AsidLineEdit;
+    asidEditor->setAsid(MC_Holder::getInstance()->getConfig()->getSymbolTableASID());
     layout->addWidget(asidEditor, 0, 1);
     asidEditor->setMinimumWidth(asidEditor->fontMetrics().width(QLatin1Char('0')) * 5);
     asidEditor->setMaximumWidth(asidEditor->fontMetrics().width(QLatin1Char('0')) * 6);
