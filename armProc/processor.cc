@@ -420,10 +420,12 @@ void processor::fetch(){
  * *************************** */
 
 void processor::undefinedTrap(){
+    coproc->setCause(ABT_UNDEFEXCEPTION);
 	execTrap(EXC_UNDEF);
 }
 
 void processor::softwareInterruptTrap(){
+    coproc->setCause(ABT_SYSEXCEPTION);
 	execTrap(EXC_SWI);
 }
 
@@ -440,10 +442,12 @@ void processor::prefetchAbortTrap(){
 }
 
 void processor::interruptTrap(){
+    coproc->setCause(ABT_INTEXCEPTION);
 	execTrap(EXC_IRQ);
 }
 
 void processor::fastInterruptTrap(){
+    coproc->setCause(ABT_INTEXCEPTION);
 	execTrap(EXC_FIQ);
 }
 
@@ -484,16 +488,16 @@ void processor::execTrap(ExceptionMode exception){
 			break;
         case EXC_IRQ:   // !! check return address
 			if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
-                cpu_registers[REG_LR_IRQ] = *getPC() + 2;
-			else 									//ARM state
-				cpu_registers[REG_LR_IRQ] = *getPC();
+                cpu_registers[REG_LR_IRQ] = *getPC() + (branchHappened() ? 6 : 2);  //EDIT: check this!!
+			else 									//ARM state                    
+                cpu_registers[REG_LR_IRQ] = *getPC() + (branchHappened() ? 8 : 0);
 			spsr = REG_SPSR_IRQ;
 			break;
         case EXC_FIQ:   // !! check return address
 			if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
-                cpu_registers[REG_LR_FIQ] = *getPC() + 2;
+                cpu_registers[REG_LR_FIQ] = *getPC() + (branchHappened() ? 6 : 2);  //EDIT: check this!!
 			else 									//ARM state
-				cpu_registers[REG_LR_FIQ] = *getPC();
+                cpu_registers[REG_LR_FIQ] = *getPC() + (branchHappened() ? 8 : 0);
 			spsr = REG_SPSR_FIQ;
 			break;
 	}
@@ -550,7 +554,7 @@ bool processor::checkAbort(AbortType memSig){
     if(memSig == ABT_NOABT)
         return true;
 
-    cpu_registers[REG_LR_ABT - 1] = memSig; /* !!!to be moved in a cp15 register!!! */
+    coproc->setCause(memSig);
 
     return false;
 }
@@ -613,7 +617,8 @@ void processor::coprocessorOperation(){
     else if(pipeline[PIPELINE_EXECUTE] == HALTCPINSTR)
         halt();
     else
-        cp->executeOperation(opcode, rm, rn, rd, info);
+        if(cp->executeOperation(opcode, rm, rn, rd, info))
+            dataAbortTrap();
 }
 
 void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
@@ -686,11 +691,13 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
             Word send = *rd;
             if(rd == getPC())   //if pc is source register, stores PC+12 (or PC+4???)
                 send += 12;
-            cp->registerTransfer(&send, opcode, rm, rn, info, toCoproc);
+            if(cp->registerTransfer(&send, opcode, rm, rn, info, toCoproc))
+                dataAbortTrap();
 		}
 		else{			//MRC
             Word rec;
-            cp->registerTransfer(&rec, opcode, rm, rn, info, toCoproc);
+            if(cp->registerTransfer(&rec, opcode, rm, rn, info, toCoproc))
+                dataAbortTrap();
 		
 			if(rd == getPC()){
                 copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, &rec);

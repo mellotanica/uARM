@@ -37,10 +37,12 @@ public:
 
     Word *getRegList(){return cp15_registers;}
 	
-    void executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info);
-    void registerTransfer(Word *cpuReg, Byte opcode, Byte operand, Byte srcDest, Byte info, bool toCoproc);
+    bool executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info);
+    bool registerTransfer(Word *cpuReg, Byte opcode, Byte operand, Byte srcDest, Byte info, bool toCoproc);
 	
     Word *getIPCauseRegister();
+
+    void setCause(unsigned int cause);
 
 private:
     enum ID_Codes{
@@ -52,12 +54,14 @@ private:
     };
 
     void register0(Word *cpureg, Byte opcode, Byte operand, Byte info, bool toCoproc);
-    void register1(Word *cpureg, Byte info, bool toCoproc);
-    void register2(Word *cpureg, Byte opcode, Byte info, bool toCoproc);
+    bool register1(Word *cpureg, Byte info, bool toCoproc);
+    bool register2(Word *cpureg, Byte opcode, Byte info, bool toCoproc);
     void register15(Word *cpureg, Byte opcode, bool toCoproc);
 
-    void EntryHi(Word *cpureg, Byte opcode, bool toCoproc);
+    bool EntryHi(Word *cpureg, Byte opcode, bool toCoproc);
     void EntryLo(Word *cpureg, bool toCoproc);
+
+    bool isVMon(){return (cp15_registers[CP15_REG1_SCB] & (1 << CP15_REG1_MPOS));}
 
     bool getPFN();
 	

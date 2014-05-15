@@ -93,13 +93,11 @@
 #define SIGNMASK	0x80000000UL
 
 #define VM_PSEG_START   0x00008000
-#define VM_PSEG_TOP     0xC0000000
-#define VM_SHSEG_START  0xC0000000
+#define VM_PSEG_TOP     0xF0000000
+#define VM_SHSEG_START  0xF0000000
 #define VM_SHSEG_TOP    0xFFFFFFFF
 
 #define PAGE_TBL_MAGICNO    0x2A
-#define PAGE_TBL_INVALID_H  0xFF0000
-#define PAGE_TBL_NOT_FOUND  0xFF0001
 
 #define PROG_START 0x20000000	//starting pc..
 #define INITIAL_BRANCH (0xE12FFF10 + REG_LR)
@@ -246,13 +244,39 @@
 #define WAITCPINSTR 0xEEF00F21 // CDP p15, 0xF, c0, c0, c1, 1
 #define HALTCPINSTR 0xEEF00F01 // CDP p15, 0xF, c0, c0, c1, 0
 
+
+// exception type constants (simulator internal coding)
+#define NOEXCEPTION 	0
+#define INTEXCEPTION	1
+#define MODEXCEPTION	2
+#define UTLBLEXCEPTION	3
+#define TLBLEXCEPTION 	4
+#define UTLBSEXCEPTION	5
+#define TLBSEXCEPTION	6
+#define ADELEXCEPTION	7
+#define ADESEXCEPTION	8
+#define DBEXCEPTION	9
+#define IBEXCEPTION	10
+#define SYSEXCEPTION	11
+#define BPEXCEPTION		12
+#define RIEXCEPTION	13
+#define CPUEXCEPTION	14
+#define OVEXCEPTION	15
+
 enum AbortType {
     ABT_NOABT   = 0,
     ABT_MEMERR  = 1,
-    ABT_BUSERR  = 2,
-    ABT_ADDRERR = 3,
-    ABT_SEGERR  = 4,
-    ABT_PAGEERR = 5,
+    ABT_BUSERR  = 2,    //data abort (pgmt)
+    ABT_ADDRERR = 3,    //data abort (pgmt)
+    ABT_SEGERR  = 4,    //tlb exception
+    ABT_PAGEERR = 5,    //tlb exception
+    ABT_PAGE_INVALID_H = 6, //tlb exception
+    ABT_PAGE_NOT_FOUND = 7, //tlb exception
+    ABT_INTEXCEPTION = 8,
+    ABT_SYSEXCEPTION = 9,
+    ABT_UNDEFEXCEPTION = 10,
+    ABT_NOCOPROC = 11,
+    ABT_BPEXCEPTION = 12,
     NOABT_ROM   = 0xFF
 };
 

@@ -187,8 +187,7 @@ setSTATUS:
 /* unsigned int setCAUSE(unsigned int cause) */
 .global setCAUSE
 setCAUSE:
-    MCR p15, #0, r0, c15, c0, #0
-    MCR p15, #0, r0, c15, c0, #1
+    MCR p15, #0, r0, c15, c0
     Bx lr
 
 /* unsigned int setCONTROL(unsigned int cause) */

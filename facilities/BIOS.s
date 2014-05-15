@@ -158,10 +158,15 @@ SWI_H:
     Beq SWI_H_Cont
 
     CMP r0, #BIOS_SRV_BP
-    Beq UNKNOWN_SRV /* FIXME: implement BREAK*/
+    Beq BREAK_Cont
 
     B BIOS_SRV_EXEC
 
+BREAK_Cont:
+    MRC p15, #0, r0, c15, c0
+    BIC r0, r0, #0xFFFFFF
+    ORR r0, r0, #12
+    MCR p15, #0, r0, c15, c0
 SWI_H_Cont:
     MOV r0, #EXCV_BASE	/* store registers */
     ADD r0, r0, #EXCV_SWI_OLD
@@ -208,6 +213,17 @@ UNDEF_H:
 
 DATAABT_H:
 PREFABT_H:
+    MRC p15, #0, sp, c15, c0	/* if vm on, data and prefetch can be tlb exceptions */
+    AND sp, sp, #0xFFFFFF
+    BIC sp, sp, #7
+    CMP sp, #0	    /* if cause is higher than 7 it's not a tlb exception */
+    Bne UNDEF_H
+    MRC p15, #0, sp, c15, c0
+    AND sp, sp, #4
+    CMP sp, #0	    /* if cause is less than 4 it's not a tlb exception */
+    Beq UNDEF_H
+
+TLB_H:
     MOV sp, #ROMSTACK_TOP	/* save lr, CPSR and r0 onto stack */
     ADD sp, sp, #ROMSTACK_OFF
     STR r0, [sp], #4
@@ -312,8 +328,9 @@ LDST:
     LDR r7, [ip], #4	/* restore coprocessor registers */
     MCR p15, #0, r7, c1, c0, #0
     LDR r7, [ip], #4
-    MCR p15, #0, r7, c2, c0, #0
-    MCR p15, #0, r7, c2, c0, #1
+    CMP r7, #0
+    MCRne p15, #0, r7, c2, c0, #0
+    MCRne p15, #0, r7, c2, c0, #1
 
     MSR SPSR, r6
     AND r1, r6, #0xF
@@ -402,7 +419,7 @@ SAVE_OLD_STATE:
 
     BX lr
 
-    .asciz "padding"
+    .asciz "paddingpaddingp"
 
 haltMess:
     .asciz "SYSTEM HALTED.\0"

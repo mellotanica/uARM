@@ -53,8 +53,8 @@ public:
 
 	virtual Word *getRegister(Word regNum) = 0;
 	
-	virtual void executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info) = 0;
-    virtual void registerTransfer(Word *cpuReg, Byte opcode, Byte operand, Byte srcDest, Byte info, bool toCoproc) = 0;
+    virtual bool executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info) = 0;
+    virtual bool registerTransfer(Word *cpuReg, Byte opcode, Byte operand, Byte srcDest, Byte info, bool toCoproc) = 0;
 };
 
 #endif //UARM_PU_H
