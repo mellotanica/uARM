@@ -32,11 +32,13 @@
 /*
  * Generalities
  */
-#define WORD_SIZE (sizeof(Word))
+#define WORD_SIZE 4
 #define WS        WORD_SIZE
 
 #define MMIO_BASE 0x00000040
 #define RAM_BASE  0x00008000
+
+#define RAM_TOP ((*((U32 *)BUS_REG_RAM_BASE)) + (*((U32 *)BUS_REG_RAM_SIZE)))
 
 /* Segment-related constants */
 #define KSEGOS_BASE        0x00000000
@@ -83,28 +85,31 @@
  * any alternative.
  */
 
-/* Bus register space */
+/* Bus register area. Among other informations, the start and amount of
+   installed RAM are stored here */
 #define BUS_REG_RAM_BASE        0x000002D0
 #define BUS_REG_RAM_SIZE        0x000002D4
-/*#define BUS_REG_BIOS_BASE       0x00000300
-#define BUS_REG_BIOS_SIZE       0x1000000C
-#define BUS_REG_BOOT_BASE       0x10000010
-#define BUS_REG_BOOT_SIZE       0x10000014*/
 #define BUS_REG_DEV_BASE        0x000002D8
+
+/* Elapsed clock ticks (CPU instructions executed) since system power on.
+   Only the "low" part is actually used. */
 #define BUS_REG_TOD_HI          0x000002DC
 #define BUS_REG_TOD_LO          0x000002E0
+
+/* How many clock ticks per microsecond (read 1) */
 #define BUS_REG_TIMER           0x000002E4
 #define BUS_REG_TIME_SCALE      0x000002E8
 
-/* Installed devices bitmap */
-#define IDEV_BITMAP_BASE        0x00000020
-#define IDEV_BITMAP_END         (IDEV_BITMAP_BASE + N_EXT_IL * WS)
-#define IDEV_BITMAP_ADDR(line)  (IDEV_BITMAP_BASE + ((line) - DEV_IL_START) * WS)
-
-/* Interrupting devices bitmap */   //FIXME: this should be somewere and should be working..
+/* Interrupting devices bitmaps starting address: the actual bitmap address is
+   computed with PENDING_BITMAP_START + (WORD_SIZE * (int_no - 3)) */
 #define CDEV_BITMAP_BASE        0x00006FE0
 #define CDEV_BITMAP_END         (CDEV_BITMAP_BASE + N_EXT_IL * WS)
 #define CDEV_BITMAP_ADDR(line)  (CDEV_BITMAP_BASE + ((line) - DEV_IL_START) * WS)
+
+/* Installed devices bitmap starting address: same as above */
+#define IDEV_BITMAP_BASE        0x00000020
+#define IDEV_BITMAP_END         (IDEV_BITMAP_BASE + N_EXT_IL * WS)
+#define IDEV_BITMAP_ADDR(line)  (IDEV_BITMAP_BASE + ((line) - DEV_IL_START) * WS)
 
 /* Device register area */
 #define DEV_REG_START           0x00000040

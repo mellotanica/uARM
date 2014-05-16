@@ -33,12 +33,13 @@
 #include <math.h>
 #include <stdlib.h>
 
-#define DEBUG_ON
+#include <iostream>
+using namespace std;
 
-#ifdef DEBUG_ON
-	#include <iostream>
-	using namespace std;
-#endif
+#define UARM_MACHINE_COMPILING
+
+#include "facilities/uARMconst.h"
+
 
 #define COPROCESSORS_NUM 16
 
@@ -60,8 +61,6 @@
 
 #define ENDIANESS_BIGENDIAN false	//selects endianess used to communicate with the memory subsystem
 
-#define OP_HALT 0xFFFFFFFF	//fake opcode that represets the end of a program
-
 #define BX_MASK ((1<<4)|(0xFFF<<8)|(1<<21)|(1<<24))
 #define NBX_MASK ((7<<5)|(1<<20)|(3<<22)|(7<<25))
 #define SWP_MASK ((1<<4)|(1<<7)|(1<<24))
@@ -75,31 +74,13 @@
 #define HWTI_MASK ((1<<4)|(1<<7)|(1<<22))
 #define NHWTI_MASK (7<<25)
 
-
 #define PSR_UNALLOC_MASK	0x0FFFFF00
 #define PSR_USER_MASK		0xF0000000
 #define PSR_PRIV_MASK		0x000000DF
 #define PSR_STATE_MASK		0x00000020
 
-//#define MEM_SIZE_B 4294967296 //2^32
-#define MEM_SIZE_W 10485760 // 10MB
-//#define MEM_SIZE_B 2147483648 //2^31
-#define MEM_SIZE_B 1073741824 //2^30
-#define MEM_SIZE_H 536870912 //2^29
-//#define MEM_SIZE_W 268435456 //2^28
+#define BYTES_PER_FRAME FRAME_SIZE
 
-#define BYTES_PER_FRAME 4096
-
-#define SIGNMASK	0x80000000UL
-
-#define VM_PSEG_START   0x00008000
-#define VM_PSEG_TOP     0xF0000000
-#define VM_SHSEG_START  0xF0000000
-#define VM_SHSEG_TOP    0xFFFFFFFF
-
-#define PAGE_TBL_MAGICNO    0x2A
-
-#define PROG_START 0x20000000	//starting pc..
 #define INITIAL_BRANCH (0xE12FFF10 + REG_LR)
 
 #define PIPELINE_STAGES 3
@@ -118,18 +99,6 @@
 #ifndef NULL
 #define NULL 0
 #endif
-
-/* ROM ADDRESSES */
-#define ROMF_EXCVBASE   0x00007000
-#define ROMF_EXCVTOP    0x00007500
-
-#define ROMF_SEGTBASE   0x00007600
-#define ROMF_SEGTTOP    0x00007E00
-
-#define ROMF_STACKBASE  0x00007FF0
-#define ROMF_STACKTOP   0x00008000
-
-
 
 // interrupt handling related constants
 
@@ -172,9 +141,6 @@
 
 // some useful macros
 
-// DMA transfer time
-#define DMATICKS	BLOCKSIZE
-
 // word alignment mask
 #define ALIGNMASK	0x00000003UL
 
@@ -205,8 +171,6 @@
 #define HWORDLEN	16
 
 // some utility constants
-#define	HIDDEN	static
-
 #define	EOS	'\0'
 #define EMPTYSTR	""
 #define	EXIT_FAILURE	1
@@ -223,20 +187,8 @@
 
 // hardware constants
 
-// physical memory page frame size (in words)
-#define FRAMESIZE	1024
-
-// KB per frame
-#define FRAMEKB	4
-
-// number of ASIDs
-#define MAXASID 256
-
 // block device size in words
 #define BLOCKSIZE	FRAMESIZE
-
-// eth packet size
-#define PACKETSIZE 1514
 
 // DMA transfer time
 #define DMATICKS	BLOCKSIZE
@@ -244,41 +196,20 @@
 #define WAITCPINSTR 0xEEF00F21 // CDP p15, 0xF, c0, c0, c1, 1
 #define HALTCPINSTR 0xEEF00F01 // CDP p15, 0xF, c0, c0, c1, 0
 
-
-// exception type constants (simulator internal coding)
-#define NOEXCEPTION 	0
-#define INTEXCEPTION	1
-#define MODEXCEPTION	2
-#define UTLBLEXCEPTION	3
-#define TLBLEXCEPTION 	4
-#define UTLBSEXCEPTION	5
-#define TLBSEXCEPTION	6
-#define ADELEXCEPTION	7
-#define ADESEXCEPTION	8
-#define DBEXCEPTION	9
-#define IBEXCEPTION	10
-#define SYSEXCEPTION	11
-#define BPEXCEPTION		12
-#define RIEXCEPTION	13
-#define CPUEXCEPTION	14
-#define OVEXCEPTION	15
-
 enum AbortType {
-    ABT_NOABT   = 0,
-    ABT_MEMERR  = 1,
-    ABT_BUSERR  = 2,    //data abort (pgmt)
-    ABT_ADDRERR = 3,    //data abort (pgmt)
-    ABT_SEGERR  = 4,    //tlb exception
-    ABT_PAGEERR = 5,    //tlb exception
-    ABT_PAGE_INVALID_H = 6, //tlb exception
-    ABT_PAGE_NOT_FOUND = 7, //tlb exception
-    ABT_INTEXCEPTION = 8,
-    ABT_SYSEXCEPTION = 9,
-    ABT_UNDEFEXCEPTION = 10,
-    ABT_NOCOPROC = 11,
-    ABT_BPEXCEPTION = 12,
+    ABT_NOABT   = NOEXCEPTION,
+    ABT_MEMERR  = MEMERROR,
+    ABT_BUSERR  = BUSERROR,    //data abort (pgmt)
+    ABT_SEGERR  = SEGERROR,    //tlb exception
+    ABT_PAGEERR = PAGEERROR,    //tlb exception
+    ABT_PAGE_INVALID_H = INVALIDPAGE, //tlb exception
+    ABT_PAGE_NOT_FOUND = PAGENOTFOUND, //tlb exception
+    ABT_INTEXCEPTION = INTEXCEPTION,
+    ABT_SYSEXCEPTION = SYSEXCEPTION,
+    ABT_UNDEFEXCEPTION = UNDEDEXCEPTION,
+    ABT_NOCOPROC = COPROCEXCEPTION,
+    ABT_BPEXCEPTION = BPEXCEPTION,
     NOABT_ROM   = 0xFF
 };
-
 
 #endif //UARM_CONST_H

@@ -158,7 +158,7 @@ void qarm::step(){
         resuming = false;
     }
     mac->step();
-    if(mac->getBus()->getProcessor(0)->exceptionRaised() && MC_Holder::getInstance()->getConfig()->getStopOnException() ||   //STATIC: refer to processor n if multiprocessor is implemented
+    if((mac->getBus()->getProcessor(0)->exceptionRaised() && MC_Holder::getInstance()->getConfig()->getStopOnException()) ||   //STATIC: refer to processor n if multiprocessor is implemented
             mac->getBus()->getProcessor(0)->getStatus() == PS_HALTED ||
             mac->isStopRequested()){
         mac->refreshData(true);

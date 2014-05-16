@@ -63,7 +63,9 @@ HEADERS += \
     services/debug_session.h \
     qarm/stoppoint_list_model.h \
     armProc/stoppoint.h \
-    qarm/ui_utils.h
+    qarm/ui_utils.h \
+    facilities/uARMconst.h \
+    facilities/uARMtypes.h
 
 SOURCES += \
     armProc/Thumbisa.cc \
