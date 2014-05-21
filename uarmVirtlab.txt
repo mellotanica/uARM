@@ -1,0 +1,54 @@
+#########################################################
+#							#
+#	      Installare uARM su VirtLab		#
+#							#
+#########################################################
+
+L'installazione della macchina virtuale sull'immagine di VirtLab e` abbastanza semplice, 
+i passi da seguire sono:
+
+- scaricare il pacchetto contenente l'ultima versione del progrmma che si trova alla 
+  pagina http://mellotanica.com/uarm/
+
+- installare il pacchetto utilizzando dpkg:
+	$> sudo dpkg -i uarm_X.Y.Z_i386.deb
+
+  oppure utilizzando un tool grafico (Ubuntu Software Center), facendo doppio click
+  sul pacchetto e selezionando "install" nella finestra del package manager
+
+- installare la repository del cross compiler:
+	$> sudo add-apt-repository ppa:terry.guo/gcc-arm-embedded
+
+- installare il cross compiler:
+	$> sudo aptitude update
+	$> sudo aptitude install gcc-arm-none-eabi
+
+Eseguite queste azioni il sistema e` pronto a compilare eseguibili per la MV
+e ad eseguire la macchina virtuale con il comando 
+	$> uarm
+oppure attraverso l'icona nel menu delle applicazioni.
+
+
+
+Il file README.txt che si trova nella cartella /usr/share/doc/uarm dopo l'installazione
+fornisce alcune informazioni sul funzionamento della macchina virtuale.
+
+
+
+#########################################################
+#							#
+#		    Aggiornare uARM			#
+#							#
+#########################################################
+
+Appena una nuova versione stabile di uARM viene rilasciata, verra` inviata notifica sulla
+mailing list del corso di sistemi operativi.
+
+Per aggiornare il software sara` sufficiente scaricare il pacchetto dalla consueta pagina
+web contenete l'ultima versione del programma ed aggiornare il sistema:
+
+- in maniera testuale:
+	$> sudo dpkg -i uarm_X.Y.Z_i386.deb
+
+- in maniera grafica facendo doppio click sul pacchetto e selezionando "update" nella
+  finestra del package manager.
