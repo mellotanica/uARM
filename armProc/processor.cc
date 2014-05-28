@@ -180,9 +180,12 @@ void processor::barrelShifter(bool immediate, Byte byte, Byte half){
 				break;
 			case 2:	//arithmetic shift right
 				if(amount == 0){	//special case, represents ASR #32
-					shifter_operand = ((val >> 31) == 1 ? 0xFFFFFFFF : 0);
-					shifter_carry_out = ((val >> 31) == 1 ? true : false);
-				} else {
+                    shifter_operand = val;
+                    shifter_carry_out = checkBit(cpu_registers[REG_CPSR], C_POS);
+                } else if(amount >= 32) {
+                    shifter_operand = ((val >> 31) == 1 ? 0xFFFFFFFF : 0);
+                    shifter_carry_out = ((val >> 31) == 1 ? true : false);
+                } else {
 					Word ret = val >> amount;
 					if((val >> 31) == 1)
 						ret |= 0xFFFFFFFF << (32 - amount);
