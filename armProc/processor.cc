@@ -190,7 +190,7 @@ void processor::barrelShifter(bool immediate, Byte byte, Byte half){
 					if((val >> 31) == 1)
 						ret |= 0xFFFFFFFF << (32 - amount);
 					else
-						ret &= 0xFFFFFFFF >> (31 - amount);
+                        ret &= 0xFFFFFFFF >> amount;
 					shifter_operand = ret;
 					shifter_carry_out = ((val & 1<<(amount-1)) == 1 ? true : false);
 				}
