@@ -51,16 +51,12 @@
 #define TERMINATEPROCESS 2
 #define VERHOGEN 3
 #define PASSEREN 4
-#define GETPID 5
+#define SPECTRAPVEC 5
 #define GETCPUTIME 6
 #define WAITCLOCK 7
 #define WAITIO 8
-#define GETPPID 9
-#define SPECTLBVECT 10
-#define SPECPGMVECT 11
-#define SPECSYSVECT 12
 
-#define SYSCALL_MAX 12
+#define SYSCALL_MAX 8
 
 /* VM/IO support level (phase3)-handled SYSCALL values */
 #define READTERMINAL 13
