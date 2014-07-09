@@ -22,6 +22,8 @@
 #ifndef UARMTYPES_H
 #define UARMTYPES_H
 
+#include "uARMconst.h"
+
 /************************** Device register types ***************************/
 
 /* Device register type for disks, tapes and printers (dtp) */
