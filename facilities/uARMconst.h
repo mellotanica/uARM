@@ -58,6 +58,10 @@
 
 #define SYSCALL_MAX 8
 
+#define SPECTLB 0
+#define SPECPGMT 1
+#define SPECSYSBP 2
+
 /* VM/IO support level (phase3)-handled SYSCALL values */
 #define READTERMINAL 13
 #define WRITETERMINAL 14
