@@ -493,14 +493,14 @@ void processor::execTrap(ExceptionMode exception){
 			if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
                 cpu_registers[REG_LR_IRQ] = *getPC() + (branchHappened() ? 6 : 2);  //EDIT: check this!!
 			else 									//ARM state                    
-                cpu_registers[REG_LR_IRQ] = *getPC() + (branchHappened() ? 8 : 0);
+                cpu_registers[REG_LR_IRQ] = *getPC() + (branchHappened() ? 4 : 0);
 			spsr = REG_SPSR_IRQ;
 			break;
         case EXC_FIQ:   // !! check return address
 			if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
                 cpu_registers[REG_LR_FIQ] = *getPC() + (branchHappened() ? 6 : 2);  //EDIT: check this!!
 			else 									//ARM state
-                cpu_registers[REG_LR_FIQ] = *getPC() + (branchHappened() ? 8 : 0);
+                cpu_registers[REG_LR_FIQ] = *getPC() + (branchHappened() ? 4 : 0);
 			spsr = REG_SPSR_FIQ;
 			break;
 	}
@@ -850,8 +850,6 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
                     return;
                 }
                 cpu_registers[REG_CPSR] = *getVisibleRegister(REG_SPSR);
-                if(W)
-                    *rn += (U ? 1 : -1) * (regn * 4);
             } else {
                 if(W){					// base writeback should not be used in this case
                     unpredictable();
@@ -898,10 +896,7 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
                             dataAbortTrap();
                             return;
                         }
-						if(W)
-                            *rn += (U ? 1 : -1) * (regn * 4);
-					}
-                    else
+                    } else
                         if(!checkAbort(bus->writeW(&address, *getVisibleRegister(i), true))){
                             dataAbortTrap();
                             return;
