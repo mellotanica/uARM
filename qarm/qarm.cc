@@ -30,7 +30,8 @@
 #include <QFileDialog>
 #include <QFile>
 #include <QScrollArea>
-
+#include <QMetaObject>
+#include <QIcon>
 
 qarm::qarm(QApplication *app):
     application(app)
@@ -58,7 +59,7 @@ qarm::qarm(QApplication *app):
     mac = new machine(debugger->getBreakpoints(),debugger->getSuspects(),debugger->getTracepoints());
 
     setWindowTitle("uARM");
-    setWindowIcon(QIcon(LIB_PREF"/icons/window_default-48.png"));
+    setWindowIcon(QIcon(":/icons/window_default-48.png"));
 
     mainWidget = new QWidget;
     toolbar = new mainBar;

@@ -5,10 +5,11 @@
 
 QT += core gui declarative
 
+TARGET = uarm
+
 QMAKE_CXXFLAGS += -std=c++11
 QMAKE_LIBS += -ldl
 CONFIG += qt debug
-TARGET = uarm
 
 HEADERS += \
     armProc/types.h \
@@ -67,8 +68,7 @@ HEADERS += \
     armProc/stoppoint.h \
     qarm/ui_utils.h \
     facilities/uARMconst.h \
-    facilities/uARMtypes.h \
-    config.h
+    facilities/uARMtypes.h
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -139,3 +139,6 @@ OTHER_FILES += \
     icons/poweron.png \
     install.sh \
     default/uarm
+
+RESOURCES += \
+    resources.qrc

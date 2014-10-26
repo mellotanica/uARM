@@ -217,28 +217,28 @@ QWidget* MachineConfigDialog::createDeviceTab()
     connect(devClassView, SIGNAL(itemSelectionChanged()), this, SLOT(onDeviceClassChanged()));
 
     registerDeviceClass("Disks\n Interrupt Line 3",
-                        LIB_PREF"/icons/disk-32.png",
+                        ":/icons/disk-32.png",
                         EXT_IL_INDEX(IL_DISK),
                         "Disks", "Disk",
                         true);
 
     registerDeviceClass("Tapes\n Interrupt Line 4",
-                        LIB_PREF"/icons/tape-32.png",
+                        ":/icons/tape-32.png",
                         EXT_IL_INDEX(IL_TAPE),
                         "Tapes", "Tape");
 
     registerDeviceClass("Network\n Interrupt Line 5",
-                        LIB_PREF"/icons/network-32.png",
+                        ":/icons/network-32.png",
                         EXT_IL_INDEX(IL_ETHERNET),
                         "Network Interfaces", "Net");
 
     registerDeviceClass("Printers\n Interrupt Line 6",
-                        LIB_PREF"/icons/printer-32.png",
+                        ":/icons/printer-32.png",
                         EXT_IL_INDEX(IL_PRINTER),
                         "Printers", "Printer");
 
     registerDeviceClass("Terminals\n Interrupt Line 7",
-                        LIB_PREF"/icons/terminal-32.png",
+                        ":/icons/terminal-32.png",
                         EXT_IL_INDEX(IL_TERMINAL),
                         "Terminals", "Terminal");
     return tab;

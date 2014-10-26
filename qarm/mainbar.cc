@@ -29,6 +29,8 @@
 
 #include "services/debug.h"
 
+#include<QIcon>
+
 mainBar::mainBar(QWidget *parent) :
     QToolBar(parent)
 {
@@ -36,12 +38,12 @@ mainBar::mainBar(QWidget *parent) :
     setFloatable(false);
     setOrientation(Qt::Horizontal);
 
-    pauseIco = new QIcon(LIB_PREF PAUSEICON);
-    playIco = new QIcon(LIB_PREF PLAYICON);
+    pauseIco = new QIcon(PAUSEICON);
+    playIco = new QIcon(PLAYICON);
 
     configB = new styledButton();
     configB->setToolTip("Machine Configs");
-    configB->setIcon(QIcon(LIB_PREF CONFIGICON));
+    configB->setIcon(QIcon(CONFIGICON));
 
     playB = new styledButton();
     playB->setToolTip("Play");
@@ -51,11 +53,11 @@ mainBar::mainBar(QWidget *parent) :
 
     resetB = new styledButton();
     resetB->setToolTip("Reset");
-    resetB->setIcon(QIcon(LIB_PREF POWERONICON));
+    resetB->setIcon(QIcon(POWERONICON));
 
     stepB = new styledButton();
     stepB->setToolTip("Step");
-    stepB->setIcon(QIcon(LIB_PREF STEPICON));
+    stepB->setIcon(QIcon(STEPICON));
     stepB->setEnabled(false);
 
     plusMinusW = new QWidget;
@@ -166,7 +168,7 @@ mainBar::mainBar(QWidget *parent) :
 }
 
 void mainBar::poweron(){
-    QIcon *resetIco = new QIcon(LIB_PREF RESETICON);
+    QIcon *resetIco = new QIcon(RESETICON);
     disconnect(resetB, SIGNAL(clicked()), this, SLOT(poweron()));
     connect(resetB, SIGNAL(clicked()), this, SLOT(resetPressed()));
     playB->setEnabled(true);

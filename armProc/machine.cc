@@ -27,6 +27,8 @@
 #include "services/debug.h"
 //#include "armProc/coprocessor_interface.h"
 
+#include <QString>
+
 machine::machine(StoppointSet* breakpoints,
                  StoppointSet* suspects,
                  StoppointSet* tracepoints)
