@@ -1,10 +1,12 @@
-configure.target = config.h
-configure.commands = ./configure
-QMAKE_EXTRA_TARGETS += configure
-PRE_TARGETDEPS = config.h
+#configure.target = config.h
+#configure.commands = ./configure
+#QMAKE_EXTRA_TARGETS += configure
+#PRE_TARGETDEPS = config.h
+
+QT += core gui declarative
 
 QMAKE_CXXFLAGS += -std=c++11
-QMAKE_LFLAGS += -lelf -ldl
+QMAKE_LIBS += -ldl
 CONFIG += qt debug
 TARGET = uarm
 
@@ -65,7 +67,8 @@ HEADERS += \
     armProc/stoppoint.h \
     qarm/ui_utils.h \
     facilities/uARMconst.h \
-    facilities/uARMtypes.h
+    facilities/uARMtypes.h \
+    config.h
 
 SOURCES += \
     armProc/Thumbisa.cc \

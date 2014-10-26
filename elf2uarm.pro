@@ -4,7 +4,7 @@
 #PRE_TARGETDEPS = config.h
 
 QMAKE_CXXFLAGS += -std=c++11
-QMAKE_LFLAGS += -lelf
+QMAKE_LIBS += -lelf
 TARGET = elf2uarm
 
 HEADERS += \
