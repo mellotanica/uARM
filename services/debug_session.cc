@@ -140,35 +140,35 @@ void DebugSession::createActions()
 {
     startMachineAction = new QAction("Power On", this);
     startMachineAction->setShortcut(QKeySequence("F5"));
-    startMachineAction->setIcon(QIcon(":/icons/machine_start-22.png"));
+    startMachineAction->setIcon(QIcon(LIB_PATH "icons/machine_start-22.png"));
     connect(startMachineAction, SIGNAL(triggered()), this, SLOT(startMachine()));
     startMachineAction->setEnabled(false);
 
     haltMachineAction = new QAction("Power Off", this);
     haltMachineAction->setShortcut(QKeySequence("Shift+F5"));
-    haltMachineAction->setIcon(QIcon(":/icons/machine_halt-22.png"));
+    haltMachineAction->setIcon(QIcon(LIB_PATH "icons/machine_halt-22.png"));
     connect(haltMachineAction, SIGNAL(triggered()), this, SLOT(onHaltMachine()));
     haltMachineAction->setEnabled(false);
 
     resetMachineAction = new QAction("Reset", this);
     resetMachineAction->setShortcut(QKeySequence("F6"));
-    resetMachineAction->setIcon(QIcon(":/icons/machine_reset-22.png"));
+    resetMachineAction->setIcon(QIcon(LIB_PATH "icons/machine_reset-22.png"));
     connect(resetMachineAction, SIGNAL(triggered()), this, SLOT(onResetMachine()));
     resetMachineAction->setEnabled(false);
 
     debugContinueAction = new QAction("&Continue", this);
     debugContinueAction->setShortcut(QKeySequence("F9"));
-    debugContinueAction->setIcon(QIcon(":/icons/debug_continue-22.png"));
+    debugContinueAction->setIcon(QIcon(LIB_PATH "icons/debug_continue-22.png"));
     connect(debugContinueAction, SIGNAL(triggered()), this, SLOT(onContinue()));
 
     debugStepAction = new QAction("Step", this);
     debugStepAction->setShortcut(QKeySequence("F10"));
-    debugStepAction->setIcon(QIcon(":/icons/debug_step-22.png"));
+    debugStepAction->setIcon(QIcon(LIB_PATH "icons/debug_step-22.png"));
     connect(debugStepAction, SIGNAL(triggered()), this, SLOT(onStep()));
 
     debugStopAction = new QAction("&Stop", this);
     debugStopAction->setShortcut(QKeySequence("F12"));
-    debugStopAction->setIcon(QIcon(":/icons/debug_stop-22.png"));
+    debugStopAction->setIcon(QIcon(LIB_PATH "icons/debug_stop-22.png"));
     connect(debugStopAction, SIGNAL(triggered()), this, SLOT(stop()));
 }
 

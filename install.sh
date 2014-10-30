@@ -12,19 +12,19 @@ if [ "$1" == "-d" ]; then
   echo "$2" >> custom_install_directory
 fi
 
-#ICONSD=$PREF"/lib/uarm/icons"
+ICONSD=$PREF"/lib/uarm/icons"
 INCLUDED=$PREF"/include/uarm"
 TESTD=$PREF"/share/doc/uarm/examples"
 LDSCRIPTSD=$INCLUDED"/ldscripts"
 DEFAULTD="/etc/default"
 BIND=$PREF"/bin"
 
-#mkdir -p "$ICONSD"
+mkdir -p "$ICONSD"
 mkdir -p "$INCLUDED"
 mkdir -p "$TESTD"
 mkdir -p "$LDSCRIPTSD"
 
-#cp icons/* "$ICONSD"
+cp icons/* "$ICONSD"
 cp ldscript/* "$LDSCRIPTSD"
 cp test/* "$TESTD"
 cp facilities/* "$INCLUDED"

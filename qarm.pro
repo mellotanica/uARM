@@ -110,6 +110,8 @@ SOURCES += \
     armProc/stoppoint.cc \
     qarm/ui_utils.cc
 
+RESOURCES +=
+
 OTHER_FILES += \
     compile \
     assemble_BIOS \
@@ -139,6 +141,3 @@ OTHER_FILES += \
     icons/poweron.png \
     install.sh \
     default/uarm
-
-RESOURCES += \
-    resources.qrc

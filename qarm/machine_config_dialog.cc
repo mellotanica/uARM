@@ -55,7 +55,7 @@ MachineConfigDialog::MachineConfigDialog(MachineConfig* config, QWidget* parent)
       config(config)
 {
     setWindowTitle("Machine Configuration");
-    setWindowIcon(QIcon(config->getAppPath()+CONFIGICON));
+    setWindowIcon(QIcon(LIB_PATH "icons/config.png"));
 
     QTabWidget* tabWidget = new QTabWidget;
     tabWidget->addTab(createGeneralTab(), "&General");
@@ -217,28 +217,28 @@ QWidget* MachineConfigDialog::createDeviceTab()
     connect(devClassView, SIGNAL(itemSelectionChanged()), this, SLOT(onDeviceClassChanged()));
 
     registerDeviceClass("Disks\n Interrupt Line 3",
-                        ":/icons/disk-32.png",
+                        LIB_PATH "icons/disk-32.png",
                         EXT_IL_INDEX(IL_DISK),
                         "Disks", "Disk",
                         true);
 
     registerDeviceClass("Tapes\n Interrupt Line 4",
-                        ":/icons/tape-32.png",
+                        LIB_PATH "icons/tape-32.png",
                         EXT_IL_INDEX(IL_TAPE),
                         "Tapes", "Tape");
 
     registerDeviceClass("Network\n Interrupt Line 5",
-                        ":/icons/network-32.png",
+                        LIB_PATH "icons/network-32.png",
                         EXT_IL_INDEX(IL_ETHERNET),
                         "Network Interfaces", "Net");
 
     registerDeviceClass("Printers\n Interrupt Line 6",
-                        ":/icons/printer-32.png",
+                        LIB_PATH "icons/printer-32.png",
                         EXT_IL_INDEX(IL_PRINTER),
                         "Printers", "Printer");
 
     registerDeviceClass("Terminals\n Interrupt Line 7",
-                        ":/icons/terminal-32.png",
+                        LIB_PATH "icons/terminal-32.png",
                         EXT_IL_INDEX(IL_TERMINAL),
                         "Terminals", "Terminal");
     return tab;

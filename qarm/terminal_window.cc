@@ -45,7 +45,7 @@ TerminalWindow::TerminalWindow(unsigned int devNo, QWidget* parent)
       parent(parent)
 {
     setWindowTitle(QString("uARM Terminal %1").arg(devNo));
-    setWindowIcon(QIcon(":/icons/terminal-32.png"));
+    setWindowIcon(QIcon(LIB_PATH "icons/terminal-32.png"));
 
     TerminalDevice* terminal = getTerminal(devNo);
 
@@ -107,8 +107,8 @@ TerminalStatusWidget::TerminalStatusWidget(TerminalDevice* t, QWidget* parent)
     : QWidget(parent),
       terminal(t),
       expanded(false),
-      expandedIcon(":/icons/expander_down-16.png"),
-      collapsedIcon(":/icons/expander_up-16.png")
+      expandedIcon(LIB_PATH "icons/expander_down-16.png"),
+      collapsedIcon(LIB_PATH "icons/expander_up-16.png")
 {
     QGridLayout* layout = new QGridLayout(this);
     layout->setContentsMargins(5, 0, 5, 0);

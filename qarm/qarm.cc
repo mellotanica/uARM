@@ -59,7 +59,7 @@ qarm::qarm(QApplication *app):
     mac = new machine(debugger->getBreakpoints(),debugger->getSuspects(),debugger->getTracepoints());
 
     setWindowTitle("uARM");
-    setWindowIcon(QIcon(":/icons/window_default-48.png"));
+    setWindowIcon(QIcon(LIB_PATH "icons/window_default-48.png"));
 
     mainWidget = new QWidget;
     toolbar = new mainBar;

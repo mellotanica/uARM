@@ -29,8 +29,6 @@
 
 #include "services/debug.h"
 
-#include<QIcon>
-
 mainBar::mainBar(QWidget *parent) :
     QToolBar(parent)
 {
@@ -38,12 +36,12 @@ mainBar::mainBar(QWidget *parent) :
     setFloatable(false);
     setOrientation(Qt::Horizontal);
 
-    pauseIco = new QIcon(PAUSEICON);
-    playIco = new QIcon(PLAYICON);
+    pauseIco = new QIcon(LIB_PATH "icons/pause.png");
+    playIco = new QIcon(LIB_PATH "icons/play.png");
 
     configB = new styledButton();
     configB->setToolTip("Machine Configs");
-    configB->setIcon(QIcon(CONFIGICON));
+    configB->setIcon(QIcon(LIB_PATH "icons/config.png"));
 
     playB = new styledButton();
     playB->setToolTip("Play");
@@ -53,11 +51,11 @@ mainBar::mainBar(QWidget *parent) :
 
     resetB = new styledButton();
     resetB->setToolTip("Reset");
-    resetB->setIcon(QIcon(POWERONICON));
+    resetB->setIcon(QIcon(LIB_PATH "icons/poweron.png"));
 
     stepB = new styledButton();
     stepB->setToolTip("Step");
-    stepB->setIcon(QIcon(STEPICON));
+    stepB->setIcon(QIcon(LIB_PATH "icons/step.png"));
     stepB->setEnabled(false);
 
     plusMinusW = new QWidget;
@@ -142,14 +140,6 @@ mainBar::mainBar(QWidget *parent) :
     utilsL->addLayout(utilsLowerL);
     utilsW->setLayout(utilsL);
 
-    addWidget(configB);
-    addWidget(playB);
-    addWidget(resetB);
-    addWidget(stepB);
-    addWidget(plusMinusW);
-    addWidget(scrollerW);
-    addWidget(utilsW);
-
     connect(this, SIGNAL(speedChanged(int)), this, SLOT(setSpeedLab(int)));
     connect(speedSl, SIGNAL(valueChanged(int)), this, SIGNAL(speedChanged(int)));
     connect(playB, SIGNAL(toggled(bool)), this, SLOT(playToggled(bool)));
@@ -165,10 +155,18 @@ mainBar::mainBar(QWidget *parent) :
 
     debugSignaler *debugger = debugSignaler::getInstance();
     connect(debugger, SIGNAL(pause()), this, SLOT(stop()));
+
+    this->addWidget(configB);
+    this->addWidget(playB);
+    this->addWidget(resetB);
+    this->addWidget(stepB);
+    this->addWidget(plusMinusW);
+    this->addWidget(scrollerW);
+    this->addWidget(utilsW);
 }
 
 void mainBar::poweron(){
-    QIcon *resetIco = new QIcon(RESETICON);
+    QIcon *resetIco = new QIcon(LIB_PATH "icons/reset.png");
     disconnect(resetB, SIGNAL(clicked()), this, SLOT(poweron()));
     connect(resetB, SIGNAL(clicked()), this, SLOT(resetPressed()));
     playB->setEnabled(true);
