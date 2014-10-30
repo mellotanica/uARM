@@ -6,31 +6,47 @@ if [ `id -u` != "0" ]; then
 fi
 
 PREF="/usr"
+ICONSOLNY="false"
 
-if [ "$1" == "-d" ]; then
-  PREF="$2"
-  echo "$2" >> custom_install_directory
-fi
+while [ -z "$1" ]; do
+  case "$1" in
+    "-d")
+	PREF="$2"
+  	echo "$2" >> custom_install_directory
+	shift
+    ;;
+    "-i")
+	ICONSOLNY="true"
+    ;;
+    "*")
+	echo "unknown option $1, skipping"
+    ;;
+  esac
+  shift
+done
 
 ICONSD=$PREF"/lib/uarm/icons"
-INCLUDED=$PREF"/include/uarm"
-TESTD=$PREF"/share/doc/uarm/examples"
-LDSCRIPTSD=$INCLUDED"/ldscripts"
-DEFAULTD="/etc/default"
-BIND=$PREF"/bin"
-
 mkdir -p "$ICONSD"
-mkdir -p "$INCLUDED"
-mkdir -p "$TESTD"
-mkdir -p "$LDSCRIPTSD"
-
 cp icons/* "$ICONSD"
-cp ldscript/* "$LDSCRIPTSD"
-cp test/* "$TESTD"
-cp facilities/* "$INCLUDED"
 
-cp uarm elf2uarm "$BIND"
+if [ "$ICONSOLY" == "false" ]; then
+ INCLUDED=$PREF"/include/uarm"
+ TESTD=$PREF"/share/doc/uarm/examples"
+ LDSCRIPTSD=$INCLUDED"/ldscripts"
+ DEFAULTD="/etc/default"
+ BIND=$PREF"/bin"
 
-cp default/* "$DEFAULTD"
+ mkdir -p "$INCLUDED"
+ mkdir -p "$TESTD"
+ mkdir -p "$LDSCRIPTSD"
+
+ cp ldscript/* "$LDSCRIPTSD"
+ cp test/* "$TESTD"
+ cp facilities/* "$INCLUDED"
+
+ cp uarm elf2uarm "$BIND"
+
+ cp default/* "$DEFAULTD"
+fi
 
 exit 0
