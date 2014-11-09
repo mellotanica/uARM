@@ -1,0 +1,105 @@
+\RequirePackage{lineno}
+\documentclass[a4paper,12pt]{article}
+
+\usepackage[latin1]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[italian]{babel}
+\usepackage{graphicx}
+\usepackage{color}
+
+\newcommand{\codeline}[1]{
+
+#1}
+\newcommand{\tab}{\hspace{15pt}}
+\newcommand{\comando}[1]{{\ttfamily #1}}
+\newcommand{\bold}[1]{{\textbf{#1}}}
+
+\newenvironment{codice}[2]{
+\vspace{8pt}
+\sffamily
+#2
+\footnotesize
+\ttfamily
+
+\begin{linenumbers}[#1]}{\end{linenumbers}}
+
+\newenvironment{lista}{\begin{itemize}\itemsep0pt \parskip0pt}{\end{itemize}}
+
+\title{uARM Memory Map}
+\author{Marco Melletti}
+\date{16/10/2013}
+
+\begin{document}
+
+\section{Memoria fisica}
+
+\subsection{Proposta 1: ARM friendly}
+
+Il linker assume che su architettura arm l'indirizzo da cui inizia il caricamento degli eseguibili sia 0x00008000, quindi, considerata la dimensione in memoria delle ROM di umps e lo spazio occupato da exception vector e device registers e la disposizione pi\`u sensata sembra essere (come mostrato in figura):
+
+\begin{itemize}
+\item il \textbf{vettore delle eccezioni} posizionato all'indirizzo 0x00000000, come da specifiche del processore;
+\item i device sono 40, ognuno rappresentato da 4 registri, per un totale di 640 Bytes occupati dai \textbf{registri dei device}, per semplicit\`a questa area di memoria inizia all'indirizzo 0x00000100;
+\item la \textbf{ROM di bootsrap} pu\`o essere posizionata all'indirizzo tondo subito successivo ai device poich\`e la dimensione di quell'area di memoria \`e fissa, quindi inizier\`a da 0x00000400; 
+\item la dimensione dell'eseguibile di bootstrap che in umps si occupa del caricamento del sistema operativo da tape (quella pi\`u ingombrante) richiede 640 Bytes, si lasciano liberi altri 2320 Bytes per permettere l'inserimento di una ROM pi\`u complessa. Il \textbf{BIOS} verr\`a quindi caricato a partire dall'indirizzo 0x00001000, ed avr\`a a disposizione un totale di 28.672 Bytes (il BIOS di umps ne occupava 15184);
+\item la \bold{RAM} disponibile in lettura/scrittura partir\`a quindi dall'indirizzo 0x00008000 come suggerisce lo script di ld per arm.
+\end{itemize}
+
+Nello schema vengono specificati come valori di ROMTOP e BOOTOP i valori che sarebbero assunti utilizzando le ROM di umps in modo da avere una prima idea dello spazio riservato.
+
+\begin{figure}
+\def\svgwidth{\columnwidth}
+\input{fisica.pdf_tex}
+\end{figure}
+
+\clearpage
+
+\subsection{Proposta 2: uMPS friendly}
+
+Per sfruttare le caratteristiche (e il codice) di umps, si pu\`o procedere modificand lo script di linking in modo da avere un'architettura pi\`u simile a quella proposta dall'emulatore: i primi 0.5 GB vengono riservati per ROM e device registers (ed exception vector) per fare indirizzamento e check di segmento pi\`u efficienti.
+
+Ne deriva una struttura come segue (mostrata sotto in figura):
+\begin{itemize}
+\item il \textbf{vettore delle eccezioni} continua a risiedere all'inizio dello spazio degli indirizzi poich\`e il processore richiede che si trovi in questa locazione
+\item i \textbf{registri dei device} saranno collocati all'indirizzo 0x01000000
+\item la \textbf{ROM di bootstrap} verr\`a collocata all'indirizzo 0x0FC00000
+\item in ultimo la \textbf{ROM del BIOS} viene caricata a 0x10000000
+\item la \textbf{RAM} avr\`a quindi disponibile lo spazio degli indirizzi da 0x80000000 fino a \emph{RAMTOP}
+\end{itemize}
+
+\begin{figure}
+\def\svgwidth{\columnwidth}
+\input{fisicaMips.pdf_tex}
+\end{figure}
+
+\clearpage
+
+\subsection{Note}
+
+Entrambe le proposte necessitano la creazione di un file .x apposito, la prima \`e pi\`u aderente ai metodi standard impiegati dal linker arm, circa come avevamo pensato. Impiegando la seconda proposta per\`o si ha il vantaggio di dover intervenire in maniera meno drastica su elf2umps per preparare gli eseguibili pi\`u ulteriori vantaggi quando si aggiunga la memoria virutale.
+
+\section{Memoria Virtuale}
+
+Lo schema di umps rimane appropriato, l'unica modifica degna di nota \`e nel frame riservato per la ROM (che veniva originariamente posizionato da 0x20000000 a 0x20000FFF): umps riserva tre porzioni di memoria, in questo frame, per vettori delle eccezioni e degli interrupt, segment table e stack.
+
+Arm richiede che il vettore delle eccezioni sia all'inizio dello spazio degli indirizzi, quindi:
+\begin{lista}
+\item nel caso in cui venga adottata la seconda proposta, si pu\`o mappare semplicemente l'intero frame sugli indirizzi da 0x00000000 a 0x00000FFF in modo da allocare anche il vettore degli interrupt consecutivamente a quello delle eccezioni; 
+\item se invece si adotta la prima proposta si pu\`o mappare il frame all'inizio della ram, quindi da 0x00008000 a 0x00008FFF, sostituendo alla prima sezione il solo vettore degli interrupt.
+\end{lista}
+
+\subsection{MMU}
+
+Come gi\`a umps, si tende ad evitare di implementare una vera mmu.
+
+La memoria viene divisa in 64 segmenti, uno per ogni ASID, ogni segmento specifica le proprie page table di massimo 1M (una per ogni macrosegmento: \emph{ksegOS}, \emph{kUseg1} e \emph{kUseg2}), la traduzione degli indirizzi \`e effettuata dalla cpu in congiunzione al coprocessore di sistema:
+
+\begin{itemize}
+\item CP0 contiene informazioni sull'ASID attuale, in base a questo valore e al numero di segmento (che se si impega la prima proposta per la memoria fisica, rimane come in umps e quindi occupa i primi due bit dell'indirizzo virtuale) viene raggiunta la page table corretta. 
+\item CP0 legge la parte alta dell'indirizzo virtuale in modo da fare il check sulla page table in base al virtual page number. In caso di successo restituisce l'indirizzo fisico associato.
+\item La CPU riceve il physical frame number e gli somma l'offset estratto dalla parte bassa dell'indirizzo virtuale e quindi accede alla memoria.
+\end{itemize}
+
+Siccome arm non forza una struttura specifica per il coprocessore di sistema (\emph{CP15}), potrebbe essere una buona idea reimplementare la parte che si occupa della gestione della memoria del CP0 di umps in una versione analoga compatibile con gli standard consigliati da arm.
+
+\end{document}

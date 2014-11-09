@@ -1,0 +1,44 @@
+\chapter{Notes}
+
+\section{Compilers and compiling}
+
+\subsection{Compilers}
+
+To compile a program to be run in uARM you need an ARM compiler in order to generate code that the cpu is able to understand.
+
+If you happen to be running a machine wich is not ARM-based, you will need a cross-compiler (or better a cross-toolchain).
+
+\texttt{arm-linux-gnueabi} and \texttt{arm-none-eabi} are the cross-toolchains with wich the program is tested so they are likely the most compatible, but any toolchain able to compile code for ARM7TDMI processor will work.
+
+\subsection{Compiling}
+
+When it comes the time to actually compile your code, be aware that you need to manually compile and then link each executable, because if gcc does all the work, it will include Linux system libraries as well. These libraries will try to "prepare" your program to be executed under Linux OS, adding initializing functions that will "break" execution in a bare metal system like uARM.
+
+So remember to add \texttt{-c} option while compiling each source file as well as \texttt{-mcpu=arm7tdmi} to ensure maximum compatibility with the system.
+
+When you have all the required object files, you have to link them together with \\ \texttt{arm-some-abi-gcc -nostartfiles -T \textbackslash\textbackslash \\ /usr/include/uarm/ldscripts/elf32ltsarm.h.uarmcore.x \textbackslash\textbackslash \\ /usr/include/uarm/crtso.o}\\ command (optionally you may want to add \texttt{/usr/include/uarm/libuarm.o} if you included system library in your code, you can also use \texttt{elf32ltsarm.h.uarmaout.x} script to link user mode programs).
+
+The last tool needed for preparing code for execution is \texttt{elf2uarm}, it converts elf binary files into uarm elf files. The tool has three operating modes and two options:
+
+\begin{itemize}
+\item -k : create kernel core file (extension \texttt{*.core.uarm}) with symbol table map (extension \texttt{*.uarm.stab})
+\item -b : create bootstrap BIOS file (extension \texttt{*.rom.uarm})
+\item -a : create a.out user program file (extension \texttt{*.aout.uarm})
+\\
+\item -m : force creation of symbol table map
+\item -v : verbose mode
+\end{itemize}
+
+\section{Hints}
+
+When writing Exception Handlers code, it is well advised to pay attetion to the Program Counter value stored in the Old Area. As described in Exception Handling section, each exception leave a different value in Link Return register and this value is automatically moved to Old Area pc from low level exception handlers, so, for example, when handling an interrupt, the Old Area PC has to be decreased by 4 to point to the right return instruction.
+
+\section{Known bugs}
+
+\begin{itemize}
+\item Thumb ISA is misbehaving with some Branch instructions
+\item Virtual Memory is not completely implemented
+\item Terminals shortcuts are still not working
+\item If Symbol Table file is changed during execution the machine can misbehave
+
+\end{itemize}

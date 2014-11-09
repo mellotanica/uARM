@@ -1,0 +1,254 @@
+\begin{center}
+\begin{tabular}{|l|}
+\hline
+\\
+\multicolumn{1}{|c|}{\emph{\textbf{ARM State General Registers}}}\\
+\\
+\begin{tabular}{c c c c c c}
+	\emph{System / User} & \emph{FIQ} & \emph{Supervisor} & \emph{Abort} & \emph{IRQ} & \emph{Undefined} \\
+	\begin{tabular}{|l|}
+	\hline
+	R0 \\
+	\hline
+	R1 \\
+	\hline
+	R2 \\
+	\hline
+	R3 \\
+	\hline
+	R4 \\
+	\hline
+	R5 \\
+	\hline
+	R6 \\
+	\hline
+	R7 \\
+	\hline
+	R8 \\
+	\hline
+	R9 \\
+	\hline
+	R10 \\
+	\hline
+	R11 \\
+	\hline
+	R12 \\
+	\hline
+	R13 \\
+	\hline
+	R14 \\
+	\hline
+	R15 (PC) \\
+	\hline
+	\hline
+	CPSR \\
+	\hline
+	\multicolumn{1}{c}{}\\
+	\end{tabular} &
+		\begin{tabular}{|l|}
+	\hline
+	R0 \\
+	\hline
+	R1 \\
+	\hline
+	R2 \\
+	\hline
+	R3 \\
+	\hline
+	R4 \\
+	\hline
+	R5 \\
+	\hline
+	R6 \\
+	\hline
+	R7 \\
+	\hline
+	\cellcolor{gray!25}R8\_fiq \\
+	\hline
+	\cellcolor{gray!25}R9\_fiq \\
+	\hline
+	\cellcolor{gray!25}R10\_fiq \\
+	\hline
+	\cellcolor{gray!25}R11\_fiq \\
+	\hline
+	\cellcolor{gray!25}R12\_fiq \\
+	\hline
+	\cellcolor{gray!25}R13\_fiq \\
+	\hline
+	\cellcolor{gray!25}R14\_fiq \\
+	\hline
+	R15 (PC) \\
+	\hline
+	\hline
+	CPSR\\
+	\hline
+	\cellcolor{gray!25}SPSR\_fiq \\
+	\hline
+	\end{tabular} &
+		\begin{tabular}{|l|}
+	\hline
+	R0 \\
+	\hline
+	R1 \\
+	\hline
+	R2 \\
+	\hline
+	R3 \\
+	\hline
+	R4 \\
+	\hline
+	R5 \\
+	\hline
+	R6 \\
+	\hline
+	R7 \\
+	\hline
+	R8 \\
+	\hline
+	R9 \\
+	\hline
+	R10 \\
+	\hline
+	R11 \\
+	\hline
+	R12 \\
+	\hline
+	\cellcolor{gray!25}R13\_svc \\
+	\hline
+	\cellcolor{gray!25}R14\_svc \\
+	\hline
+	R15 (PC) \\
+	\hline
+	\hline
+	CPSR\\
+	\hline
+	\cellcolor{gray!25}SPSR\_svc \\
+	\hline
+	\end{tabular} &
+		\begin{tabular}{|l|}
+	\hline
+	R0 \\
+	\hline
+	R1 \\
+	\hline
+	R2 \\
+	\hline
+	R3 \\
+	\hline
+	R4 \\
+	\hline
+	R5 \\
+	\hline
+	R6 \\
+	\hline
+	R7 \\
+	\hline
+	R8 \\
+	\hline
+	R9 \\
+	\hline
+	R10 \\
+	\hline
+	R11 \\
+	\hline
+	R12 \\
+	\hline
+	\cellcolor{gray!25}R13\_abt \\
+	\hline
+	\cellcolor{gray!25}R14\_abt \\
+	\hline
+	R15 (PC) \\
+	\hline
+	\hline
+	CPSR \ \ \\
+	\hline
+	\cellcolor{gray!25}SPSR\_abt \\
+	\hline
+	\end{tabular} &
+		\begin{tabular}{|l|}
+	\hline
+	R0 \\
+	\hline
+	R1 \\
+	\hline
+	R2 \\
+	\hline
+	R3 \\
+	\hline
+	R4 \\
+	\hline
+	R5 \\
+	\hline
+	R6 \\
+	\hline
+	R7 \\
+	\hline
+	R8 \\
+	\hline
+	R9 \\
+	\hline
+	R10 \\
+	\hline
+	R11 \\
+	\hline
+	R12 \\
+	\hline
+	\cellcolor{gray!25}R13\_irq \\
+	\hline
+	\cellcolor{gray!25}R14\_irq \\
+	\hline
+	R15 (PC) \\
+	\hline
+	\hline
+	CPSR \ \ \\
+	\hline
+	\cellcolor{gray!25}SPSR\_irq \\
+	\hline
+	\end{tabular} &
+		\begin{tabular}{|l|}
+	\hline
+	R0 \\
+	\hline
+	R1 \\
+	\hline
+	R2 \\
+	\hline
+	R3 \\
+	\hline
+	R4 \\
+	\hline
+	R5 \\
+	\hline
+	R6 \\
+	\hline
+	R7 \\
+	\hline
+	R8 \\
+	\hline
+	R9 \\
+	\hline
+	R10 \\
+	\hline
+	R11 \\
+	\hline
+	R12 \\
+	\hline
+	\cellcolor{gray!25}R13\_und \\
+	\hline
+	\cellcolor{gray!25}R14\_und \\
+	\hline
+	R15 (PC) \\
+	\hline
+	\hline
+	CPSR \ \ \\
+	\hline
+	\cellcolor{gray!25}SPSR\_und \\
+	\hline
+	\end{tabular} \\	
+\end{tabular}\\
+\\
+\begin{tabular}{ll}\cellcolor{gray!25} \ & = banked register \\ \end{tabular} \\
+\\
+\hline
+\end{tabular}
+\end{center}

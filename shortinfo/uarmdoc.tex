@@ -1,0 +1,33 @@
+\documentclass{report}
+
+\usepackage{graphicx}
+\usepackage[table]{xcolor}
+\usepackage{longtable}
+\usepackage{multirow}
+\usepackage{ulem}
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+	\huge\textbf{$\mu$ARM Informal Specifications}
+\end{center}
+\vfill
+\Large{Marco Melletti - melletti.marco@gmail.com\\http://www.mellotanica.com/uarm}
+\end{titlepage}
+
+\tableofcontents
+
+\input{tex/cpu.tex}
+
+\input{tex/bus.tex}
+
+\input{tex/memory.tex}
+
+%\input{tex/gui.tex}
+
+\input{tex/bios.tex}
+
+\input{tex/note.tex}
+
+\end{document}

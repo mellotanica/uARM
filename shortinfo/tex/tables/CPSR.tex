@@ -1,0 +1,24 @@
+\begin{center}
+\begin{tabular}{|l|}
+\hline
+\\
+\multicolumn{1}{|c|}{\textbf{Program Status Register}}\\
+\\
+	\begin{tabular}{|*{16}{p{0.5cm}|}}
+	\multicolumn{4}{c}{\textbf{\small condition code flags}} & \multicolumn{4}{c}{\textbf{\small reserved bits}} & \multicolumn{8}{c}{\textbf{\small control bits}} \\
+	\multicolumn{1}{c}{31} & \multicolumn{1}{c}{30} & \multicolumn{1}{c}{29} & \multicolumn{1}{c}{28} & \multicolumn{1}{c}{27} & \multicolumn{1}{c}{26} & \multicolumn{1}{c}{9} & \multicolumn{1}{c}{8} & \multicolumn{1}{c}{7} & \multicolumn{1}{c}{6} & \multicolumn{1}{c}{5} & \multicolumn{1}{c}{4} & \multicolumn{1}{c}{3} & \multicolumn{1}{c}{2} & \multicolumn{1}{c}{1} & \multicolumn{1}{c}{0} \\
+	\hline
+	\textbf{N} & \textbf{Z} & \textbf{C} & \textbf{V} & \textbf{$\cdot$} & \multicolumn{2}{c|}{\textbf{$\cdot$ // $\cdot$}} & \textbf{$\cdot$} & \textbf{I} & \textbf{F} & \textbf{T} & \textbf{M4} & \textbf{M3} & \textbf{M2} & \textbf{M1} & \textbf{M0} \\
+	\hline
+	\end{tabular} \\
+	\\
+	\begin{tabular}{ll}
+	N : Negative / less then & I : IRQ disabled \\
+	Z : Zero & F : FIQ disabled \\
+	C : Carry / Borrow / Extend & T : State bit (Thumb enabled)\\
+	V : Overflow & M : Mode bits \\
+	\end{tabular} \\
+\\
+\hline
+\end{tabular}
+\end{center}
