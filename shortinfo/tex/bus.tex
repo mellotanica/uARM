@@ -87,12 +87,12 @@ For each word, \emph{i} bit is set if \emph{i}\textsuperscript{th} device on tha
 The last memory frame (\texttt{0x7000} $\rightarrow$ \texttt{0x7FFC}) is reserved for kernel use:
 \begin{itemize}
 \item \texttt{0x7000} $\rightarrow$ \texttt{0x7500}: Exception states vector - memory area in which processor states are saved and loaded when entering into/exiting from exception handlers code.
-\item \texttt{0x7600} $\rightarrow$ \texttt{0x7E00}: Segment table - here is stored the 256 elements segment table describing the virtual address space, for each ASID (entries in the segment table) there are two pointers to ASID's private and shared page tables.
+\item \texttt{0x7600} $\rightarrow$ \texttt{0x7C00}: Segment table - here is stored the 128 elements segment table describing the virtual address space, for each ASID (entries in the segment table) there are two pointers to ASID's private and shared page tables.
 \item \texttt{0x7FF0} $\rightarrow$ \texttt{0x7FFC}: Rom stack - when invoking rom functions this stack is used to pass parameters to the hardware routines.
 \end{itemize}
 
 \subsubsection{Stored Processor States}
-Processor states are defined by library data structure \emph{state\_t}, this structure is composed of 20 unsinged 32-bit integers representing processor registers' values and coprocessor's system control registers' values. 
+Processor states are defined by library data structure \emph{state\_t}, this structure is composed of 20 unsigned 32-bit integers representing processor registers' values and coprocessor's system control registers' values. 
 
 Its structure is shown below:
 \nopagebreak

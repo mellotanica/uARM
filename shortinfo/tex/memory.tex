@@ -22,12 +22,24 @@ The machine starts execution in this mode, each address is used directly without
 
 All the available memory is directly accessible in Privileged mode and any address over 0x00008000 is directly accessible in User mode.
 
+\vspace{10px}
+
+\input{tex/tables/mem_ph.tex}
+
 \section{Virtual addressing mode}
 By setting M flag in System Coprocessor's register 1 (CP15.R1.M, that is least significative bit), you enable memory address translation.
 
-When the MMU is enabled the user process ASID is stored in the EntryHy field of CP15's 64bit register R2 along whith the Virtual Page Frame number. The EntryLow filed contains the Physical Page Frame address and is kept up to date after each modification of CP15.R2.EntryHy value.
+In Privileged mode all logical memory is accessible, when executin in User mode, only User Segments are accessible instead: the first one (Useg2) starts from address \texttt{0x2000.0000} and extends over the next GB, the second one (Useg3) starts from address \texttt{0x3000.0000} and terminates at the top of the logical memory, address \texttt{0x3FFF.FFFF}.
 
-The CP15 register 2 is organized as a Segment Table Entry:
+\vspace{10px}
+
+\input{tex/tables/mem_vir.tex}
+
+\vspace{10px}
+
+When the MMU is enabled the user process ASID is stored in the EntryHy field of CP15's 64bit register R2 along whith the Virtual Page number (e.g. the 20 most significant bits of the logical address). The EntryLow filed is filled with the Physical Page Frame address and is kept up to date after each modification of CP15.R2.EntryHy value.
+
+The CP15 register 2 is organized as a Page Table Entry (PTE):
 \\
 
 \input{tex/tables/CP15.R2.tex}
@@ -39,3 +51,33 @@ The Low half of each entry contains 4 flags used for memory protection:
 \item \textbf{V}alid bit: if bit is set the Page Table Entry is considered valid, otherwise a TLB-Invalid exception is raised.
 \item \textbf{G}lobal bit: if the bit is set, the Page Table Entry will match the corresponding VPN regardless of the ASID.
 \end{itemize}
+
+Page Table Entries are grouped together in Page Tables, each Page Table begins with a special word (PgTbl-Header) composed of the PgTbl Magic Number \texttt{0x2A} stored in the most significant 8 bits and the number of page table entries in the least significant 20 bits.
+
+The Segment Table specifies the physical addresses of the Page Tables of the three Segments for each ASID, the general structure is shown below:
+\\
+
+\input{tex/tables/seg_pag_tables.tex}
+
+\vspace{10px}
+
+uARM implements a Translation Lookaside Buffer (TLB) to translate logical addresses to physical ones, the buffer contains a specific amount of recently used PTEs and uses a random algorythm to select which entry to replace with a newly retrieved PTE.
+The number of available TLB slots is variable between 4 and 64 elements, it is conigurable through the settings window and needs a reset of the machine to effectively change.
+
+Each time a memory access is requested, the memory subsystem checks if the requested virtual Page has a corresponding PTE in the TLB for the current ASID or with the \texttt{G} flag set, if this is the case it concatenates the physical frame address with the actual requested offset to access the right address.
+
+If the necessary PTE is not present in the TLB, a TLB-Miss exception is raised and the BIOS reacts with a TLB Refill event, which executes the next steps:
+\begin{enumerate}
+\item Retrieve the PgTbl address from the Segment Table for the current ASID and requeste Segment.
+\item Access the PgTbl and check if it is well-formed and well-located:
+	\begin{itemize}
+	\item Address must be greater than \texttt{0x0000.8000},
+	\item Address must be word aligned,
+	\item PgTbl-Header must be valid,
+	\item PgTbl must not extend outside physical memory (e.g. [PgTbl addr + PgTbl size] $<$ RAMTOP).
+	\end{itemize}
+\item Linearly search the PgTbl for matching Virtual Page with correct ASID or \texttt{G} flag set.
+\item If a matching PTE was found, write it back in a random slot of the TLB and resume execution from the same instruction that raised the TLB-Miss exception, else raise a PTE-Miss exception.
+\end{enumerate}
+
+The random algorythm uses all the TLB slots besides the first one (e.g. item~0) to ensure a safe entry is always available.
