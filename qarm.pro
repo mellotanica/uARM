@@ -1,8 +1,3 @@
-#configure.target = config.h
-#configure.commands = ./configure
-#QMAKE_EXTRA_TARGETS += configure
-#PRE_TARGETDEPS = config.h
-
 QT += core gui declarative
 
 TARGET = uarm

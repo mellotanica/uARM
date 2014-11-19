@@ -8,7 +8,7 @@ fi
 PREF="/usr"
 ICONSOLNY="false"
 
-while [ -z "$1" ]; do
+while [ -n "$1" ]; do
   case "$1" in
     "-d")
 	PREF="$2"
@@ -44,7 +44,7 @@ if [ "$ICONSOLY" == "false" ]; then
  cp test/* "$TESTD"
  cp facilities/* "$INCLUDED"
 
- cp uarm elf2uarm "$BIND"
+ cp uarm elf2uarm uarm-mkdev "$BIND"
 
  cp default/* "$DEFAULTD"
 fi
