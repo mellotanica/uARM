@@ -10,6 +10,8 @@ else
   echo "!!!!!!!! it seems you don't have qt4 installed, this may lead to wrong compilation !!!!!!!!"
 fi
 
+./configure
+
 $QMCOMP qarm.pro
 make
 make clean
