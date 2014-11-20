@@ -6,7 +6,7 @@ if [ `id -u` != "0" ]; then
 fi
 
 PREF="/usr"
-ICONSOLNY="false"
+ICONSONLY="false"
 
 while [ -n "$1" ]; do
   case "$1" in
@@ -16,7 +16,7 @@ while [ -n "$1" ]; do
 	shift
     ;;
     "-i")
-	ICONSOLNY="true"
+	ICONSONLY="true"
     ;;
     "*")
 	echo "unknown option $1, skipping"
@@ -29,7 +29,7 @@ ICONSD=$PREF"/lib/uarm/icons"
 mkdir -p "$ICONSD"
 cp icons/* "$ICONSD"
 
-if [ "$ICONSOLY" == "false" ]; then
+if [ "$ICONSONLY" == "false" ]; then
  INCLUDED=$PREF"/include/uarm"
  TESTD=$PREF"/share/doc/uarm/examples"
  LDSCRIPTSD=$INCLUDED"/ldscripts"
