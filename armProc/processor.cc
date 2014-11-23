@@ -55,6 +55,7 @@ processor::~processor(){
     }
     delete [] cpu_registers;
     delete [] prefetchFault;
+    tlb.~scoped_array();
 }
 
 void processor::reset(){
@@ -72,6 +73,11 @@ void processor::reset(){
         prefetchFault[i] = false;
 
     coproc->reset();
+
+    tlbSize = MC_Holder::getInstance()->getConfig()->getTLBSize();
+    if(tlb)
+        tlb.~scoped_array();
+    tlb.reset(new TLBEntry[tlbSize]);
 
     Word address = 0;
     bus->writeW(&address, INITIAL_BRANCH, true);
@@ -414,6 +420,171 @@ void processor::fetch(){
     } else {
         nextCycle();
     }
+}
+
+// This method maps the virtual addresses to physical ones following the
+// complex mapping algorithm and TLB used by MIPS (see external doc).
+// It returns TRUE if conversion was not possible (this implies an exception
+// have been raised) and FALSE if conversion has taken place: physical value
+// for address conversion is returned thru paddr pointer.
+// AccType details memory access type (READ/WRITE/EXECUTE)
+bool processor::mapVirtual(Word vaddr, Word * paddr, Word accType)
+{
+    if (coproc->isVMon()) {
+        // VM is on
+
+        // SignalProcVAccess() is always done so it is possible
+        // to track accesses which produce exceptions
+        bus->HandleVMAccess(ENTRYHI_GET_ASID(*coproc->getRegister(CP15_REG2_EntryHi)), vaddr, accType, this);
+
+        // address validity and bounds check
+        if (BADADDR(vaddr) || ((getMode() == MODE_USER) && (vaddr < USEG2BASE))) {
+            // bad offset or kernel segment access from user mode
+            *paddr = MAXWORDVAL;
+
+            // the bad virtual address is put into BADVADDR reg
+            *coproc->getRegister(CP15_REG6_FA) = vaddr;
+
+            if (accType == WRITE)
+                coproc->setCause(ADESEXCEPTION);
+            else
+                coproc->setCause(ADELEXCEPTION);
+
+            return true;
+        }
+
+        // The access is in user mode to user space, or in kernel mode
+        // to KSEG0 or USEG2/3 spaces.
+
+        unsigned int index;
+        if (probeTLB(&index, *coproc->getRegister(CP15_REG2_EntryHi), vaddr)) {
+            if (tlb[index].IsV()) {
+                if (accType != WRITE || tlb[index].IsD()) {
+                    // All OK
+                    *paddr = PHADDR(vaddr, tlb[index].getLO());
+                    return false;
+                } else {
+                    // write operation on frame with D bit set to 0
+                    *paddr = MAXWORDVAL;
+                    setTLBRegs(vaddr);
+                    coproc->setCause(MODEXCEPTION);
+                    return true;
+                }
+            } else  {
+                // invalid access to frame with V bit set to 0
+                *paddr = MAXWORDVAL;
+                setTLBRegs(vaddr);
+                if (accType == WRITE)
+                    coproc->setCause(TLBSEXCEPTION);
+                else
+                    coproc->setCause(TLBLEXCEPTION);
+
+                return true;
+            }
+        } else {
+            // bad or missing VPN match: Refill event required
+            *paddr = MAXWORDVAL;
+            setTLBRegs(vaddr);
+            if (accType == WRITE)
+                coproc->setCause(UTLBSEXCEPTION);
+            else
+                coproc->setCause(UTLBLEXCEPTION);
+
+            return true;
+        }
+    } else {
+        // VM is off
+
+        // SignalProcVAccess() is always done so it is possible
+        // to track accesses which produce exceptions
+        bus->HandleVMAccess(MAXASID, vaddr, accType, this);
+
+        // address validity and bounds check
+        if (BADADDR(vaddr) || ((getMode() == MODE_USER) && (vaddr < KSEG0TOP))) {
+            // bad offset or kernel segment access from user mode
+            *paddr = MAXWORDVAL;
+
+            // the bad address is put into BADVADDR reg
+            *coproc->getRegister(CP15_REG6_FA) = vaddr;
+
+            if (accType == WRITE)
+                coproc->setCause(ADESEXCEPTION);
+            else
+                coproc->setCause(ADELEXCEPTION);
+
+            return true;
+        } else {
+            *paddr = vaddr;
+            return false;
+        }
+    }
+}
+
+// This method sets the CP0 special registers on exceptions forced by TLB
+// handling (see mapVirtual() for invocation/specific cases).
+void processor::setTLBRegs(Word vaddr)
+{
+    // Note that ENTRYLO is left undefined!
+    *coproc->getRegister(CP15_REG6_FA) = vaddr;
+    *coproc->getRegister(CP15_REG2_EntryHi) = VPN(vaddr) | ASID(*coproc->getRegister(CP15_REG2_EntryHi));
+}
+
+// This method scans the TLB looking for a entry that matches ASID/VPN pair;
+// scan algorithm follows MIPS specifications, and returns the _highest_
+// entry that matches
+bool processor::probeTLB(unsigned int* index, Word asid, Word vpn)
+{
+    bool found = false;
+
+    for (unsigned int i = 0; i < tlbSize; i++) {
+        if (tlb[i].VPNMatch(vpn) && (tlb[i].IsG() || tlb[i].ASIDMatch(asid))) {
+            found = true;
+            *index = i;
+        }
+    }
+
+    return found;
+}
+
+void processor::getTLB(unsigned int index, Word* hi, Word* lo) const
+{
+    *hi = tlb[index].getHI();
+    *lo = tlb[index].getLO();
+}
+
+Word processor::getTLBHi(unsigned int index) const
+{
+    return tlb[index].getHI();
+}
+
+Word processor::getTLBLo(unsigned int index) const
+{
+    return tlb[index].getLO();
+}
+
+void processor::setTLB(unsigned int index, Word hi, Word lo)
+{
+    if (index < tlbSize) {
+        tlb[index].setHI(hi);
+        tlb[index].setLO(lo);
+        //SignalTLBChanged(index);
+    } else {
+        Panic("Unknown TLB entry in Processor::setTLB()");
+    }
+}
+
+void processor::setTLBHi(unsigned int index, Word value)
+{
+    assert(index < tlbSize);
+    tlb[index].setHI(value);
+    //SignalTLBChanged(index);
+}
+
+void processor::setTLBLo(unsigned int index, Word value)
+{
+    assert(index < tlbSize);
+    tlb[index].setLO(value);
+    //SignalTLBChanged(index);
 }
 
 /* *************************** *

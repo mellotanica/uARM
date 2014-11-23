@@ -6,6 +6,8 @@ QMAKE_CXXFLAGS += -std=c++11
 QMAKE_LIBS += -ldl
 CONFIG += qt debug
 
+DEFINES += UARM_MACHINE_COMPILING
+
 HEADERS += \
     armProc/types.h \
     armProc/Thumbisa.h \
@@ -63,7 +65,8 @@ HEADERS += \
     armProc/stoppoint.h \
     qarm/ui_utils.h \
     facilities/uARMconst.h \
-    facilities/uARMtypes.h
+    facilities/uARMtypes.h \
+    armProc/tlbentry.h
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -103,9 +106,8 @@ SOURCES += \
     services/debug_session.cc \
     qarm/stoppoint_list_model.cc \
     armProc/stoppoint.cc \
-    qarm/ui_utils.cc
-
-RESOURCES +=
+    qarm/ui_utils.cc \
+    armProc/tlbentry.cpp
 
 OTHER_FILES += \
     compile \

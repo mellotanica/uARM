@@ -36,8 +36,6 @@
 #include <iostream>
 using namespace std;
 
-#define UARM_MACHINE_COMPILING
-
 #include "facilities/uARMconst.h"
 
 
@@ -139,16 +137,37 @@ using namespace std;
 #define EXEC	0x1
 #define EMPTY 	0x0
 
-// some useful macros
-
 // word alignment mask
 #define ALIGNMASK	0x00000003UL
+
+// TLB EntryHI handling masks and constants
+#define VPNMASK	0xFFFFF000UL
+#define ASIDMASK	0x00000FE0UL
+#define ASIDOFFS	6
+#define OFFSETMASK	(~(VPNMASK))
+
+// TLB EntryLO bit positions and mask
+#define GBITPOS	8
+#define VBITPOS 9
+#define DBITPOS 10
+#define ENTRYLOMASK	0xFFFFFF00UL
+
+// some useful macros
 
 // recognizes bad (unaligned) virtual address
 #define BADADDR(w)	((w & ALIGNMASK) != 0UL)
 
 // returns the sign bit of a word
 #define SIGNBIT(w)	(w & SIGNMASK)
+
+// extracts VPN from address
+#define VPN(w)		((w & VPNMASK))
+
+// extracts ASID from address
+#define ASID(w)	((w & ASIDMASK))
+
+// computes physical address from virtual address and PFN field
+#define PHADDR(va, pa)	((va & OFFSETMASK) | (pa & VPNMASK))
 
 // returns 1 if the two strings are equal, 0 otherwise
 #define SAMESTRING(s,t)	(strcmp(s,t) == 0)

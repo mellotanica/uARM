@@ -25,6 +25,7 @@
 #include "armProc/pu.h"
 #include "armProc/bus.h"
 #include "armProc/cp15.h"
+#include "armProc/tlbentry.h"
 
 enum ProcessorStatus {
     PS_HALTED,
@@ -96,6 +97,13 @@ public:
 	
     systemBus *getBus() {return bus;}
 	
+    void getTLB(unsigned int index, Word * hi, Word * lo) const;
+    Word getTLBHi(unsigned int index) const;
+    Word getTLBLo(unsigned int index) const;
+    void setTLB(unsigned int index, Word hi, Word lo);
+    void setTLBHi(unsigned int index, Word value);
+    void setTLBLo(unsigned int index, Word value);
+
     // processor could abort the execution cycle of coprocessors in case of interrupts or traps
     void cycle();
 	
@@ -125,6 +133,9 @@ private:
 	ARMisa *execARM;
 	Thumbisa *execThumb;
 	
+    size_t tlbSize;
+    scoped_array<TLBEntry> tlb;
+
     ProcessorMode getMode() {uint16_t mode = cpu_registers[REG_CPSR] & MODE_MASK; return (ProcessorMode) mode;}
 	void debugARM(string mnemonic);
 	void debugThumb(string mnemonic);
@@ -148,6 +159,10 @@ private:
     void decode() {}
 	void execute();
 	
+    bool mapVirtual(Word vaddr, Word * paddr, Word accType);
+    bool probeTLB(unsigned int * index, Word asid, Word vpn);
+    void setTLBRegs(Word vaddr);
+
     void multiply(bool accumulate, bool lngWord);
     void multiply(Word *rd, Word *rm, Word *rs, Word *rn , bool accumulate, bool lngWord, bool S);
 	void coprocessorTransfer(bool memAcc, bool toCoproc);

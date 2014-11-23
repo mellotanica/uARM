@@ -45,6 +45,12 @@
 #define KSEGOS_BIOS_BASE   0x00000300
 #define KUSEG2_BASE        0x00008000
 
+// segments base addresses
+#define KSEG0BASE	0x00000000UL
+#define KSEG0TOP	0x20000000UL
+#define USEG2BASE	0x80000000UL
+#define USEG3BASE	0xC0000000UL
+
 /* Device register size */
 #define DEV_REG_SIZE_W   4
 #define DEV_REG_SIZE     (DEV_REG_SIZE_W * WS)

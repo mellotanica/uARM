@@ -293,7 +293,7 @@
 #define FRAMEKB	4
 
 // number of ASIDs
-#define MAXASID 256
+#define MAXASID 128
 
 // eth packet size
 #define PACKETSIZE 1514
@@ -311,5 +311,12 @@
 #define UNDEDEXCEPTION	9
 #define COPROCEXCEPTION	10
 #define BPEXCEPTION		12
+#define UTLBLEXCEPTION	13
+#define TLBLEXCEPTION 	14
+#define UTLBSEXCEPTION	15
+#define TLBSEXCEPTION	16
+#define ADELEXCEPTION	17
+#define ADESEXCEPTION	18
+#define MODEXCEPTION    19
 
 #endif // UARMCONST_H

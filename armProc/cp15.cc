@@ -83,12 +83,6 @@ void cp15::reset(){
 }
 
 bool cp15::executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info){
-    switch(opcode){
-        case 0:
-            if(rd == 2) //Refresh PTE
-                return getPFN();
-            break;
-    }
     return false;
 }
 
@@ -98,6 +92,7 @@ bool cp15::registerTransfer(Word *cpuReg, Byte opcode, Byte operand, Byte srcDes
         case 0: register0(cpuReg, opcode, operand, info, toCoproc); break;
         case 1: result = register1(cpuReg, info, toCoproc); break;
         case 2: result = register2(cpuReg, opcode, info, toCoproc); break;
+        case 6: genRegister(cpuReg, CP15_REG6_FA, toCoproc); break;
         case 15: register15(cpuReg, opcode, toCoproc); break;
     }
     return result;
@@ -127,8 +122,6 @@ bool cp15::register1(Word *cpureg, Byte info, bool toCoproc){
         switch(info){
             case 0b000: //control register
                 cp15_registers[CP15_REG1_SCB] = *cpureg;
-                if(isVMon())
-                    result = getPFN();
                 break;
             case 0b001: break;  //aux control register
             case 0b010:         //coprocessor access register
@@ -152,6 +145,13 @@ bool cp15::register2(Word *cpureg, Byte opcode, Byte info, bool toCoproc){
         case 1: EntryLo(cpureg, toCoproc); break;
     }
     return result;
+}
+
+void cp15::genRegister(Word *cpureg, Word cpreg, bool toCoproc){
+    if(toCoproc){
+        cp15_registers[cpreg] = *cpureg;
+    } else
+        *cpureg = cp15_registers[cpreg];
 }
 
 void cp15::register15(Word *cpureg, Byte opcode, bool toCoproc){
@@ -206,8 +206,6 @@ bool cp15::EntryHi(Word *cpureg, Byte opcode, bool toCoproc){
         }
         if(changed){
             cp15_registers[CP15_REG2_EntryHi] |= value;
-            if(isVMon())
-                result = getPFN();
         }
     } else {        //read
         *cpureg = cp15_registers[CP15_REG2_EntryHi];

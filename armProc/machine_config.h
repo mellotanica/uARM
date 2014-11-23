@@ -30,6 +30,7 @@
 #include "facilities/arch.h"
 #include "armProc/types.h"
 #include "qarm/guiConst.h"
+#include "facilities/uARMconst.h"
 
 #include <QApplication>
 
@@ -67,7 +68,7 @@ public:
     static const bool DEFAULT_STOP_ON_EXCEPTION = false;
 
     static const Word MIN_ASID = 1;
-    static const Word MAX_ASID = 256;
+    static const Word MAX_ASID = MAXASID-1;
 
     static MachineConfig* LoadFromFile(const std::string& fileName, std::string& error, QApplication *app);
     static MachineConfig* Create(const std::string& fileName, QApplication *app);
