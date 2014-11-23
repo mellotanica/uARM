@@ -1,0 +1,19 @@
+{
+\centering
+\begin{tabular}{|c|l c|c|l}
+\multicolumn{2}{c}{User Mode} & \multicolumn{1}{l}{} & \multicolumn{2}{c}{Kernel Mode}\\
+\cline{1-1}\cline{4-4}
+\multirow{2}{*}{Useg3} & \texttt{0x3FFF.FFFF} & & \multirow{2}{*}{Useg3} & \texttt{0x3FFF.FFFF} \\
+ & \texttt{0x3000.0000} & & & \texttt{0x3000.0000} \\
+\cline{1-1}\cline{4-4}
+\multirow{2}{*}{Useg2} & & & \multirow{2}{*}{Useg2} & \\
+ & \texttt{0x2000.0000} & \hspace{20px} & & \texttt{0x2000.0000} \\
+\cline{1-1}\cline{4-4}
+\cellcolor{gray} & & & \multirow{3}{*}{Kseg0} & \\
+\cellcolor{gray} & & & & \\
+\cellcolor{gray} & & & & \texttt{0x00008000} \\
+\cline{4-4}
+\cellcolor{gray}\hspace{50px} & \texttt{0x00000000} & & \hspace{50px} & \texttt{0x00000000} \\
+\cline{1-1}\cline{4-4}
+\end{tabular}
+}

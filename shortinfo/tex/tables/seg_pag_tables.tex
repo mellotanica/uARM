@@ -1,0 +1,49 @@
+{
+\centering
+\begin{tabular}{r|c|c|c|l}
+\multicolumn{5}{c}{Segent Table:} \\
+\multicolumn{5}{c}{}\\
+\multicolumn{1}{c}{} & \multicolumn{1}{c}{Kseg0} & \multicolumn{1}{c}{Useg2} & \multicolumn{1}{c}{Useg3} & \multicolumn{1}{c}{} \\
+\multicolumn{1}{c}{} & \multicolumn{1}{c}{$\downarrow$} & \multicolumn{1}{c}{$\downarrow$} & \multicolumn{1}{c}{$\downarrow$} & \multicolumn{1}{c}{\texttt{0x0000.7C00}} \\
+\cline{2-4}
+ASID 255 $\rightarrow$ & PgTbl addr & PgTbl addr & PgTbl addr & \\
+\cline{2-4}
+ASID 254 $\rightarrow$ & PgTbl addr & PgTbl addr & PgTbl addr & \\
+\cline{2-4}
+\multicolumn{1}{c}{} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{$\cdot$} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{} \\
+\multicolumn{1}{c}{} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{$\cdot$} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{} \\
+\multicolumn{1}{c}{} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{$\cdot$} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{} \\
+\cline{2-4}
+ASID 2 $\rightarrow$ & PgTbl addr & PgTbl addr & PgTbl addr & \\
+\cline{2-4}
+ASID 1 $\rightarrow$ & PgTbl addr & PgTbl addr & PgTbl addr & \\
+\cline{2-4}
+ASID 0 $\rightarrow$ & PgTbl addr & PgTbl addr & PgTbl addr & \texttt{0x0000.7600} \\
+\cline{2-4}
+\end{tabular}
+
+\centering
+\begin{tabular}{p{0.45\textwidth}p{0.45\textwidth}}
+\multicolumn{2}{c}{Page Table:} \\
+\multicolumn{2}{c}{}\\
+\hline
+\multicolumn{2}{|c|}{PgTbl Entry n}\\
+\hline
+\multicolumn{2}{c}{$\cdot$}\\
+\multicolumn{2}{c}{$\cdot$}\\
+\multicolumn{2}{c}{$\cdot$}\\
+\hline
+\multicolumn{2}{|c|}{PgTbl Entry 2}\\
+\hline
+\multicolumn{2}{|c|}{PgTbl Entry 1}\\
+\hline
+\multicolumn{2}{|c|}{PgTbl Entry 0}\\
+\hline
+\hfill PgTbl Header Word $\rightarrow$ & 
+	\begin{tabular}{lrclr}
+	\multicolumn{2}{|c|}{MagicNO} & \cellcolor{gray}& \multicolumn{2}{|c|}{\hspace{14px}EntryCNT\hspace{11px}\ } \\
+	\hline
+	\footnotesize{31} & \footnotesize{24} & \ \ \ \ & \footnotesize{19} & \footnotesize{0} \\
+	\end{tabular}
+\end{tabular}
+}
