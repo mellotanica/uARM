@@ -55,7 +55,6 @@ HEADERS += \
     qarm/flat_push_button.h \
     qarm/breakpoint_window.h \
     facilities/arch.h \
-    configUbuntu.h \
     services/disass.h \
     qarm/symbol_table_model.h \
     qarm/add_breakpoint_dialog.h \

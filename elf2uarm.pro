@@ -2,6 +2,8 @@ QMAKE_CXXFLAGS += -std=c++11
 QMAKE_LIBS += -lelf
 TARGET = elf2uarm
 
+DEFINES += UARM_MACHINE_COMPILING
+
 HEADERS += \
     services/util.h \
     services/debug.h \
