@@ -333,9 +333,7 @@ void processor::nextCycle() {
         prefetch();
         return;
     }                           //else run normally
-
-    //shoud we check for pc 14 to halt the system??
-
+    Word ppc;
     if(cpu_registers[REG_CPSR] & T_MASK){	//Thumb state
         *getPC() += 2;
     }
@@ -346,21 +344,22 @@ void processor::nextCycle() {
     if(*getPC() % 4 == 0){	//in ARM state or after second halfword in Thumb state, fetch new word
         prefetchFault[PIPELINE_EXECUTE] = prefetchFault[PIPELINE_DECODE];
         prefetchFault[PIPELINE_DECODE] = prefetchFault[PIPELINE_FETCH];
-        prefetchFault[PIPELINE_FETCH] = !bus->fetch(*getPC(), !(cpu_registers[REG_CPSR] & T_MASK));
+        if(mapVirtual(*getPC(), &ppc, EXEC)){
+            prefetchFault[PIPELINE_FETCH] = true;
+        } else
+            prefetchFault[PIPELINE_FETCH] = !bus->fetch(ppc, !(cpu_registers[REG_CPSR] & T_MASK));
     }
 }
 
 void processor::prefetch() {
-    /*if(*getPC() == 0x14){
-        status = PS_HALTED;
-        return;
-    }*/
-    Word tpc = *getPC();
-    prefetchFault[PIPELINE_EXECUTE] = !bus->prefetch(tpc);
-    tpc += 4;
-    prefetchFault[PIPELINE_DECODE] = !bus->prefetch(tpc);
-    tpc += 4;
-    prefetchFault[PIPELINE_FETCH] = !bus->prefetch(tpc);
+    Word ppc, vpc = *getPC();
+    int i;
+    for(i = PIPELINE_EXECUTE; i >= PIPELINE_FETCH; i--, vpc+=4){
+        if(mapVirtual(vpc, &ppc, EXEC)){
+            prefetchFault[i] = true;
+        } else
+            prefetchFault[i] = !bus->prefetch(ppc);
+    }
     //if prefetch happened in thumb mode pc must be advanced by two halfwords
     *getPC() += (cpu_registers[REG_CPSR] & T_MASK ? 4 : 8);
     old_pc = *getPC();
@@ -500,7 +499,7 @@ bool processor::mapVirtual(Word vaddr, Word * paddr, Word accType)
         bus->HandleVMAccess(MAXASID, vaddr, accType, this);
 
         // address validity and bounds check
-        if (BADADDR(vaddr) || ((getMode() == MODE_USER) && (vaddr < KSEG0TOP))) {
+        if (BADADDR(vaddr) || ((getMode() == MODE_USER) && (vaddr < RAM_BASE))) {
             // bad offset or kernel segment access from user mode
             *paddr = MAXWORDVAL;
 
@@ -786,13 +785,17 @@ void processor::coprocessorOperation(){
 	Byte rm = pipeline[PIPELINE_EXECUTE] & 0xF;
 	Byte rd = (pipeline[PIPELINE_EXECUTE] >> 12) & 0xF;
 	Byte info = (pipeline[PIPELINE_EXECUTE] >> 5) & 7;
-    if(pipeline[PIPELINE_EXECUTE] == WAITCPINSTR)
-        suspend();
-    else if(pipeline[PIPELINE_EXECUTE] == HALTCPINSTR)
-        halt();
-    else
-        if(cp->executeOperation(opcode, rm, rn, rd, info))
-            dataAbortTrap();
+    switch(pipeline[PIPELINE_EXECUTE]){
+        case WAITCPINSTR:
+            suspend(); break;
+        case HALTCPINSTR:
+            halt(); break;
+        /* TODO: TLB functions here */
+        default:
+            if(cp->executeOperation(opcode, rm, rn, rd, info))
+                dataAbortTrap();
+            break;
+    }
 }
 
 void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
@@ -803,9 +806,9 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
 		return;
 	}
 	if(memAcc){
-		Word *base = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
+        Word paddr, *base = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
 		Word cpRegNum = (pipeline[PIPELINE_EXECUTE] >> 12) & 0xF;
-		Word *cpReg;
+        Word *cpReg;
 		Byte offset = pipeline[PIPELINE_EXECUTE] & 0xFF;
 		bool P, U, W, N;
         P = checkBit(pipeline[PIPELINE_EXECUTE], 24);	// pre/post indexing
@@ -818,13 +821,15 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
 		if(N){	//multiple transfer
 			while((cpReg = cp->getRegister(cpRegNum)) != NULL){	// load all registers starting from cpRegNum
 				if(toCoproc){	//load
-                    if(!checkAbort(bus->readW(&address, cpReg))){
+                    if(mapVirtual(address, &paddr, READ) ||
+                            !checkAbort(bus->readW(&paddr, cpReg))){
                         dataAbortTrap();
                         return;
                     }
 				}
 				else{			//store
-                    if(!checkAbort(bus->writeW(&address, *cpReg, true))){
+                    if(mapVirtual(address, &paddr, WRITE) ||
+                            !checkAbort(bus->writeW(&paddr, *cpReg, true))){
                         dataAbortTrap();
                         return;
                     }
@@ -837,13 +842,15 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
 			cpReg = cp->getRegister(cpRegNum);
 			if(cpReg != NULL){
 				if(toCoproc){	//load
-                    if(!checkAbort(bus->readW(&address, cpReg))){
+                    if(mapVirtual(address, &paddr, READ) ||
+                            !checkAbort(bus->readW(&paddr, cpReg))){
                         dataAbortTrap();
                         return;
                     }
 				}
 				else{			//store
-                    if(!checkAbort(bus->writeW(&address, *cpReg, true))){
+                    if(mapVirtual(address, &paddr, WRITE) ||
+                            !checkAbort(bus->writeW(&paddr, *cpReg, true))){
                         dataAbortTrap();
                         return;
                     }
@@ -999,7 +1006,7 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
     Word writeBackAddr = *rn + ((U ? 1 : -1) * 4 * regn);
 
     //first address points always to lower most stored register
-    Word address = *rn + ((U ? 1 : -1) * (P ? 4 : 0)) - (U ? 0 : ((regn - 1) * 4));
+    Word paddr, address = *rn + ((U ? 1 : -1) * (P ? 4 : 0)) - (U ? 0 : ((regn - 1) * 4));
 	if(load){		//LDM
 		if(S){	//user bank transfer / mode change
 			if(getMode() == MODE_USER){	// S bit should be set only in privileged mode
@@ -1008,7 +1015,8 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 			}
             for(unsigned i = 0; i < 15; i++){
 				if(list & (1<<i)){		// if register i is marked load it
-                    if(!checkAbort(bus->readW(&address, &cpu_registers[i]))){
+                    if(mapVirtual(address, &paddr, READ) ||
+                            !checkAbort(bus->readW(&paddr, &cpu_registers[i]))){
                         dataAbortTrap();
                         return;
                     }
@@ -1016,7 +1024,8 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 				}
             }
             if(list & 0x8000){			// if r15 is required for loading restore also CPSR
-                if(!checkAbort(bus->readW(&address, getPC()))){
+                if(mapVirtual(address, &paddr, READ) ||
+                        !checkAbort(bus->readW(&paddr, getPC()))){
                     dataAbortTrap();
                     return;
                 }
@@ -1031,7 +1040,8 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 		else{	// regular multiple load
             for(unsigned i = 0; i < (sizeof(HalfWord) * 8); i++){
                 if(list & (1<<i)){		// if register i is marked load it
-                    if(!checkAbort(bus->readW(&address, getVisibleRegister(i)))){
+                    if(mapVirtual(address, &paddr, READ) ||
+                            !checkAbort(bus->readW(&paddr, getVisibleRegister(i)))){
                         dataAbortTrap();
                         return;
                     }
@@ -1049,7 +1059,8 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 			}
             for(unsigned i = 0; i < (sizeof(HalfWord) * 8); i++){
 				if(list & (1<<i)){		// if register i is marked store it
-                    if(!checkAbort(bus->writeW(&address, cpu_registers[i], true))){
+                    if(mapVirtual(address, &paddr, WRITE) ||
+                            !checkAbort(bus->writeW(&paddr, cpu_registers[i], true))){
                         dataAbortTrap();
                         return;
                     }
@@ -1063,12 +1074,14 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 				if(list & (1<<i)){		// if register i is marked store it
                     if(!firstChecked){	// if first register to be stored is base address register
 						firstChecked = true;
-                        if(!checkAbort(bus->writeW(&address, *getVisibleRegister(i), true))){   // store the initial value before writing back return address
+                        if(mapVirtual(address, &paddr, WRITE) ||
+                                !checkAbort(bus->writeW(&paddr, *getVisibleRegister(i), true))){   // store the initial value before writing back return address
                             dataAbortTrap();
                             return;
                         }
                     } else
-                        if(!checkAbort(bus->writeW(&address, *getVisibleRegister(i), true))){
+                        if(mapVirtual(address, &paddr, WRITE) ||
+                                !checkAbort(bus->writeW(&paddr, *getVisibleRegister(i), true))){
                             dataAbortTrap();
                             return;
                         }
@@ -1188,7 +1201,7 @@ void processor::halfwordDataTransfer(bool sign, bool load_halfwd){
     halfwordDataTransfer(dest, src, rm, offset, P, U, I, W, sign, load_halfwd);
 }
 void processor::halfwordDataTransfer(Word *rd, Word *rn, Word *rm, Word offs, bool P, bool U, bool I, bool W, bool sign, bool load_halfwd){
-    Word address = *rn;
+    Word paddr, address = *rn;
     Word offset;
     if(rn == getVisibleRegister(REG_PC))	//if source is r15 the address must be instruction addr+12
 		address += 12;
@@ -1212,7 +1225,8 @@ void processor::halfwordDataTransfer(Word *rd, Word *rn, Word *rm, Word offs, bo
 			Word ret = 0;
 			if(load_halfwd){ //load halfword and sign extend
                 HalfWord readwd;
-                if(!checkAbort(bus->readH(&address, &readwd))){
+                if(mapVirtual(address, &paddr, READ) ||
+                        !checkAbort(bus->readH(&paddr, &readwd))){
                     dataAbortTrap();
                     return;
                 }
@@ -1222,7 +1236,8 @@ void processor::halfwordDataTransfer(Word *rd, Word *rn, Word *rm, Word offs, bo
 						ret |= 1<<i;
 			} else {	//load byte and sign extend
                 Byte readwd;
-                if(!checkAbort(bus->readB(&address, &readwd))){
+                if(mapVirtual(address, &paddr, READ) ||
+                        !checkAbort(bus->readB(&paddr, &readwd))){
                     dataAbortTrap();
                     return;
                 }
@@ -1235,13 +1250,15 @@ void processor::halfwordDataTransfer(Word *rd, Word *rn, Word *rm, Word offs, bo
 		} else {	//it's a halfword transfer
 			if(load_halfwd) {	//load val
                 HalfWord readwd;
-                if(!checkAbort(bus->readH(&address, &readwd))){
+                if(!mapVirtual(address, &paddr, READ) ||
+                        checkAbort(bus->readH(&paddr, &readwd))){
                     dataAbortTrap();
                     return;
                 }
                 *rd = readwd;
 			} else {	//store val
-                if(!checkAbort(bus->writeH(&address, (HalfWord) (*rd & 0xFFFF), true))){
+                if(mapVirtual(address, &paddr, WRITE) ||
+                        !checkAbort(bus->writeH(&paddr, (HalfWord) (*rd & 0xFFFF), true))){
                     dataAbortTrap();
                     return;
                 }
@@ -1280,34 +1297,38 @@ void processor::singleMemoryAccess(bool L){
 
 
 void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, Word* base, Word offset){
-	Word address = *base;
+    Word paddr, address = *base;
 	if(P){	//pre-indexing
 		address += ((U ? 1 : -1) * offset);
 			
 		if(B){
             if(L){
                 Byte read;
-                if(!checkAbort(bus->readB(&address, &read))){
+                if(mapVirtual(address, &paddr, READ) ||
+                        !checkAbort(bus->readB(&paddr, &read))){
                     dataAbortTrap();
                     return;
                 }
                 *srcDst = read;
             }
             else{
-                if(!checkAbort(bus->writeB(&address, ((Byte) *srcDst & 0xFF), true))){
+                if(mapVirtual(address, &paddr, WRITE) ||
+                        !checkAbort(bus->writeB(&paddr, ((Byte) *srcDst & 0xFF), true))){
                     dataAbortTrap();
                     return;
                 }
             }
 		} else
             if(L){
-                if(!checkAbort(bus->readW(&address, srcDst))){
+                if(mapVirtual(address, &paddr, READ) ||
+                        !checkAbort(bus->readW(&paddr, srcDst))){
                     dataAbortTrap();
                     return;
                 }
             }
             else{
-                if(!checkAbort(bus->writeW(&address, *srcDst, true))){
+                if(mapVirtual(address, &paddr, WRITE) ||
+                        !checkAbort(bus->writeW(&paddr, *srcDst, true))){
                     dataAbortTrap();
                     return;
                 }
@@ -1321,27 +1342,31 @@ void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, 
 		if(B){
             if(L){
                 Byte read;
-                if(!checkAbort(bus->readB(base, &read))){
+                if(mapVirtual(*base, &paddr, READ) ||
+                        !checkAbort(bus->readB(&paddr, &read))){
                     dataAbortTrap();
                     return;
                 }
                 *srcDst = read;
             }
             else{
-                if(!checkAbort(bus->writeB(base, ((Byte) *srcDst & 0xFF), true))){
+                if(mapVirtual(*base, &paddr, WRITE) ||
+                        !checkAbort(bus->writeB(&paddr, ((Byte) *srcDst & 0xFF), true))){
                     dataAbortTrap();
                     return;
                 }
             }
 		} else {
             if(L){
-                if(!checkAbort(bus->readW(&address, srcDst))){
+                if(mapVirtual(address, &paddr, READ) ||
+                        !checkAbort(bus->readW(&paddr, srcDst))){
                     dataAbortTrap();
                     return;
                 }
             }
             else{
-                if(!checkAbort(bus->writeW(&address, *srcDst, true))){
+                if(mapVirtual(address, &paddr, WRITE) ||
+                        !checkAbort(bus->writeW(&paddr, *srcDst, true))){
                     dataAbortTrap();
                     return;
                 }
