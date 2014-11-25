@@ -70,7 +70,7 @@ Each time a memory access is requested, the memory subsystem checks if the reque
 
 If the necessary PTE is not present in the TLB, a TLB-Miss exception is raised and the BIOS reacts with a TLB Refill event, which executes the next steps:
 \begin{enumerate}
-\item Retrieve the PgTbl address from the Segment Table for the current ASID and requeste Segment.
+\item Retrieve the PgTbl address from the Segment Table for the current ASID and required Segment.
 \item Access the PgTbl and check if it is well-formed and well-located:
 	\begin{itemize}
 	\item Address must be greater than \texttt{0x0000.8000},
