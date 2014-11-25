@@ -110,15 +110,22 @@ QWidget* MachineConfigDialog::createGeneralTab()
     ramSizeSpinner->setValue(config->getRamSize());
     layout->addWidget(ramSizeSpinner, 4, 3);
 
+    layout->addWidget(new QLabel("TLB Size (Entries):"), 5, 1);
+    tlbSizeSpinner = new QSpinBox();
+    tlbSizeSpinner->setMinimum(MachineConfig::MIN_TLB_SIZE);
+    tlbSizeSpinner->setMaximum(MachineConfig::MAX_TLB_SIZE);
+    tlbSizeSpinner->setValue(config->getTLBSize());
+    layout->addWidget(tlbSizeSpinner, 5, 3);
+
     stopOnInterruptBox = new QCheckBox("Pause execution on Exception");
     stopOnInterruptBox->setChecked(config->getStopOnException());
-    layout->addWidget(stopOnInterruptBox, 5, 1, 1, 3);
+    layout->addWidget(stopOnInterruptBox, 6, 1, 1, 3);
 
     QSignalMapper* fileChooserMapper = new QSignalMapper(this);
     connect(fileChooserMapper, SIGNAL(mapped(int)), this, SLOT(getROMFileName(int)));
     QPushButton* fileChooserButton;
 
-    layout->addWidget(new QLabel("<b>BIOS</b>"), 6, 0, 1, 3);
+    layout->addWidget(new QLabel("<b>BIOS</b>"), 7, 0, 1, 3);
 
     layout->addWidget(new QLabel("Execution ROM:"), 8, 1);
     romFileInfo[ROM_TYPE_BIOS].description = "Execution ROM";
@@ -181,8 +188,7 @@ QWidget* MachineConfigDialog::createGeneralTab()
 
     romFileInfo[ROM_TYPE_STAB].lineEdit->setEnabled(true);
     fileChooserButton->setEnabled(true);
-    //STATIC: no VM right now..
-    stabAsidEdit->setEnabled(false);
+    stabAsidEdit->setEnabled(true);
 
     return tabWidget;
 }
@@ -289,6 +295,7 @@ void MachineConfigDialog::saveConfigChanges()
     config->setClockRate(clockRateSpinner->value());
     config->setRefreshRate(refreshRateSpinner->value());
     config->setRamSize(ramSizeSpinner->value());
+    config->setTLBSize(tlbSizeSpinner->value());
 
     config->setROM(ROM_TYPE_BIOS,
                    QFile::encodeName(romFileInfo[ROM_TYPE_BIOS].lineEdit->text()).constData());

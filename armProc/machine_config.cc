@@ -232,6 +232,11 @@ void MachineConfig::setRamSize(Word size)
     ramSize = bumpProperty(MIN_RAM, size, MAX_RAM);
 }
 
+void MachineConfig::setTLBSize(Word size)
+{
+    tlbSize = bumpProperty(MIN_TLB_SIZE, size, MAX_TLB_SIZE);
+}
+
 void MachineConfig::setNumProcessors(unsigned int value)
 {
     cpus = bumpProperty(MIN_CPUS, value, MAX_CPUS);
@@ -324,6 +329,7 @@ void MachineConfig::resetToFactorySettings()
     setClockRate(DEFAULT_CLOCK_RATE);
     setRefreshRate(DEFAULT_REFRESH_RATE);
     setRamSize(DEFAULT_RAM_SIZE);
+    setTLBSize(DEFAULT_TLB_SIZE);
     setStopOnException(DEFAULT_STOP_ON_EXCEPTION);
 
     // STATIC: this is a temp bios, there needs to be a more complete one..

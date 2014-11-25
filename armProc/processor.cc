@@ -79,6 +79,8 @@ void processor::reset(){
         tlb.~scoped_array();
     tlb.reset(new TLBEntry[tlbSize]);
 
+    *coproc->getRegister(CP15_REG8_TLBR) = (tlbSize-1)<<8;
+
     Word address = 0;
     bus->writeW(&address, INITIAL_BRANCH, true);
 }
@@ -395,6 +397,17 @@ void processor::AssertIRQ(unsigned int il)
 void processor::DeassertIRQ(unsigned int il)
 {
     *(coproc->getIPCauseRegister()) &= ~CAUSE_IP(il);
+}
+
+void processor::clockTick(){
+    //update cp15 random register value
+    Word reg = *coproc->getRegister(CP15_REG8_TLBR);
+
+    reg >>= 8;
+    reg --;
+    if(reg <= 0)
+        reg = tlbSize-1;
+    *coproc->getRegister(CP15_REG8_TLBR) = reg << 8;
 }
 
 void processor::cycle() {

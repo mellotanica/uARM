@@ -205,7 +205,6 @@ void systemBus::ClockTick(){
     addr = BUS_REG_TOD_LO;
     writeW(&addr, (Word) (tod & 0xFFFFFFFF));           //TOD Low
 
-
     // Update interval timer
     if (UnsSub(&timer, timer, 1)){
         pic->StartIRQ(IL_TIMER);

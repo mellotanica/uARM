@@ -52,6 +52,10 @@ public:
     static const Word MAX_RAM = 1024;
     static const Word DEFAULT_RAM_SIZE = 256;
 
+    static const Word MIN_TLB_SIZE = 4;
+    static const Word MAX_TLB_SIZE = 64;
+    static const Word DEFAULT_TLB_SIZE = 64;
+
     // STATIC: only one cpu...
     static const unsigned int MIN_CPUS = 1;
     static const unsigned int MAX_CPUS = 1;

@@ -117,16 +117,20 @@ procDisplay::procDisplay(QWidget *parent) :
     cp15Reg[0][0]->setText("CP15 registers:");
     cp15Reg[1][1]->setText("ID (r0):");
     cp15Reg[2][1]->setText("SCB (r1):");
-    cp15Reg[3][1]->setText("FA (r6):");
-    cp15Reg[1][3]->setText("PTE_Hi (r2):");
-    cp15Reg[2][3]->setText("PTE_Low (r2):");
-    cp15Reg[3][3]->setText("Cause (r15):");
+    cp15Reg[3][1]->setText("PTE_Hi (r2):");
+    cp15Reg[4][1]->setText("PTE_Low (r2):");
+    cp15Reg[1][3]->setText("FA (r6):");
+    cp15Reg[2][3]->setText("TLBR (r8):");
+    cp15Reg[3][3]->setText("TLBI (r10):");
+    cp15Reg[4][3]->setText("Cause (r15):");
+
     infoReg[0][0]->setText("BUS Info:");
     infoReg[1][1]->setText("TOD_Hi:");
     infoReg[2][1]->setText("TOD_Low:");
     infoReg[3][1]->setText("TIMER:");
+    infoReg[4][1]->setText("Ram Size:");
 
-    for(unsigned int i = 0; i < 4; i++){
+    for(unsigned int i = 0; i < INFOROWS; i++){
         cp15Reg[i][1]->setAlignment(Qt::AlignRight);
         cp15Reg[i][3]->setAlignment(Qt::AlignRight);
         infoReg[i][1]->setAlignment(Qt::AlignRight);
@@ -179,13 +183,16 @@ void procDisplay::reset(){
     cp15Reg[1][2]->setText(convertHex(0));
     cp15Reg[2][2]->setText(convertHex(0));
     cp15Reg[3][2]->setText(convertHex(0));
+    cp15Reg[4][2]->setText(convertHex(0));
     cp15Reg[1][4]->setText(convertHex(0));
     cp15Reg[2][4]->setText(convertHex(0));
     cp15Reg[3][4]->setText(convertHex(0));
+    cp15Reg[4][4]->setText(convertHex(0));
 
     infoReg[1][2]->setText(convertHex(0));
     infoReg[2][2]->setText(convertHex(0));
     infoReg[3][2]->setText(convertHex(0));
+    infoReg[4][2]->setText(convertHex(MC_Holder::getInstance()->getConfig()->getRamSize()*BYTES_PER_FRAME));
 }
 
 void procDisplay::updateVals(Word *cpu, Word *cp15, Word *ppln, Word todH, Word todL, Word timer, QString ass){
@@ -214,15 +221,16 @@ void procDisplay::updateVals(Word *cpu, Word *cp15, Word *ppln, Word todH, Word 
 
     cp15Reg[1][2]->setText(convertHex(cp15[CP15_REG0_IDC]));
     cp15Reg[2][2]->setText(convertHex(cp15[CP15_REG1_SCB]));
-    cp15Reg[3][2]->setText(convertHex(cp15[CP15_REG6_FA]));
-    cp15Reg[1][4]->setText(convertHex(cp15[CP15_REG2_EntryHi]));
-    cp15Reg[2][4]->setText(convertHex(cp15[CP15_REG2_EntryLo]));
-    cp15Reg[3][4]->setText(convertHex(cp15[CP15_REG15_CAUSE]));
+    cp15Reg[3][2]->setText(convertHex(cp15[CP15_REG2_EntryHi]));
+    cp15Reg[4][2]->setText(convertHex(cp15[CP15_REG2_EntryLo]));
+    cp15Reg[1][4]->setText(convertHex(cp15[CP15_REG6_FA]));
+    cp15Reg[2][4]->setText(convertHex(cp15[CP15_REG8_TLBR]));
+    cp15Reg[3][4]->setText(convertHex(cp15[CP15_REG10_TLBI]));
+    cp15Reg[4][4]->setText(convertHex(cp15[CP15_REG15_CAUSE]));
 
     infoReg[1][2]->setText(convertHex(todH));
     infoReg[2][2]->setText(convertHex(todL));
     infoReg[3][2]->setText(convertHex(timer));
-
 }
 
 QString procDisplay::convertHex(Word val){

@@ -55,6 +55,7 @@ void machine::step(){
     stopRequested = false;
     if(cpu->getStatus() != PS_HALTED){
         sysbus->ClockTick();
+        cpu->clockTick();
 
         if(cpu->getStatus() != PS_IDLE)
             cpu->cycle();

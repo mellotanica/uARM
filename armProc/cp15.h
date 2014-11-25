@@ -75,6 +75,8 @@ public:
 
     bool isVMon(){return (cp15_registers[CP15_REG1_SCB] & (1 << CP15_REG1_MPOS));}
 
+    void clockTick();
+
 private:
     enum ID_Codes{
         MAIN_ID = 0x41807767,

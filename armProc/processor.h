@@ -106,6 +106,7 @@ public:
 
     // processor could abort the execution cycle of coprocessors in case of interrupts or traps
     void cycle();
+    void clockTick();
 	
     void AssertIRQ(unsigned int il);
     void DeassertIRQ(unsigned int il);
