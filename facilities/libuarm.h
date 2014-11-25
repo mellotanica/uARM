@@ -52,12 +52,21 @@ unsigned int getTIMER();
 unsigned int getTODHI();
 unsigned int getTODLO();
 unsigned int getCONTROL();
+unsigned int getTLB_Index();
+unsigned int getTLB_Random();
 
 /* set special registers value */
 unsigned int setSTATUS(unsigned int status);
 unsigned int setCAUSE(unsigned int cause);
 unsigned int setTIMER(unsigned int timer);
 unsigned int setCONTROL(unsigned int control);
+unsigned int setTLB_Index(unsigned int index);
 
+/* coprocessor TLB calls */
+void TLBWR();
+void TLBWI();
+void TLBR();
+void TLBP();
+void TLBCLR();
 
 #endif //UARM_LIBURAM_H

@@ -32,6 +32,13 @@
 .equ DEV_TERM_OFF,	4
 .equ STATE_T_REGISTERS,	16
 
+.equ OP_TLBWR, 2
+.equ OP_TLBWI, 3
+.equ OP_TLBR, 4
+.equ OP_TLBP, 5
+.equ OP_TLBCLR, 6
+
+
 /* prints a 0-terminated string on terminal 0 *
  * void tprint(const char *s)                 */
 
@@ -151,6 +158,18 @@ getCONTROL:
     MRC p15, #0, r0, c1, c0, #0
     Bx lr
 
+/* unsigned int getTLB_Index() */
+.global getTLB_Index
+getTLB_Index:
+    MRC p15, #0, r0, c10, c0, #0
+    Bx lr
+
+/* unsigned int getTLB_Random() */
+.global getTLB_Random
+getTLB_Random:
+    MRC p15, #0, r0, c8, c0, #0
+    Bx lr
+
 /* unsigned int getTIMER() */
 .global getTIMER
 getTIMER:
@@ -196,6 +215,12 @@ setCONTROL:
     MCR p15, #0, r0, c1, c0, #0
     Bx lr
 
+/* unsigned int setTLB_Index(unsigned int index) */
+.global setTLB_Index
+setTLB_Index:
+    MCR p15, #0, r0, c10, c0, #0
+    Bx lr
+
 /* unsigned int setTIMER(unsigned int timer) */
 .global setTIMER
 setTIMER:
@@ -205,3 +230,32 @@ setTIMER:
     pop {r5}
     Bx lr
 
+/* void TLBWR(); */
+.global TLBWR
+TLBWR:
+    CDP p15, #OP_TLBWR, c0, c8, c0, #0
+    Bx lr
+
+/* void TLBWI(); */
+.global TLBWI
+TLBWI:
+    CDP p15, #OP_TLBWI, c0, c10, c0, #0
+    Bx lr
+
+/* void TLBR(); */
+.global TLBR
+TLBR:
+    CDP p15, #OP_TLBR, c2, c10, c0, #0
+    Bx lr
+
+/* void TLBP(); */
+.global TLBP
+TLBP:
+    CDP p15, #OP_TLBP, c10, c2, c0, #0
+    Bx lr
+
+/* void TLBCLR(); */
+.global TLBCLR
+TLBCLR:
+    CDP p15, #OP_TLBCLR, c0, c0, c0, #0
+    Bx lr
