@@ -610,7 +610,7 @@ void systemBus::IntAck(unsigned int intl, unsigned int devNum){
 }
 
 bool systemBus::DMATransfer(Block * blk, Word startAddr, bool toMemory){
-    if (BADADDR(startAddr))
+    if (BADADDR(startAddr,sizeof(Word)))
         return true;
 
     AbortType error;
@@ -644,7 +644,7 @@ bool systemBus::DMAVarTransfer(Block * blk, Word startAddr, Word byteLength, boo
     else
         length = byteLength / WORDLEN;
 
-    if (BADADDR(startAddr) || length > BLOCKSIZE)
+    if (BADADDR(startAddr, sizeof(Word)) || length > BLOCKSIZE)
         return true;
 
     AbortType error;

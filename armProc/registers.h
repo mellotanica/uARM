@@ -113,7 +113,7 @@
  * CP15 registers
  */
  
-#define CP15_REGISTERS_NUM 6
+#define CP15_REGISTERS_NUM 9
 
 #define CP15_REG0_IDC    0   // ID codes (processor, cache, tightly coupled memory and TLB)
 #define CP15_REG1_SCB    1   // System Control Register
@@ -123,17 +123,16 @@
 #define CP15_REG3_DAC    4   // Domain Access Control
 #define CP15_REG5_FS     5   // Fault Status
 #define CP15_REG7_CWBC   7   // Cache/Write Buffer Control
-#define CP15_REG8_TLBC   8   // TLB Control
 #define CP15_REG9_CL     9   // Cache Lockdown
-#define CP15_REG10_TLBL  10  // TLB Lockdown
 #define CP15_REG11_DMAC  11  // DMA Control
 #define CP15_REG13_PID   12  // Process ID
 */
 #define CP15_REG2_EntryHi 3     // PTE Hy Word
 #define CP15_REG2_EntryLo 4     // PTE Lo Word
-#define CP15_REG6_FA      6     // Fault Address
-#define CP15_REG15_CAUSE  5     // Exception Cause
-//#define CP15_REG15_IP_CAUSE 6   // Interrupt Cause
+#define CP15_REG6_FA      5     // Fault Address
+#define CP15_REG8_TLBR    6     // TLB Control (TLB.Random)
+#define CP15_REG10_TLBI   7     // TLB Lockdown (TLB.Index)
+#define CP15_REG15_CAUSE  8     // Exception Cause
 
 #define CP15_REG1_MPOS  0   // enable MMU or protection unit (read 0)
 #define CP15_REG1_APOS  1   // enable memory alignement fault check (read 0 if arch checks memory alignement)

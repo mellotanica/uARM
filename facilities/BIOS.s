@@ -33,6 +33,14 @@
 .equ EXCV_SWI_OLD, 6 * STATE_T_SIZE	/* Syscall Old */
 .equ EXCV_SWI_NEW, 7 * STATE_T_SIZE	/* Syscall New */
 .equ DEV_BASE, 0x40
+.equ SEGTBL_BASE, 0x7600
+.equ TLB_MAGICNO, 0x2A
+.equ RAMTOP_REG, 0x2D4
+.equ ASID_MASK, 0xFE0
+.equ VADDR_MASK_a, 0xFF000000
+.equ VADDR_MASK_b, 0x00FF0000
+.equ VADDR_MASK_c, 0x0000F000
+.equ GLOBAL_MASK, 0x100
 
 .global _start
 _start:
@@ -212,16 +220,26 @@ UNDEF_H:
     B LDST
 
 DATAABT_H:
+    MOV sp, #ROMSTACK_TOP	/* save 0xD onto stack to identify dataAbt */
+    ADD sp, sp, #ROMSTACK_OFF
+    STR r0, [sp, #4]
+    MOV r0, #0xD
+    STR r0, [sp]
+    LDR r0, [sp, #4]
+    B DP_CONT
 PREFABT_H:
+    MOV sp, #ROMSTACK_TOP	/* save 0 onto stack to identify dataAbt */
+    ADD sp, sp, #ROMSTACK_OFF
+    STR r0, [sp, #4]
+    MOV r0, #0
+    STR r0, [sp]
+    LDR r0, [sp, #4]
+
+DP_CONT:
     MRC p15, #0, sp, c15, c0	/* if vm on, data and prefetch can be tlb exceptions */
     AND sp, sp, #0xFFFFFF
-    BIC sp, sp, #7
-    CMP sp, #0	    /* if cause is higher than 7 it's not a tlb exception */
-    Bne UNDEF_H
-    MRC p15, #0, sp, c15, c0
-    AND sp, sp, #4
-    CMP sp, #0	    /* if cause is less than 4 it's not a tlb exception */
-    Beq UNDEF_H
+    CMP sp, #8	    /* if cause is less than 8 it's not a tlb exception */
+    Blt UNDEF_H
 
 TLB_H:
     MOV sp, #ROMSTACK_TOP	/* save lr, CPSR and r0 onto stack */
@@ -236,6 +254,14 @@ TLB_H:
 
     BL SAVE_OLD_STATE
 
+    MRC p15, #0, r0, c15, c0	/* if vm on, we could need a refill */
+    AND r0, r0, #0xFFFFFF
+    CMP r0, #12	    /* if cause is 12 or 13 (maybe even 14 and 15?) we should perform a refill */
+    Blt TLB_CONT
+    CMP r0, #13
+    Ble TLB_REFILL
+
+TLB_CONT:
     MOV r0, #EXCV_BASE
     ADD r0, r0, #EXCV_TLB_NEW
     B LDST
@@ -288,6 +314,17 @@ UNKNOWN_SRV:
 
 HALT_LOOP:
     B HALT_LOOP
+
+haltMess:
+    .asciz "SYSTEM HALTED.\0"
+
+unknownMess:
+    .asciz "UNKNOWN SERVICE.\nKERNEL PANIC!\0"
+
+panicMess:
+    .asciz "KERNEL PANIC!\0"
+
+    .asciz "padd"
 
 PRINT:
     MOV r5, #4
@@ -393,8 +430,7 @@ SAVE_OLD_STATE:
 
     LDR r2, [sp], #4	/* pc */
     ADD r0, r0, #PSR_OFFSET
-    SUB r0, r0, #4
-    STR r2, [r0], #4
+    STR r2, [r0, #-4]
 
     LDR r3, [sp]    /* cpsr */
     MSR CPSR, r3
@@ -419,14 +455,112 @@ SAVE_OLD_STATE:
 
     BX lr
 
-    .asciz "paddingpaddingp"
+TLB_PAGTBL_ERR:
+    MRC p15, #0, r0, c15, c0	/* set EXC_BADPAGTBL in cause */
+    AND r0, r0, #0xFF000000
+    ORR r0, r0, #9
+    MCR p15, #0, r0, c15, c0
+    B TLB_CONT
 
-haltMess:
-    .asciz "SYSTEM HALTED.\0"
+TLB_SEGTBL_ERR:
+    MRC p15, #0, r0, c15, c0	/* set EXC_BADSEGTBL in cause */
+    AND r0, r0, #0xFF000000
+    ORR r0, r0, #8
+    MCR p15, #0, r0, c15, c0
+    B TLB_CONT
 
-unknownMess:
-    .asciz "UNKNOWN SERVICE.\nKERNEL PANIC!\0"
+TLB_REFILL:
+    MRC p15, #1, r0, c2, c0 /* retrieve vpn (r0: vpn) */
+    AND r1, r0, #4064
+    LSR r1, r1, #5
+    LSR r2, r0, #30
+    CMP r2, #0  /* if segno is > 0 shift it for direct address calculation */
+    SUBgt r2, #1
 
-panicMess:
-    .asciz "KERNEL PANIC!\0"
+    /* 1. retrieve page table address */
+    MOV r4, #4
+    MUL r3, r2, r4
+    MOV r4, #12
+    MUL r5, r1, r4
+    ADD r3, r3, r5
 
+    /* 2. cheack page table validity (r1: pagtbl addr) */
+        /* a) addr > 0x8000 */
+    LDR r1, [r3]
+    CMP r1, #ROMSTACK_TOP
+    Ble TLB_SEGTBL_ERR
+        /* b) addr word aligned*/
+    AND r2, r1, #3
+    CMP r2, #0
+    Bne TLB_SEGTBL_ERR
+        /* c) valid pagtbl header */
+    LDR r2, [r1], #4
+    LSR r3, r2, #24
+    CMP r3, #TLB_MAGICNO
+    Bne TLB_PAGTBL_ERR
+        /* d) valid pagtbl size */
+    MOV r4, #0xFF0
+    ORR r4, r4, #0xFF000
+    ORR r4, r4, #0xF
+    AND r3, r2, r4
+    MOV r4, #8
+    MUL r2, r4, r3
+    ADD r2, r2, r1
+    MOV r4, #RAMTOP_REG
+    LDR r4, [r4]
+    ADD r4, r4, #ROMSTACK_TOP
+    CMP r2, r4
+    Bgt TLB_PAGTBL_ERR
+
+    MOV r8, #VADDR_MASK_a
+    ORR r8, r8, #VADDR_MASK_b
+    ORR r8, r8, #VADDR_MASK_c
+    AND r3, r8, r0
+    AND r4, r0, #ASID_MASK
+
+    /* 3. search page table for correct PTE */
+    /* (r1: pte pointer, r2: pagtbl top, r3: vaddr, r4: asid, r5: pte.lo, r6: pte.hi, r8: vaddr_mask) */
+TLB_LOOP:
+    LDMIA r1!, {r5, r6}
+    AND r7, r6, r8
+    CMP r7, r3
+    Bne TLB_LOOP    /* wrong vaddr */
+
+    AND r7, r6, #ASID_MASK
+    CMP r7, r4
+    Beq TLB_LOOP_FOUND
+
+    AND r7, r5, #GLOBAL_MASK
+    CMP r7, #0
+    Bne TLB_LOOP_FOUND
+
+    CMP r1, r2
+    Bge TLB_LOOP_EXIT
+    B TLB_LOOP
+
+    /* 4. if pte has been found, update TLB, else rasie TLB_MISS exception (r5: pte.lo, r6:pte.hi)*/
+TLB_LOOP_EXIT:
+    MRC p15, #0, r0, c15, c0	/* set EXC_PTEMISS in cause */
+    AND r0, r0, #0xFF000000
+    ORR r0, r0, #11
+    MCR p15, #0, r0, c15, c0
+    B TLB_CONT
+
+TLB_LOOP_FOUND:
+    MCR p15, #0, r5, c2, c0
+    CDP p15, #2, c0, c8, c0, #0
+
+    MOV r0, #EXCV_BASE
+    ADD r0, r0, #EXCV_TLB_OLD
+    ADD r1, r0, #PSR_OFFSET
+    LDR r2, [r1, #-4]
+
+    MOV sp, #ROMSTACK_TOP	/* retrieve trap infos */
+    ADD sp, sp, #ROMSTACK_OFF
+    LDR r3, [sp]
+    CMP r3, #0XD
+    SUBeq r2, r2, #8    /* data abort */
+    SUBne r2, r2, #4    /* prefetch abort */
+    STR r2, [r1, #-4]   /* fix return address */
+
+    B LDST  /* re-execute last instruction */

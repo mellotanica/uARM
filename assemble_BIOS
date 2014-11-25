@@ -2,4 +2,4 @@
 
 FNAME=`echo "$1" | sed -e 's/\..*//'`
 
-arm-linux-gnueabi-gcc -mcpu=arm7tdmi -c -fPIC -o "$FNAME".elf "$1"
+arm-none-eabi-gcc -mcpu=arm7tdmi -c -fPIC -o "$FNAME".elf "$1"

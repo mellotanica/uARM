@@ -159,7 +159,7 @@ private:
     void decode() {}
 	void execute();
 	
-    bool mapVirtual(Word vaddr, Word * paddr, Word accType);
+    bool mapVirtual(Word vaddr, Word * paddr, Word accType, Word size = sizeof(Word));
     bool probeTLB(unsigned int * index, Word asid, Word vpn);
     void setTLBRegs(Word vaddr);
 

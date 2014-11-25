@@ -93,9 +93,21 @@ bool cp15::registerTransfer(Word *cpuReg, Byte opcode, Byte operand, Byte srcDes
         case 1: result = register1(cpuReg, info, toCoproc); break;
         case 2: result = register2(cpuReg, opcode, info, toCoproc); break;
         case 6: genRegister(cpuReg, CP15_REG6_FA, toCoproc); break;
+        case 8:
+            if(!toCoproc)
+                genRegister(cpuReg, CP15_REG8_TLBR, false);
+            break;
+        case 10: genRegister(cpuReg, CP15_REG10_TLBI, toCoproc);break;
         case 15: register15(cpuReg, opcode, toCoproc); break;
     }
     return result;
+}
+
+void cp15::genRegister(Word *cpureg, Word cpreg, bool toCoproc){
+    if(toCoproc){
+        cp15_registers[cpreg] = *cpureg;
+    } else
+        *cpureg = cp15_registers[cpreg];
 }
 
 void cp15::register0(Word *cpureg, Byte opcode, Byte operand, Byte info, bool toCoproc){
@@ -142,16 +154,9 @@ bool cp15::register2(Word *cpureg, Byte opcode, Byte info, bool toCoproc){
     bool result = false;
     switch(opcode){
         case 0: result = EntryHi(cpureg, info, toCoproc); break;
-        case 1: EntryLo(cpureg, toCoproc); break;
+        case 1: genRegister(cpureg, CP15_REG2_EntryLo, toCoproc);break;
     }
     return result;
-}
-
-void cp15::genRegister(Word *cpureg, Word cpreg, bool toCoproc){
-    if(toCoproc){
-        cp15_registers[cpreg] = *cpureg;
-    } else
-        *cpureg = cp15_registers[cpreg];
 }
 
 void cp15::register15(Word *cpureg, Byte opcode, bool toCoproc){
@@ -211,48 +216,6 @@ bool cp15::EntryHi(Word *cpureg, Byte opcode, bool toCoproc){
         *cpureg = cp15_registers[CP15_REG2_EntryHi];
     }
     return result;
-}
-
-void cp15::EntryLo(Word *cpureg, bool toCoproc){
-    if(!toCoproc){   //read
-        *cpureg = cp15_registers[CP15_REG2_EntryLo];
-    }
-}
-
-bool cp15::getPFN(){    //search Page Table for PTE and read EntryLo
-    Word ASID = ((cp15_registers[CP15_REG2_EntryHi] >> 4) & 0xFF);
-    Word VPF = cp15_registers[CP15_REG2_EntryHi] >> 12;
-    bool shared = (cp15_registers[CP15_REG2_EntryHi] >= VM_SHSEG_START);
-    Word pgTblPtr, address = ((2 * ASID) + (shared ? 4 : 0));
-    AbortType abt = bus->readW(&address, &pgTblPtr);
-    if(abt != ABT_NOABT){
-        setCause(abt);
-        return true;
-    }
-    abt = bus->readW(&pgTblPtr, &pgTblPtr);
-    if((pgTblPtr >> 24) != PAGE_TBL_MAGICNO){   // invalid page table header
-        setCause(ABT_PAGE_INVALID_H);
-        return true;
-    }
-    Word pgTblSize = pgTblPtr & 0xFFFFF;
-    /* scan page table */
-    Word tmpHi;
-    for(Word i = 0; i < pgTblSize; i++){
-        address = pgTblPtr + (8 * (i+1));
-        abt = bus->readW(&address, &tmpHi);
-        if(abt != ABT_NOABT){
-            setCause(abt);
-            return true;
-        }
-        if((tmpHi >> 12) == VPF){   // FOUND!
-            address -= 4;
-            bus->readW(&address, &cp15_registers[CP15_REG2_EntryLo]);
-            setCause(ABT_NOABT);
-            return false;
-        }
-    }
-    setCause(ABT_PAGE_NOT_FOUND);
-    return true;
 }
 
 #endif //UARM_CP15_CC

@@ -138,7 +138,7 @@ using namespace std;
 #define EMPTY 	0x0
 
 // word alignment mask
-#define ALIGNMASK	0x00000003UL
+#define ALIGNMASK	0x00000000UL
 
 // TLB EntryHI handling masks and constants
 #define VPNMASK	0xFFFFF000UL
@@ -155,7 +155,7 @@ using namespace std;
 // some useful macros
 
 // recognizes bad (unaligned) virtual address
-#define BADADDR(w)	((w & ALIGNMASK) != 0UL)
+#define BADADDR(w, s)	((w & (ALIGNMASK+s-1)) != 0UL)
 
 // returns the sign bit of a word
 #define SIGNBIT(w)	(w & SIGNMASK)
