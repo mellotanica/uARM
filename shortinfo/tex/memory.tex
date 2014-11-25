@@ -79,7 +79,7 @@ If the necessary PTE is not present in the TLB, a TLB-Miss exception is raised a
 	\item PgTbl must not extend outside physical memory (e.g. [PgTbl addr + PgTbl size] $<$ RAMTOP).
 	\end{itemize}
 \item Linearly search the PgTbl for matching Virtual Page with correct ASID or \texttt{G} flag set.
-\item If a matching PTE was found, write it back in a random slot of the TLB and resume execution from the same instruction that raised the TLB-Miss exception, else raise a PTE-Miss exception.
+\item If a matching PTE has been found, write it back in a random slot of the TLB and resume execution from the same instruction that raised the TLB-Miss exception, else raise a PTE-Miss exception.
 \end{enumerate}
 
 The random algorythm uses all the TLB slots besides the first one (e.g. item~0) to ensure a safe entry is always available.
