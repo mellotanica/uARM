@@ -41,11 +41,11 @@
 #define RAM_TOP ((*((U32 *)BUS_REG_RAM_BASE)) + (*((U32 *)BUS_REG_RAM_SIZE)))
 
 /* Coprocessor instructions opcodes */
-#define OP_TLBWR    2
-#define OP_TLBWI    3
-#define OP_TLBR     4
-#define OP_TLBP     5
-#define OP_TLBCLR   6
+#define OP_TLBWR    0xEE280F00  // opcode 2
+#define OP_TLBWI    0xEE3A0F00  // opcode 3
+#define OP_TLBR     0xEE4A2F00  // opcode 4
+#define OP_TLBP     0xEE52AF00  // opcode 5
+#define OP_TLBCLR   0xEE600F00  // opcode 6
 
 /* Segment-related constants */
 #define KSEGOS_BASE        0x00000000

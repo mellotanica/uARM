@@ -170,6 +170,24 @@ getTLB_Random:
     MRC p15, #0, r0, c8, c0, #0
     Bx lr
 
+/* unsigned int getEntryHi() */
+.global getEntryHi
+getEntryHi:
+    MRC p15, #0, r0, c2, c0, #0
+    Bx lr
+
+/* unsigned int getEntryLo() */
+.global getEntryLo
+getEntryLo:
+    MRC p15, #1, r0, c2, c0, #0
+    Bx lr
+
+/* unsigned int getBadVAddr() */
+.global getBadVAddr
+getBadVAddr:
+    MRC p15, #0, r0, c6, c0, #0
+    Bx lr
+
 /* unsigned int getTIMER() */
 .global getTIMER
 getTIMER:
@@ -219,6 +237,19 @@ setCONTROL:
 .global setTLB_Index
 setTLB_Index:
     MCR p15, #0, r0, c10, c0, #0
+    Bx lr
+
+/* unsigned int setEntryHi(unsigned int hi) */
+.global setEntryHi
+setEntryHi:
+    MCR p15, #0, r0, c2, c0, #0
+    MCR p15, #0, r0, c2, c0, #1
+    Bx lr
+
+/* unsigned int setEntryLo(unsigned int lo) */
+.global setEntryLo
+setEntryLo:
+    MCR p15, #1, r0, c2, c0, #0
     Bx lr
 
 /* unsigned int setTIMER(unsigned int timer) */

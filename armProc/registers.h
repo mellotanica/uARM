@@ -155,5 +155,17 @@
 #define CP15_REG1_SBO_MASK ((7<<4)|(1<<16)|(1<<18))
 #define CP15_REG1_SBZ_MASK ((1<<17)|(3<<19)|(0x3F<<25))
 
+#define CP15_REG2_Hi_ASIDPOS    5       // ASID field start
+#define CP15_REG2_Hi_VPNPOS     12      // VPN field start
+#define CP15_REG2_Hi_ASIDMASK   0x7F    // ASID extraction mask
+#define CP15_REG2_Hi_VPNMASK    0x3FFFF // VPN extraction mask
+
+#define CP15_REG8_IPOS      8   // next index to be written
+#define CP15_REG10_IPOS     8   // next index to be written/searched
+#define CP15_REG10_PFNPOS   13  // retrieved physical frame number
+#define CP15_REG10_PPOS     31  // if P bit is 1 no match was found
+
+#define CP15_REGTLB_IMASK   0x3F    // maks to extract index from Random and Index Registers
+
 
 #endif //UARM_REGISTERS_H

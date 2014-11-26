@@ -28,6 +28,11 @@
 #include "armProc/Thumbisa.h"
 #include "services/error.h"
 
+#define CP15_REG8   CP15_REG8_TLBR
+#define CP15_REG10   CP15_REG10_TLBI
+
+#define GET_TLB_INDEX(r,i) *i = ((*coproc->getRegister(CP15_REG##r)) >> CP15_REG##r##_IPOS) & CP15_REGTLB_IMASK
+
 processor::processor(systemBus *bus) : pu(bus) {
     //cpint = new coprocessor_interface(bus);
     coproc = new cp15(bus);
@@ -79,7 +84,7 @@ void processor::reset(){
         tlb.~scoped_array();
     tlb.reset(new TLBEntry[tlbSize]);
 
-    *coproc->getRegister(CP15_REG8_TLBR) = (tlbSize-1)<<8;
+    *coproc->getRegister(CP15_REG8_TLBR) = (tlbSize-1) << CP15_REG8_IPOS;
 
     Word address = 0;
     bus->writeW(&address, INITIAL_BRANCH, true);
@@ -403,11 +408,11 @@ void processor::clockTick(){
     //update cp15 random register value
     Word reg = *coproc->getRegister(CP15_REG8_TLBR);
 
-    reg >>= 8;
+    reg >>= CP15_REG8_IPOS;
     reg --;
     if(reg <= 0)
         reg = tlbSize-1;
-    *coproc->getRegister(CP15_REG8_TLBR) = reg << 8;
+    *coproc->getRegister(CP15_REG8_TLBR) = reg << CP15_REG8_IPOS;
 }
 
 void processor::cycle() {
@@ -793,6 +798,7 @@ void processor::coprocessorOperation(){
 		undefinedTrap();
 		return;
 	}
+    unsigned int index;
 	Byte opcode = (pipeline[PIPELINE_EXECUTE] >> 20) & 0xF;
 	Byte rn = (pipeline[PIPELINE_EXECUTE] >> 16) & 0xF;
 	Byte rm = pipeline[PIPELINE_EXECUTE] & 0xF;
@@ -803,12 +809,30 @@ void processor::coprocessorOperation(){
             suspend(); break;
         case HALTCPINSTR:
             halt(); break;
-        /* TODO: TLB functions here */
         case OP_TLBWR: /* CDP p15, #TLBWR, c0, c8, c0, #0 */
-        case OP_TLBWI: /* CDP p15, #TLBWI, c0, c10, c0, #INDEX */
+            GET_TLB_INDEX(8, &index);
+            setTLB(index, *coproc->getRegister(CP15_REG2_EntryHi), *coproc->getRegister(CP15_REG2_EntryLo));
+            break;
+        case OP_TLBWI: /* CDP p15, #TLBWI, c0, c10, c0, #0 */
+            GET_TLB_INDEX(10, &index);
+            setTLB(index, *coproc->getRegister(CP15_REG2_EntryHi), *coproc->getRegister(CP15_REG2_EntryLo));
+            break;
         case OP_TLBR: /* CDP p15, #TLBR, c2, c10, c0, #0 */
+            GET_TLB_INDEX(10, &index);
+            getTLB(index, coproc->getRegister(CP15_REG2_EntryHi), coproc->getRegister(CP15_REG2_EntryLo));
         case OP_TLBP: /* CDP p15, #TLBP, c10, c2, c0, #0 */
+            {
+                Word hi = *coproc->getRegister(CP15_REG2_EntryHi), *cpreg = coproc->getRegister(CP15_REG10_TLBI);
+                bool found = probeTLB(&index, (hi >> CP15_REG2_Hi_ASIDPOS) & CP15_REG2_Hi_ASIDMASK, (hi >> CP15_REG2_Hi_VPNPOS) & CP15_REG2_Hi_VPNMASK);
+                copyBitReg(cpreg, CP15_REG10_PPOS, (found ? 0 : 1));
+                resetBitsReg(cpreg, CP15_REGTLB_IMASK << CP15_REG10_IPOS);
+                (*cpreg) |= ((index & CP15_REGTLB_IMASK) << CP15_REG10_IPOS);
+            }
+            break;
         case OP_TLBCLR: /* CDP p15, #TLBLCR, c0, c0, c0, #0 */
+            for(index = 1; index < tlbSize; index ++)
+                setTLB(index, 0, 0);
+            break;
         default:
             if(cp->executeOperation(opcode, rm, rn, rd, info))
                 dataAbortTrap();

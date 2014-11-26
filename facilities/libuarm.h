@@ -54,6 +54,9 @@ unsigned int getTODLO();
 unsigned int getCONTROL();
 unsigned int getTLB_Index();
 unsigned int getTLB_Random();
+unsigned int getEntryHi();
+unsigned int getEntryLo();
+unsigned int getBadVAddr();
 
 /* set special registers value */
 unsigned int setSTATUS(unsigned int status);
@@ -61,6 +64,8 @@ unsigned int setCAUSE(unsigned int cause);
 unsigned int setTIMER(unsigned int timer);
 unsigned int setCONTROL(unsigned int control);
 unsigned int setTLB_Index(unsigned int index);
+unsigned int setEntryHi(unsigned int hi);
+unsigned int setEntryLo(unsigned int lo);
 
 /* coprocessor TLB calls */
 void TLBWR();
