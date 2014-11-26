@@ -590,7 +590,7 @@ void processor::setTLB(unsigned int index, Word hi, Word lo)
     if (index < tlbSize) {
         tlb[index].setHI(hi);
         tlb[index].setLO(lo);
-        //SignalTLBChanged(index);
+        bus->SignalTLBChanged(index);
     } else {
         Panic("Unknown TLB entry in Processor::setTLB()");
     }
@@ -600,14 +600,14 @@ void processor::setTLBHi(unsigned int index, Word value)
 {
     assert(index < tlbSize);
     tlb[index].setHI(value);
-    //SignalTLBChanged(index);
+    bus->SignalTLBChanged(index);
 }
 
 void processor::setTLBLo(unsigned int index, Word value)
 {
     assert(index < tlbSize);
     tlb[index].setLO(value);
-    //SignalTLBChanged(index);
+    bus->SignalTLBChanged(index);
 }
 
 /* *************************** *

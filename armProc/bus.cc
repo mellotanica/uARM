@@ -763,4 +763,8 @@ void systemBus::HandleVMAccess(Word asid, Word vaddr, Word access, processor* cp
     mac->HandleVMAccess(asid, vaddr, access, cpu);
 }
 
+void systemBus::SignalTLBChanged(unsigned int index){
+    mac->updateTLB(index);
+}
+
 #endif //UARM_SYSTEMBUS_CC

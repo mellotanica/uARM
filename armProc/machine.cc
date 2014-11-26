@@ -191,4 +191,8 @@ void machine::clearCause(){
     stopCause = 0;
 }
 
+void machine::updateTLB(unsigned int index){
+    emit tlbChanged(index);
+}
+
 #endif //UARM_MACHINE_CC

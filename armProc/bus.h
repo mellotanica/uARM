@@ -134,6 +134,7 @@ public:
     void setToDLO(Word lo);
     void setTimer(Word time);
 
+    void SignalTLBChanged(unsigned int index);
 
     processor* getProcessor(unsigned int cpuId) { return cpus[cpuId]; }
 

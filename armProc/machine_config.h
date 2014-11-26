@@ -54,7 +54,7 @@ public:
 
     static const Word MIN_TLB_SIZE = 4;
     static const Word MAX_TLB_SIZE = 64;
-    static const Word DEFAULT_TLB_SIZE = 64;
+    static const Word DEFAULT_TLB_SIZE = 16;
 
     // STATIC: only one cpu...
     static const unsigned int MIN_CPUS = 1;

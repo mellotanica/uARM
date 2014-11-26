@@ -65,7 +65,9 @@ HEADERS += \
     qarm/ui_utils.h \
     facilities/uARMconst.h \
     facilities/uARMtypes.h \
-    armProc/tlbentry.h
+    armProc/tlbentry.h \
+    qarm/tlb_model.h \
+    qarm/tlb_window.h
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -106,7 +108,9 @@ SOURCES += \
     qarm/stoppoint_list_model.cc \
     armProc/stoppoint.cc \
     qarm/ui_utils.cc \
-    armProc/tlbentry.cpp
+    armProc/tlbentry.cpp \
+    qarm/tlb_model.cc \
+    qarm/tlb_window.cc
 
 OTHER_FILES += \
     compile \

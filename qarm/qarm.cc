@@ -79,6 +79,7 @@ qarm::qarm(QApplication *app):
     clock = new QTimer(this);
 
     bpWindow = new breakpoint_window(mac, this);
+    tlbWindow = new tlb_window(mac, this);
 
     connect(toolbar, SIGNAL(play(int)), this, SLOT(start(int)));
     connect(toolbar, SIGNAL(speedChanged(int)), this, SLOT(speedChanged(int)));
@@ -94,6 +95,11 @@ qarm::qarm(QApplication *app):
     connect(toolbar, SIGNAL(hideBPW()), bpWindow, SLOT(hide()));
     connect(bpWindow, SIGNAL(hiding()), toolbar, SLOT(uncheckBPB()));
     connect(this, SIGNAL(resetMachine()), bpWindow, SLOT(reset()));
+
+    connect(display, SIGNAL(showTLB()), tlbWindow, SLOT(show()));
+    connect(display, SIGNAL(hideTLB()), tlbWindow, SLOT(hide()));
+    connect(tlbWindow, SIGNAL(hiding()), display, SLOT(uncheckTLB()));
+    connect(this, SIGNAL(resetMachine()), tlbWindow, SIGNAL(onMachineReset()));
 
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
 

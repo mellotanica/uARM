@@ -30,6 +30,7 @@
 #include "qarm/ramview.h"
 #include "qarm/QLine.h"
 #include "qarm/breakpoint_window.h"
+#include "qarm/tlb_window.h"
 #include "terminal_window.h"
 #include <QMainWindow>
 #include <QWidget>
@@ -79,6 +80,7 @@ private:
     QString coreF, biosF;
 
     breakpoint_window *bpWindow;
+    tlb_window *tlbWindow;
 
     QWidget *mainWidget;
     procDisplay *display;

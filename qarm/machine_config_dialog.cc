@@ -111,11 +111,15 @@ QWidget* MachineConfigDialog::createGeneralTab()
     layout->addWidget(ramSizeSpinner, 4, 3);
 
     layout->addWidget(new QLabel("TLB Size (Entries):"), 5, 1);
-    tlbSizeSpinner = new QSpinBox();
-    tlbSizeSpinner->setMinimum(MachineConfig::MIN_TLB_SIZE);
-    tlbSizeSpinner->setMaximum(MachineConfig::MAX_TLB_SIZE);
-    tlbSizeSpinner->setValue(config->getTLBSize());
-    layout->addWidget(tlbSizeSpinner, 5, 3);
+    tlbSizeList = new QComboBox();
+    int currentIndex = 0;
+    for (unsigned int val = MachineConfig::MIN_TLB_SIZE; val <= MachineConfig::MAX_TLB_SIZE; val <<= 1) {
+        tlbSizeList->addItem(QString::number(val));
+        if (config->getTLBSize() == val)
+            tlbSizeList->setCurrentIndex(currentIndex);
+        currentIndex++;
+    }
+    layout->addWidget(tlbSizeList, 5, 3);
 
     stopOnInterruptBox = new QCheckBox("Pause execution on Exception");
     stopOnInterruptBox->setChecked(config->getStopOnException());
@@ -295,7 +299,7 @@ void MachineConfigDialog::saveConfigChanges()
     config->setClockRate(clockRateSpinner->value());
     config->setRefreshRate(refreshRateSpinner->value());
     config->setRamSize(ramSizeSpinner->value());
-    config->setTLBSize(tlbSizeSpinner->value());
+    config->setTLBSize(MachineConfig::MIN_TLB_SIZE << tlbSizeList->currentIndex());
 
     config->setROM(ROM_TYPE_BIOS,
                    QFile::encodeName(romFileInfo[ROM_TYPE_BIOS].lineEdit->text()).constData());
