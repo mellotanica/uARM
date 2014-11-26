@@ -109,7 +109,7 @@ mainBar::mainBar(QWidget *parent) :
 
     ramB = new styledButton();
     ramB->setToolButtonStyle(Qt::ToolButtonTextOnly);
-    ramB->setText("View Ram");
+    ramB->setText("RAM");
 
     for (unsigned int i = 0; i < N_DEV_PER_IL; ++i) {
         showTerminalActions[i] = new QAction(QString("Terminal %1").arg(i), this);
@@ -132,9 +132,17 @@ mainBar::mainBar(QWidget *parent) :
     breakpB->setCheckable(true);
     breakpB->setEnabled(true);
 
+    tlbB = new styledButton();
+    tlbB->setText("TLB");
+    tlbB->setCheckable(true);
+    tlbB->setEnabled(true);
+
     utilsUpperL->addWidget(breakpB);
+    utilsUpperL->addWidget(new QWidget());
     utilsUpperL->addWidget(ramB);
     utilsLowerL->addWidget(windowB);
+    utilsLowerL->addWidget(new QWidget());
+    utilsLowerL->addWidget(tlbB);
 
     utilsL->addLayout(utilsUpperL);
     utilsL->addLayout(utilsLowerL);
@@ -152,6 +160,7 @@ mainBar::mainBar(QWidget *parent) :
     connect(configB, SIGNAL(clicked()), this, SIGNAL(showConfig()));
     connect(windowB, SIGNAL(clicked()), this, SLOT(showDropDownMenu()));
     connect(breakpB, SIGNAL(toggled(bool)), this, SLOT(toggleBPButton(bool)));
+    connect(tlbB, SIGNAL(toggled(bool)), this, SLOT(toggleTlbViewer(bool)));
 
     debugSignaler *debugger = debugSignaler::getInstance();
     connect(debugger, SIGNAL(pause()), this, SLOT(stop()));
@@ -258,6 +267,17 @@ void mainBar::toggleBPButton(bool checked){
 
 void mainBar::uncheckBPB(){
     breakpB->setChecked(false);
+}
+
+void mainBar::toggleTlbViewer(bool status){
+    if(status)
+        emit showTLB();
+    else
+        emit hideTLB();
+}
+
+void mainBar::uncheckTLB(){
+    tlbB->setChecked(false);
 }
 
 #endif //QARM_MAINBAR_CC

@@ -114,11 +114,6 @@ procDisplay::procDisplay(QWidget *parent) :
     cpuReg[0][5]->setText("IRQ");
     cpuReg[0][6]->setText("FIQ");
 
-    tlbB = new QPushButton("Show TLB");
-    tlbB->setCheckable(true);
-    tlbB->setEnabled(true);
-    connect(tlbB, SIGNAL(toggled(bool)), this, SLOT(toggleTlbViewer(bool)));
-
     cp15Reg[0][0]->setText("CP15 registers:");
     cp15Reg[1][1]->setText("ID (r0):");
     cp15Reg[2][1]->setText("SCB (r1):");
@@ -153,8 +148,6 @@ procDisplay::procDisplay(QWidget *parent) :
     for(int i = 0; i < CP15ROWS; i++)
         for(int j = 0; j < CP15COLS; j++)
             cp15L->addWidget(cp15Reg[i][j], i, j);
-
-    cp15L->addWidget(tlbB, CP15ROWS, 0);
 
     for(int i = 0; i < INFOROWS; i++)
         for(int j = 0; j < INFOCOLS; j++)
@@ -269,17 +262,6 @@ QString procDisplay::convertHex(Word val){
         ref = (val & mask) >> count;
     }
     return ret;
-}
-
-void procDisplay::toggleTlbViewer(bool status){
-    if(status)
-        emit showTLB();
-    else
-        emit hideTLB();
-}
-
-void procDisplay::uncheckTLB(){
-    tlbB->setChecked(false);
 }
 
 #endif //QARM_PROCDISPLAY_CC

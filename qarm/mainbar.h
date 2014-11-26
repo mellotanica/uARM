@@ -58,6 +58,8 @@ signals:
     void showTerminal(unsigned int devNo);
     void showBPW();
     void hideBPW();
+    void showTLB();
+    void hideTLB();
 
 private slots:
     void poweron();
@@ -73,9 +75,11 @@ private slots:
     void showTerminalClicked();
     void uncheckBPB();
     void toggleBPButton(bool checked);
+    void uncheckTLB();
+    void toggleTlbViewer(bool status);
 
 private:
-    styledButton *playB, *resetB, *stepB, *ramB, *plusB, *minusB, *configB, *windowB, *breakpB;   //interactions
+    styledButton *playB, *resetB, *stepB, *ramB, *plusB, *minusB, *configB, *windowB, *breakpB, *tlbB;   //interactions
     QVBoxLayout *plusMinusL, *scrollerL, *utilsL;
     QHBoxLayout *utilsUpperL, *utilsLowerL;
     QWidget *plusMinusW, *scrollerW, *utilsW;

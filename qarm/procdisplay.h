@@ -25,7 +25,6 @@
 #include <QWidget>
 #include <QGridLayout>
 #include <QLabel>
-#include <QPushButton>
 #include <sstream>
 #include <iomanip>
 #include "qarm/QLine.h"
@@ -44,17 +43,8 @@ public:
 public slots:
     void updateVals(Word *cpu, Word *cp15, Word *pipeline, Word todH, Word todL, Word timer, QString ass);
     void reset();
-    void uncheckTLB();
-
-signals:
-    void showTLB();
-    void hideTLB();
-
-private slots:
-    void toggleTlbViewer(bool status);
 
 private:
-    QPushButton *tlbB;
     QVBoxLayout *mainLayout;
     QGridLayout *pipeL, *cpuL, *cp15L, *infoL;
     QHBoxLayout *lowLayout;

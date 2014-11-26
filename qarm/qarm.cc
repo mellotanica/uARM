@@ -96,9 +96,9 @@ qarm::qarm(QApplication *app):
     connect(bpWindow, SIGNAL(hiding()), toolbar, SLOT(uncheckBPB()));
     connect(this, SIGNAL(resetMachine()), bpWindow, SLOT(reset()));
 
-    connect(display, SIGNAL(showTLB()), tlbWindow, SLOT(show()));
-    connect(display, SIGNAL(hideTLB()), tlbWindow, SLOT(hide()));
-    connect(tlbWindow, SIGNAL(hiding()), display, SLOT(uncheckTLB()));
+    connect(toolbar, SIGNAL(showTLB()), tlbWindow, SLOT(show()));
+    connect(toolbar, SIGNAL(hideTLB()), tlbWindow, SLOT(hide()));
+    connect(tlbWindow, SIGNAL(hiding()), toolbar, SLOT(uncheckTLB()));
     connect(this, SIGNAL(resetMachine()), tlbWindow, SIGNAL(onMachineReset()));
 
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
