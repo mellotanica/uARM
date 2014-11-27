@@ -823,7 +823,7 @@ void processor::coprocessorOperation(){
         case OP_TLBP: /* CDP p15, #TLBP, c10, c2, c0, #0 */
             {
                 Word hi = *coproc->getRegister(CP15_REG2_EntryHi), *cpreg = coproc->getRegister(CP15_REG10_TLBI);
-                bool found = probeTLB(&index, (hi >> CP15_REG2_Hi_ASIDPOS) & CP15_REG2_Hi_ASIDMASK, (hi >> CP15_REG2_Hi_VPNPOS) & CP15_REG2_Hi_VPNMASK);
+                bool found = probeTLB(&index, hi , hi);
                 copyBitReg(cpreg, CP15_REG10_PPOS, (found ? 0 : 1));
                 resetBitsReg(cpreg, CP15_REGTLB_IMASK << CP15_REG10_IPOS);
                 (*cpreg) |= ((index & CP15_REGTLB_IMASK) << CP15_REG10_IPOS);
