@@ -75,7 +75,7 @@ If the necessary PTE is not present in the TLB, a TLB-Miss exception is raised a
 	\begin{itemize}
 	\item Address must be greater than \texttt{0x0000.8000},
 	\item Address must be word aligned,
-	\item PgTbl-Header must be valid,
+	\item PgTbl-Header must be valid (magic number is \texttt{0x2A}),
 	\item PgTbl must not extend outside physical memory (e.g. [PgTbl addr + PgTbl size] $<$ RAMTOP).
 	\end{itemize}
 \item Linearly search the PgTbl for matching Virtual Page with correct ASID or \texttt{G} flag set.
