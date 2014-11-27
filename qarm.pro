@@ -140,4 +140,6 @@ OTHER_FILES += \
     icons/window_default-48.png \
     icons/poweron.png \
     install.sh \
-    default/uarm
+    default/uarm \
+    facilities/crti.o \
+    facilities/crti.s
