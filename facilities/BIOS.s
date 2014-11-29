@@ -256,7 +256,7 @@ TLB_H:
 
     MRC p15, #0, r0, c15, c0	/* if vm on, we could need a refill */
     AND r0, r0, #0xFFFFFF
-    CMP r0, #12	    /* if cause is 12 or 13 (maybe even 14 and 15?) we should perform a refill */
+    CMP r0, #12	    /* if cause is 12 or 13 we should perform a refill */
     Blt TLB_CONT
     CMP r0, #13
     Ble TLB_REFILL
@@ -477,9 +477,9 @@ TLB_SEGTBL_ERR:
     B TLB_CONT
 
 TLB_REFILL:
-    MRC p15, #1, r0, c2, c0 /* retrieve vpn (r0: vpn) */
-    AND r1, r0, #4064
-    LSR r1, r1, #5
+    MRC p15, #1, r0, c2, c0 /* retrieve segtbl info (r0: hi, r1: asid, r2: segno) */
+    LSR r1, r0, #5
+    AND r1, r1, #0x7F
     LSR r2, r0, #30
     CMP r2, #0  /* if segno is > 0 shift it for direct address calculation */
     SUBgt r2, #1
@@ -491,7 +491,7 @@ TLB_REFILL:
     MUL r5, r1, r4
     ADD r3, r3, r5
 
-    /* 2. cheack page table validity (r1: pagtbl addr) */
+    /* 2. cheack page table validity (r1: pagtbl cursor, r2: pgtbl header) */
         /* a) addr > 0x8000 */
     LDR r1, [r3]
     CMP r1, #ROMSTACK_TOP
@@ -554,8 +554,8 @@ TLB_LOOP_EXIT:
     B TLB_CONT
 
 TLB_LOOP_FOUND:
-    MCR p15, #0, r5, c2, c0
-    CDP p15, #2, c0, c8, c0, #0
+    MCR p15, #1, r5, c2, c0
+    CDP p15, #2, c0, c8, c0, #0 /* TLBWR */
 
     MOV r0, #EXCV_BASE
     ADD r0, r0, #EXCV_TLB_OLD
