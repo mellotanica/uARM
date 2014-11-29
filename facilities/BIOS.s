@@ -358,16 +358,10 @@ PRINT_LOOP:
 /* Loads a processor state from given address *
  * unsigned int LDST(void *addr);             */
 LDST:
+    /* r0: state, r6: psr, ip: cp15registers */
     MOV ip, r0
     ADD ip, ip, #PSR_OFFSET
-    LDR r6, [ip], #4    /* r5 contains current psr */
-
-    LDR r7, [ip], #4	/* restore coprocessor registers */
-    MCR p15, #0, r7, c1, c0, #0
-    LDR r7, [ip], #4
-    CMP r7, #0
-    MCRne p15, #0, r7, c2, c0, #0
-    MCRne p15, #0, r7, c2, c0, #1
+    LDR r6, [ip], #4
 
     MSR SPSR, r6
     AND r1, r6, #0xF
@@ -376,14 +370,15 @@ LDST:
     CMP r1, #0xF
     Beq LDST_u
 
+    /* r1: stack, r4: r0_new, r5: pc_new */
     LDR r4, [r0]
-    ADD r2, r0, #PSR_OFFSET
-    SUB r2, r2, #4
+    SUB r2, ip, #8
     LDR r5, [r2]
     MOV r1, #ROMSTACK_TOP
     ADD r1, r1, #ROMSTACK_OFF
     MRS r3, CPSR
-    STMIA r1, {r3, r4, r5}  /*CPSR, r0_new, pc_new*/
+    STR ip, [r1], #4
+    STMIA r1, {r3, r4, r5}  /* stack: *cp15regs_new, CPSR, r0_new, pc_new*/
     AND r2, r6, #0xF
     CMP r2, #0
     ADDeq r6, r6, #0xF
@@ -395,16 +390,28 @@ LDST:
     LDMIA r1, {r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
     MOV r0, #ROMSTACK_TOP
     ADD r0, r0, #ROMSTACK_OFF
+    ADD r0, r0, #4
     LDR r0, [r0]
     MSR CPSR, r0
 
     MOV r0, #ROMSTACK_TOP
     ADD r0, r0, #ROMSTACK_OFF
-    ADD r0, r0, #4
+    LDR r0, [r0]
+    MCR p15, #0, r0, c2, c0, #0
+    MCR p15, #0, r0, c2, c0, #1
+
+    MOV r0, #ROMSTACK_TOP
+    ADD r0, r0, #ROMSTACK_OFF
+    LDR r0, [r0]
+    MCR p15, #0, r0, c1, c0, #0
+
+    MOV r0, #ROMSTACK_TOP
+    ADD r0, r0, #ROMSTACK_OFF
+    ADD r0, r0, #8
     LDMIA r0, {r0, r15}^
 
 LDST_u:
-    LDMIA r0, {r0, r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14, r15}^
+    B PANIC /* bios functions cannot be accessd from user/system mode, it needs to be supervisor at least */
 
 /* r0 contains state_old addr, lr points to caller and sp to stack with old lr, CPSR and r0 */
 SAVE_OLD_STATE:
