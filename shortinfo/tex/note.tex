@@ -29,6 +29,34 @@ The last tool needed for preparing code for execution is \texttt{elf2uarm}, it c
 \item -v : verbose mode
 \end{itemize}
 
+\section{Binary Formats}
+
+Output file formats used for core and user program files (*.core.uarm and *.uarm files) are essentially based on ELF standard. They have the same structure:
+\begin{itemize}
+\item header section (16 header fields described below)
+\item .text segment
+\item optional .data segment
+\end{itemize}
+
+Header section has the following format:
+\\
+
+\begin{tabular}{rll}
+\texttt{0} & \texttt{AOUT\_HE\_TAG:} & Header TAG (aout.h defines different executable files magic numbers) \\
+\texttt{1} & \texttt{AOUT\_HE\_ENTRY:} & Program Entry Point \\
+\texttt{2} & \texttt{AOUT\_HE\_TEXT\_VADDR:} & .text segment beginning virtual address \\
+\texttt{3} & \texttt{AOUT\_HE\_TEXT\_MEMSZ:} & .text segment actual Byte size \\
+\texttt{4} & \texttt{AOUT\_HE\_TEXT\_OFFSET:} & .text segment offset from Header section end \\
+\texttt{5} & \texttt{AOUT\_HE\_TEXT\_FILESZ:} & .text segment size (rounded to the next 4KB block) \\
+\texttt{6} & \texttt{AOUT\_HE\_DATA\_VADDR:} & .data segment beginning virtual address \\
+\texttt{7} & \texttt{AOUT\_HE\_DATA\_MEMSZ:} & .data segment actual Byte size \\
+\texttt{8} & \texttt{AOUT\_HE\_DATA\_OFFSET:} & .data segment offset from Header section end \\
+\texttt{9} & \texttt{AOUT\_HE\_DATA\_FILESZ:} & .data segment size (rounded to the next 4KB block) \\
+\end{tabular}
+\\
+
+the last 6 header fields are unused.
+
 \section{Hints}
 
 When writing Exception Handlers code, it is well advised to pay attetion to the Program Counter value stored in the Old Area. As described in Exception Handling section, each exception leave a different value in Link Return register and this value is automatically moved to Old Area pc from low level exception handlers, so, for example, when handling an interrupt, the Old Area PC has to be decreased by 4 to point to the right return instruction.
