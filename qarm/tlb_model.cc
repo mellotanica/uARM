@@ -168,7 +168,7 @@ void TLBModel::onMachineReset()
 
 void TLBModel::onTLBChanged(unsigned int tlbIndex)
 {
-    Q_EMIT dataChanged(index(tlbIndex, COLUMN_PTE_HI), index(tlbIndex, COLUMN_PTE_LO));
+    emit dataChanged(index(tlbIndex, COLUMN_PTE_HI), index(tlbIndex, COLUMN_PTE_LO));
 }
 
 QString TLBModel::tlbEntryDetails(unsigned int index) const

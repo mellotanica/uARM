@@ -28,10 +28,8 @@
 #include "armProc/Thumbisa.h"
 #include "services/error.h"
 
-#define CP15_REG8   CP15_REG8_TLBR
-#define CP15_REG10   CP15_REG10_TLBI
-
-#define GET_TLB_INDEX(r,i) *i = ((*coproc->getRegister(CP15_REG##r)) >> CP15_REG##r##_IPOS) & CP15_REGTLB_IMASK
+#define GET_TLB_INDEX_R(i) *i = ((*coproc->getRegister(CP15_REG8_TLBR)) >> CP15_REG8_IPOS) & CP15_REGTLB_IMASK
+#define GET_TLB_INDEX_I(i) *i = ((*coproc->getRegister(CP15_REG10_TLBI)) >> CP15_REG10_IPOS) & CP15_REGTLB_IMASK
 
 processor::processor(systemBus *bus) : pu(bus) {
     //cpint = new coprocessor_interface(bus);
@@ -666,7 +664,7 @@ void processor::execTrap(ExceptionMode exception){
 			spsr = REG_SPSR_UND;
 			break;
         case EXC_DATAABT:   // !! check return address
-            cpu_registers[REG_LR_UND] = *getPC();
+            cpu_registers[REG_LR_ABT] = *getPC();
             spsr = REG_SPSR_ABT;
 			break;
 		case EXC_RESET:
@@ -674,7 +672,7 @@ void processor::execTrap(ExceptionMode exception){
             cpu_registers[REG_SPSR_SVC] = bus->get_unpredictable();
 			break;
         case EXC_PREFABT:   // !! check return address
-            cpu_registers[REG_LR_UND] = *getPC() - 4;
+            cpu_registers[REG_LR_ABT] = *getPC() - 4;
             spsr = REG_SPSR_ABT;
 			break;
         case EXC_IRQ:   // !! check return address
@@ -810,15 +808,15 @@ void processor::coprocessorOperation(){
         case HALTCPINSTR:
             halt(); break;
         case OP_TLBWR: /* CDP p15, #TLBWR, c0, c8, c0, #0 */
-            GET_TLB_INDEX(8, &index);
+            GET_TLB_INDEX_R(&index);
             setTLB(index, *coproc->getRegister(CP15_REG2_EntryHi), *coproc->getRegister(CP15_REG2_EntryLo));
             break;
         case OP_TLBWI: /* CDP p15, #TLBWI, c0, c10, c0, #0 */
-            GET_TLB_INDEX(10, &index);
+            GET_TLB_INDEX_I(&index);
             setTLB(index, *coproc->getRegister(CP15_REG2_EntryHi), *coproc->getRegister(CP15_REG2_EntryLo));
             break;
         case OP_TLBR: /* CDP p15, #TLBR, c2, c10, c0, #0 */
-            GET_TLB_INDEX(10, &index);
+            GET_TLB_INDEX_I(&index);
             getTLB(index, coproc->getRegister(CP15_REG2_EntryHi), coproc->getRegister(CP15_REG2_EntryLo));
         case OP_TLBP: /* CDP p15, #TLBP, c10, c2, c0, #0 */
             {

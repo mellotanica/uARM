@@ -45,8 +45,7 @@ AddBreakpointDialog::AddBreakpointDialog(QWidget* parent)
     layout->addWidget(asidEditor, 0, 1);
     asidEditor->setMinimumWidth(asidEditor->fontMetrics().width(QLatin1Char('0')) * 5);
     asidEditor->setMaximumWidth(asidEditor->fontMetrics().width(QLatin1Char('0')) * 6);
-    //STATIC: without vm support this must be fixed
-    asidEditor->setEnabled(false);
+    asidEditor->setEnabled(true);
 
     layout->setColumnMinimumWidth(2, 12);
 

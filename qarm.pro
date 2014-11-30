@@ -67,7 +67,8 @@ HEADERS += \
     facilities/uARMtypes.h \
     armProc/tlbentry.h \
     qarm/tlb_model.h \
-    qarm/tlb_window.h
+    qarm/tlb_window.h \
+    qarm/register_item_delegate.h
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -110,7 +111,8 @@ SOURCES += \
     qarm/ui_utils.cc \
     armProc/tlbentry.cpp \
     qarm/tlb_model.cc \
-    qarm/tlb_window.cc
+    qarm/tlb_window.cc \
+    qarm/register_item_delegate.cc
 
 OTHER_FILES += \
     compile \
@@ -142,4 +144,8 @@ OTHER_FILES += \
     install.sh \
     default/uarm \
     facilities/crti.o \
-    facilities/crti.s
+    facilities/crti.s \
+    facilities/libuarm.s \
+    facilities/crtso.s \
+    facilities/libdiv.s \
+    facilities/libdiv.o

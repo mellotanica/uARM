@@ -166,6 +166,7 @@ using namespace std;
 // extracts ASID from address
 #define ASID(w)	((w & ASIDMASK))
 
+// FIXME: paddr needed to be block-aligned, now less memory is addressable, but blocks can start everywhere
 // computes physical address from virtual address and PFN field
 #define PHADDR(va, pa)	((va & OFFSETMASK) | (pa & VPNMASK))
 

@@ -222,18 +222,18 @@ UNDEF_H:
 DATAABT_H:
     MOV sp, #ROMSTACK_TOP	/* save 0xD onto stack to identify dataAbt */
     ADD sp, sp, #ROMSTACK_OFF
-    STR r0, [sp, #4]
-    MOV r0, #0xD
     STR r0, [sp]
-    LDR r0, [sp, #4]
+    MOV r0, #0xD
+    STR r0, [sp, #0xC]
+    LDR r0, [sp]
     B DP_CONT
 PREFABT_H:
     MOV sp, #ROMSTACK_TOP	/* save 0 onto stack to identify dataAbt */
     ADD sp, sp, #ROMSTACK_OFF
-    STR r0, [sp, #4]
-    MOV r0, #0
     STR r0, [sp]
-    LDR r0, [sp, #4]
+    MOV r0, #0
+    STR r0, [sp, #0xC]
+    LDR r0, [sp]
 
 DP_CONT:
     MRC p15, #0, sp, c15, c0	/* if vm on, data and prefetch can be tlb exceptions */
@@ -245,6 +245,16 @@ TLB_H:
     MOV sp, #ROMSTACK_TOP	/* save lr, CPSR and r0 onto stack */
     ADD sp, sp, #ROMSTACK_OFF
     STR r0, [sp], #4
+
+    LDR r0, [sp, #0x8]  /* if it is a tlb exception, wrong address can be in cp15.r6 */
+    MRC p15, #0, sp, c6, c0, #0 /* fix return address onto stack */
+    CMP r0, #0xD
+    SUBne lr, sp, #4    /* if it was a prefetch abort, lr shoud be fault instruction + 4 */
+    SUBeq lr, lr, #8    /* if it was a data abort, lr contains return address + 8 */
+    MOV sp, #ROMSTACK_TOP
+    ADD sp, sp, #ROMSTACK_OFF
+    ADD sp, sp, #4
+
     STR lr, [sp], #4
     MRS r0, CPSR
     STR r0, [sp]
@@ -358,17 +368,11 @@ PRINT_LOOP:
 /* Loads a processor state from given address *
  * unsigned int LDST(void *addr);             */
 LDST:
-    /* r0: state, r6: psr, ip: cp15registers */
+    /* r0: state, spsr=r6: psr, ip: cp15registers */
     MOV ip, r0
     ADD ip, ip, #PSR_OFFSET
     LDR r6, [ip], #4
-
     MSR SPSR, r6
-    AND r1, r6, #0xF
-    CMP r1, #0
-    Beq LDST_u
-    CMP r1, #0xF
-    Beq LDST_u
 
     /* r1: stack, r4: r0_new, r5: pc_new */
     LDR r4, [r0]
@@ -384,34 +388,39 @@ LDST:
     ADDeq r6, r6, #0xF
     ORR r6, r6, #0xC0
 
+    /* prepare destination mode registers */
     MSR CPSR, r6
 
     ADD r1, r0, #4
     LDMIA r1, {r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13, r14}
+
+    /* restore hanlder mode */
     MOV r0, #ROMSTACK_TOP
     ADD r0, r0, #ROMSTACK_OFF
     ADD r0, r0, #4
     LDR r0, [r0]
     MSR CPSR, r0
 
+    /* set EntryHy */
     MOV r0, #ROMSTACK_TOP
     ADD r0, r0, #ROMSTACK_OFF
     LDR r0, [r0]
+    LDR r0, [r0, #4]
     MCR p15, #0, r0, c2, c0, #0
     MCR p15, #0, r0, c2, c0, #1
 
+    /* set Control */
     MOV r0, #ROMSTACK_TOP
     ADD r0, r0, #ROMSTACK_OFF
     LDR r0, [r0]
+    LDR r0, [r0]
     MCR p15, #0, r0, c1, c0, #0
 
+    /* set r0, CPSR and jump */
     MOV r0, #ROMSTACK_TOP
     ADD r0, r0, #ROMSTACK_OFF
     ADD r0, r0, #8
     LDMIA r0, {r0, r15}^
-
-LDST_u:
-    B PANIC /* bios functions cannot be accessd from user/system mode, it needs to be supervisor at least */
 
 /* r0 contains state_old addr, lr points to caller and sp to stack with old lr, CPSR and r0 */
 SAVE_OLD_STATE:
@@ -463,21 +472,25 @@ SAVE_OLD_STATE:
     BX lr
 
 TLB_PAGTBL_ERR:
-    MRC p15, #0, r0, c15, c0	/* set EXC_BADPAGTBL in cause */
+    MRC p15, #0, r0, c15, c0, #0	/* set EXC_BADPAGTBL in cause */
     AND r0, r0, #0xFF000000
     ORR r0, r0, #9
-    MCR p15, #0, r0, c15, c0
+    MCR p15, #0, r0, c15, c0, #0
     B TLB_CONT
 
 TLB_SEGTBL_ERR:
-    MRC p15, #0, r0, c15, c0	/* set EXC_BADSEGTBL in cause */
+    MRC p15, #0, r0, c15, c0, #0	/* set EXC_BADSEGTBL in cause */
     AND r0, r0, #0xFF000000
     ORR r0, r0, #8
-    MCR p15, #0, r0, c15, c0
+    MCR p15, #0, r0, c15, c0, #0
     B TLB_CONT
 
 TLB_REFILL:
-    MRC p15, #1, r0, c2, c0 /* retrieve vpn (r0: vpn) */
+    MRC p15, #0, r0, c1, c0, #0 /* disable vm */
+    BIC r0, r0, #1
+    MCR p15, #0, r0, c1, c0, #0
+
+    MRC p15, #0, r0, c2, c0, #0 /* retrieve vpn (r0: EntryHi, r1: asid, r2: segno) */
     AND r1, r0, #4064
     LSR r1, r1, #5
     LSR r2, r0, #30
@@ -490,6 +503,7 @@ TLB_REFILL:
     MOV r4, #12
     MUL r5, r1, r4
     ADD r3, r3, r5
+    ADD r3, r3, #SEGTBL_BASE
 
     /* 2. cheack page table validity (r1: pagtbl addr) */
         /* a) addr > 0x8000 */
@@ -526,18 +540,18 @@ TLB_REFILL:
     AND r4, r0, #ASID_MASK
 
     /* 3. search page table for correct PTE */
-    /* (r1: pte pointer, r2: pagtbl top, r3: vaddr, r4: asid, r5: pte.lo, r6: pte.hi, r8: vaddr_mask) */
+    /* (r1: pte pointer, r2: pagtbl top, r3: vaddr, r4: asid, r5: pte.hi, r6: pte.lo, r8: vaddr_mask) */
 TLB_LOOP:
     LDMIA r1!, {r5, r6}
-    AND r7, r6, r8
+    AND r7, r5, r8
     CMP r7, r3
     Bne TLB_LOOP    /* wrong vaddr */
 
-    AND r7, r6, #ASID_MASK
+    AND r7, r5, #ASID_MASK
     CMP r7, r4
     Beq TLB_LOOP_FOUND
 
-    AND r7, r5, #GLOBAL_MASK
+    AND r7, r6, #GLOBAL_MASK
     CMP r7, #0
     Bne TLB_LOOP_FOUND
 
@@ -545,29 +559,19 @@ TLB_LOOP:
     Bge TLB_LOOP_EXIT
     B TLB_LOOP
 
-    /* 4. if pte has been found, update TLB, else rasie TLB_MISS exception (r5: pte.lo, r6:pte.hi)*/
+    /* 4. if pte has been found, update TLB, else rasie TLB_MISS exception (r5: pte.hi, r6:pte.lo)*/
 TLB_LOOP_EXIT:
-    MRC p15, #0, r0, c15, c0	/* set EXC_PTEMISS in cause */
+    MRC p15, #0, r0, c15, c0, #0	/* set EXC_PTEMISS in cause */
     AND r0, r0, #0xFF000000
     ORR r0, r0, #11
-    MCR p15, #0, r0, c15, c0
+    MCR p15, #0, r0, c15, c0, #0
     B TLB_CONT
 
 TLB_LOOP_FOUND:
-    MCR p15, #0, r5, c2, c0
+    MCR p15, #1, r6, c2, c0, #0
     CDP p15, #2, c0, c8, c0, #0
 
     MOV r0, #EXCV_BASE
     ADD r0, r0, #EXCV_TLB_OLD
-    ADD r1, r0, #PSR_OFFSET
-    LDR r2, [r1, #-4]
-
-    MOV sp, #ROMSTACK_TOP	/* retrieve trap infos */
-    ADD sp, sp, #ROMSTACK_OFF
-    LDR r3, [sp]
-    CMP r3, #0XD
-    SUBeq r2, r2, #8    /* data abort */
-    SUBne r2, r2, #4    /* prefetch abort */
-    STR r2, [r1, #-4]   /* fix return address */
 
     B LDST  /* re-execute last instruction */

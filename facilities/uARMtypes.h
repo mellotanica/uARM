@@ -116,4 +116,19 @@ typedef struct {
   uPTE_t *kUseg3_pte;
 } segtable_t;
 
+/********************************* ELF files ***********************************/
+
+typedef struct {
+	unsigned int tag;
+	unsigned int entry_point;
+	unsigned int text_vaddr;
+	unsigned int text_memsz;
+	unsigned int text_offset;
+	unsigned int text_filesz;
+	unsigned int data_vaddr;
+	unsigned int data_memsz;
+	unsigned int data_offset;
+	unsigned int data_filesz;
+} elf_hdr_s;
+
 #endif // UARMTYPES_H

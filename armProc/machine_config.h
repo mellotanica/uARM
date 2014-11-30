@@ -71,7 +71,7 @@ public:
 
     static const bool DEFAULT_STOP_ON_EXCEPTION = false;
 
-    static const Word MIN_ASID = 1;
+    static const Word MIN_ASID = 0;
     static const Word MAX_ASID = MAXASID-1;
 
     static MachineConfig* LoadFromFile(const std::string& fileName, std::string& error, QApplication *app);
