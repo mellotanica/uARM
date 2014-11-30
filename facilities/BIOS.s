@@ -543,6 +543,9 @@ TLB_REFILL:
     /* (r1: pte pointer, r2: pagtbl top, r3: vaddr, r4: asid, r5: pte.hi, r6: pte.lo, r8: vaddr_mask) */
 TLB_LOOP:
     LDMIA r1!, {r5, r6}
+    CMP r1, r2
+    Bge TLB_LOOP_EXIT
+    
     AND r7, r5, r8
     CMP r7, r3
     Bne TLB_LOOP    /* wrong vaddr */
@@ -555,8 +558,6 @@ TLB_LOOP:
     CMP r7, #0
     Bne TLB_LOOP_FOUND
 
-    CMP r1, r2
-    Bge TLB_LOOP_EXIT
     B TLB_LOOP
 
     /* 4. if pte has been found, update TLB, else rasie TLB_MISS exception (r5: pte.hi, r6:pte.lo)*/
