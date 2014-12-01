@@ -187,12 +187,22 @@ void machine::toggleBP(bool status){
     breakpointStatus = status;
 }
 
+void machine::toggleTLBPause(bool status){
+    stopOnTLB = status;
+    MC_Holder::getInstance()->getConfig()->setStopOnTLBChange(status);
+    MC_Holder::getInstance()->getConfig()->Save();
+}
+
 void machine::clearCause(){
     stopCause = 0;
 }
 
 void machine::updateTLB(unsigned int index){
     emit tlbChanged(index);
+    if(stopOnTLB){
+        stopCause |= SC_UTLB_KERNEL;
+        stopRequested = true;
+    }
 }
 
 #endif //UARM_MACHINE_CC

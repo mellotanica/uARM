@@ -81,9 +81,11 @@ private slots:
     void run();
     void reset();
     void toggleBP(bool status);
+    void toggleTLBPause(bool status);
 
 private:
     bool breakpointStatus = true;
+    bool stopOnTLB = false;
     bool fullUIupdate = true;
     unsigned int refreshRate = 1;
     unsigned int ticksFromUpdate = 0;

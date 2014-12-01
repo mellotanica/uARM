@@ -40,6 +40,9 @@ breakpoint_window::breakpoint_window(machine *mac, QWidget * parent, Qt::WindowF
     QWidget *buttonsLeftW = new QWidget(buttonsW);
     QGridLayout *buttonsLeftL = new QGridLayout(buttonsLeftW);
 
+    QWidget *buttonsCenterW = new QWidget(buttonsW);
+    QGridLayout *buttonsCenterL = new QGridLayout(buttonsCenterW);
+
     QWidget *buttonsRightW = new QWidget(buttonsW);
     QGridLayout *buttonsRightL = new QGridLayout(buttonsRightW);
 
@@ -59,6 +62,13 @@ breakpoint_window::breakpoint_window(machine *mac, QWidget * parent, Qt::WindowF
     breakpointsActive = new QCheckBox("Stop on Breakpoint", buttonsW);
     connect(breakpointsActive, SIGNAL(toggled(bool)), mac, SLOT(toggleBP(bool)));
     breakpointsActive->setChecked(true);
+    buttonsCenterL->addWidget(breakpointsActive);
+
+    breakOnTLB = new QCheckBox("Stop on TLB change", buttonsW);
+    connect(breakOnTLB, SIGNAL(toggled(bool)), mac, SLOT(toggleTLBPause(bool)));
+    breakOnTLB->setChecked(MC_Holder::getInstance()->getConfig()->getStopOnTLBChange());
+    buttonsCenterL->addWidget(breakOnTLB);
+    buttonsCenterW->setLayout(buttonsCenterL);
 
     buttonsLeftL->addWidget(add, 0, 0);
     buttonsLeftL->addWidget(new QFLine(false), 1, 0);
@@ -69,12 +79,10 @@ breakpoint_window::breakpoint_window(machine *mac, QWidget * parent, Qt::WindowF
     buttonsRightW->setLayout(buttonsRightL);
 
     buttonsL->addWidget(buttonsLeftW);
-    buttonsL->addWidget(breakpointsActive);
+    buttonsL->addWidget(buttonsCenterW);
     buttonsL->addWidget(buttonsRightW);
 
     buttonsW->setLayout(buttonsL);
-
-    //EDIT: setup buttons
 
     breakpointView = new QTreeView;
     breakpointView->setRootIsDecorated(false);

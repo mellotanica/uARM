@@ -99,6 +99,8 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
             config->setRamSize(root->Get("num-ram-frames")->AsNumber());
         if (root->HasMember("pause-on-exc"))
             config->setStopOnException(root->Get("pause-on-exc")->AsBool());
+        if (root->HasMember("pause-on-tlb"))
+            config->setStopOnTLBChange(root->Get("pause-on-tlb")->AsBool());
 
         if (root->HasMember("boot")) {
             JsonObject* bootOpt = root->Get("boot")->AsObject();
@@ -166,6 +168,7 @@ void MachineConfig::Save()
     root->Set("tlb-size", (int) getTLBSize());
     root->Set("num-ram-frames", (int) getRamSize());
     root->Set("pause-on-exc", getStopOnException());
+    root->Set("pause-on-tlb", getStopOnTLBChange());
 
     JsonObject* bootOpt = new JsonObject;
     bootOpt->Set("load-core-file", isLoadCoreEnabled());
@@ -267,6 +270,11 @@ void MachineConfig::setSymbolTableASID(Word asid)
     symbolTableASID = bumpProperty(MIN_ASID, asid, MAX_ASID);
 }
 
+void MachineConfig::setStopOnTLBChange(bool value)
+{
+    stopOnTLBChange = value;
+}
+
 unsigned int MachineConfig::getDeviceType(unsigned int il, unsigned int devNo) const
 {
     assert(il < N_EXT_IL && devNo < N_DEV_PER_IL);
@@ -331,6 +339,7 @@ void MachineConfig::resetToFactorySettings()
     setRamSize(DEFAULT_RAM_SIZE);
     setTLBSize(DEFAULT_TLB_SIZE);
     setStopOnException(DEFAULT_STOP_ON_EXCEPTION);
+    setStopOnTLBChange(DEFAULT_STOP_ON_TLB_CHANGE);
 
     // STATIC: this is a temp bios, there needs to be a more complete one..
     setROM(ROM_TYPE_BIOS, "/usr/include/uarm/BIOS.rom.uarm");

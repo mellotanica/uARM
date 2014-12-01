@@ -64,7 +64,7 @@ private:
     QToolButton *add, *remove;
     StoppointListModel *stoppointList;
     QTreeView *breakpointView;
-    QCheckBox *breakpointsActive;
+    QCheckBox *breakpointsActive, *breakOnTLB;
 
     SymbolTable *activeStab;
 

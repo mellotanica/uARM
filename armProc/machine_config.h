@@ -70,6 +70,7 @@ public:
     static const unsigned int DEFAULT_REFRESH_RATE = 70;
 
     static const bool DEFAULT_STOP_ON_EXCEPTION = false;
+    static const bool DEFAULT_STOP_ON_TLB_CHANGE = false;
 
     static const Word MIN_ASID = 0;
     static const Word MAX_ASID = MAXASID-1;
@@ -106,6 +107,9 @@ public:
     void setTLBSize(Word size);
     Word getTLBSize() const { return tlbSize; }
 
+    void setStopOnTLBChange(bool value);
+    bool getStopOnTLBChange() const { return stopOnTLBChange; }
+
     void setROM(ROMType type, const std::string& fileName);
     const std::string& getROM(ROMType type) const;
 
@@ -133,6 +137,7 @@ private:
 
     bool loadCoreFile;
     bool stopOnException;
+    bool stopOnTLBChange;
 
     Word ramSize;
     unsigned int cpus;
