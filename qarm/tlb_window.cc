@@ -32,6 +32,7 @@ tlb_window::tlb_window(machine *mac, QWidget * parent, Qt::WindowFlags flags):
     tlbView = new QTableView;
     TLBModel *innermodel = new TLBModel(mac, this);
     connect(this, SIGNAL(onMachineReset()), innermodel, SLOT(onMachineReset()));
+    connect(innermodel, SIGNAL(dataChanged(QModelIndex,QModelIndex)), tlbView, SLOT(dataChanged(QModelIndex,QModelIndex)));
     tlbView->setModel(innermodel);
     tlbView->setSelectionMode(QAbstractItemView::SingleSelection);
     tlbView->setSelectionBehavior(QAbstractItemView::SelectRows);

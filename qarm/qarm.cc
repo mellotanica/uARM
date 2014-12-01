@@ -99,7 +99,6 @@ qarm::qarm(QApplication *app):
     connect(toolbar, SIGNAL(showTLB()), tlbWindow, SLOT(show()));
     connect(toolbar, SIGNAL(hideTLB()), tlbWindow, SLOT(hide()));
     connect(tlbWindow, SIGNAL(hiding()), toolbar, SLOT(uncheckTLB()));
-    connect(this, SIGNAL(resetMachine()), tlbWindow, SIGNAL(onMachineReset()));
 
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
 
@@ -107,6 +106,7 @@ qarm::qarm(QApplication *app):
     connect(this, SIGNAL(resetMachine()), this, SIGNAL(resetDisplay()));
     connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), display, SLOT(updateVals(Word*,Word*,Word*,Word,Word,Word,QString)));
     connect(this, SIGNAL(resetDisplay()), display, SLOT(reset()));
+    connect(this, SIGNAL(resetMachine()), tlbWindow, SIGNAL(onMachineReset()));
 
     connect(this, SIGNAL(stopSig()), clock, SLOT(stop()));
     connect(this, SIGNAL(stopSig()), toolbar, SLOT(stop()));
