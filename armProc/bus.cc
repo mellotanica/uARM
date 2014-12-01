@@ -612,7 +612,7 @@ bool systemBus::DMATransfer(Block * blk, Word startAddr, bool toMemory){
     if (BADADDR(startAddr,sizeof(Word)))
         return true;
 
-    AbortType error;
+    AbortType error = ABT_NOABT;
 
     Word addr;
     if (toMemory) {
@@ -646,7 +646,7 @@ bool systemBus::DMAVarTransfer(Block * blk, Word startAddr, Word byteLength, boo
     if (BADADDR(startAddr, sizeof(Word)) || length > BLOCKSIZE)
         return true;
 
-    AbortType error;
+    AbortType error = ABT_NOABT;
 
     Word addr;
     if (toMemory) {
