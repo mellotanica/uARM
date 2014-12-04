@@ -42,16 +42,21 @@ ramView::ramView(machine *mac, QWidget *parent) :
     QRegExpValidator *hexValidator = new QRegExpValidator(rx);
 
     startEd = new QLineEdit;
-    startEd->setToolTip("Start Address");
+    startEd->setAccessibleName("Start Address");
+    startEd->setToolTip(startEd->accessibleName());
+    startEd->setAccessibleDescription("Start address in hexadecimal format without leading 0x");
     startEd->setValidator(hexValidator);
     startEd->setMaxLength(8);
 
     endEd = new QLineEdit;
-    endEd->setToolTip("End Address");
+    endEd->setAccessibleName("End Address");
+    endEd->setToolTip(endEd->accessibleName());
+    endEd->setAccessibleDescription("End address in hexadecimal format without leading 0x");
     endEd->setValidator(hexValidator);
     endEd->setMaxLength(8);
 
     visualizeB = new QPushButton("Display Portion");
+    visualizeB->setAccessibleName("Display Selected Portion");
 
     topPanel->addWidget(new QLabel("0x"));
     topPanel->addWidget(startEd);

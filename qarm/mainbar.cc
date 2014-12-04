@@ -40,21 +40,25 @@ mainBar::mainBar(QWidget *parent) :
     playIco = new QIcon(LIB_PATH "icons/play.png");
 
     configB = new styledButton();
-    configB->setToolTip("Machine Configs");
+    configB->setAccessibleName("Machine Configs");
+    configB->setToolTip(configB->accessibleName());
     configB->setIcon(QIcon(LIB_PATH "icons/config.png"));
 
     playB = new styledButton();
-    playB->setToolTip("Play");
+    playB->setAccessibleName("Play");
+    playB->setToolTip(playB->accessibleName());
     playB->setCheckable(true);
     playB->setIcon(*playIco);
     playB->setEnabled(false);
 
     resetB = new styledButton();
-    resetB->setToolTip("Reset");
+    resetB->setAccessibleName("Power on");
+    resetB->setToolTip(resetB->accessibleName());
     resetB->setIcon(QIcon(LIB_PATH "icons/poweron.png"));
 
     stepB = new styledButton();
-    stepB->setToolTip("Step");
+    stepB->setAccessibleName("Step");
+    stepB->setToolTip(stepB->accessibleName());
     stepB->setIcon(QIcon(LIB_PATH "icons/step.png"));
     stepB->setEnabled(false);
 
@@ -63,9 +67,11 @@ mainBar::mainBar(QWidget *parent) :
 
     plusB = new styledButton();
     plusB->setText("+");
+    plusB->setAccessibleName("Increase Emulation Speed");
 
     minusB = new styledButton();
     minusB->setText("-");
+    minusB->setAccessibleName("Decrease Emulation Speed");
 
     plusMinusL->addWidget(plusB);
     plusMinusL->addWidget(minusB);
@@ -77,16 +83,19 @@ mainBar::mainBar(QWidget *parent) :
     scrollerW = new QWidget;
 
     speedLab = new QLabel("50 instr/sec");
+    speedLab->setAccessibleName("Emulation Speed");
     speedLab->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     speedLab->setAlignment(Qt::AlignRight);
     speedLab->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     statusLab = new QLabel("HALTED");
+    statusLab->setAccessibleName("System Status");
     statusLab->setFrameStyle(QFrame::StyledPanel);
     statusLab->setAlignment(Qt::AlignRight);
     statusLab->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
     speedSl = new QSlider();
+    speedSl->setAccessibleName("Emulation Speed Selection");
     speedSl->setOrientation(Qt::Horizontal);
     speedSl->setMinimum(IPSMIN);
     speedSl->setMaximum(IPSMAX);
@@ -110,6 +119,7 @@ mainBar::mainBar(QWidget *parent) :
     ramB = new styledButton();
     ramB->setToolButtonStyle(Qt::ToolButtonTextOnly);
     ramB->setText("RAM");
+    ramB->setAccessibleName("RAM contents viewer");
 
     for (unsigned int i = 0; i < N_DEV_PER_IL; ++i) {
         showTerminalActions[i] = new QAction(QString("Terminal %1").arg(i), this);
@@ -121,6 +131,7 @@ mainBar::mainBar(QWidget *parent) :
 
     windowB = new styledButton();
     windowB->setText("Terminals");
+    windowB->setAccessibleName("Show Terminal");
 
     windowMenu = new QMenu;
 
@@ -129,11 +140,13 @@ mainBar::mainBar(QWidget *parent) :
 
     breakpB = new styledButton();
     breakpB->setText("Breakpoints");
+    breakpB->setAccessibleName("Breakpoint Selector");
     breakpB->setCheckable(true);
     breakpB->setEnabled(true);
 
     tlbB = new styledButton();
     tlbB->setText("TLB");
+    tlbB->setAccessibleName("TLB contents viewer");
     tlbB->setCheckable(true);
     tlbB->setEnabled(true);
 
@@ -180,7 +193,8 @@ void mainBar::poweron(){
     connect(resetB, SIGNAL(clicked()), this, SLOT(resetPressed()));
     playB->setEnabled(true);
     stepB->setEnabled(true);
-    resetB->setToolTip("Reset Machine");
+    resetB->setAccessibleName("Reset Machine");
+    resetB->setToolTip(resetB->accessibleName());
     resetB->setIcon(*resetIco);
     resetPressed();
 }
@@ -188,12 +202,14 @@ void mainBar::poweron(){
 void mainBar::playToggled(bool checked){
     if(checked){
         playB->setIcon(*pauseIco);
-        playB->setToolTip("Pause");
+        playB->setAccessibleName("Pause");
+        playB->setToolTip(playB->accessibleName());
         int spV = speedSl->value();
         emit play(spV);
     } else {
         playB->setIcon(*playIco);
-        playB->setToolTip("Play");
+        playB->setAccessibleName("Play");
+        playB->setToolTip(playB->accessibleName());
         emit pause();
     }
 }

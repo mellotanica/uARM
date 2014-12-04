@@ -77,27 +77,36 @@ MachineConfigDialog::MachineConfigDialog(MachineConfig* config, QWidget* parent)
 QWidget* MachineConfigDialog::createGeneralTab()
 {
     QWidget* tabWidget = new QWidget;
+    tabWidget->setAccessibleName("General Settings");
+
     QGridLayout* layout = new QGridLayout(tabWidget);
     layout->setContentsMargins(11, 13, 11, 11);
 
     layout->addWidget(new QLabel("<b>Hardware</b>"), 0, 0, 1, 3);
 
+    /* STATIC: only one core
     layout->addWidget(new QLabel("Processors:"), 1, 1);
     cpuSpinner = new QSpinBox();
     cpuSpinner->setMinimum(MachineConfig::MIN_CPUS);
     cpuSpinner->setMaximum(MachineConfig::MAX_CPUS);
     cpuSpinner->setValue(config->getNumProcessors());
-    layout->addWidget(cpuSpinner, 1, 3);
+    layout->addWidget(cpuSpinner, 1, 3);*/
 
     layout->addWidget(new QLabel("Default Clock Rate (MHz):"), 2, 1);
     clockRateSpinner = new QSpinBox();
+    clockRateSpinner->setAccessibleName("Default Clock Rate (MHz):");
+    clockRateSpinner->setAccessibleDescription("This will change the relative time taken by devices to operate");
+    clockRateSpinner->setToolTip(clockRateSpinner->accessibleDescription());
     clockRateSpinner->setMinimum(MachineConfig::MIN_CLOCK_RATE);
     clockRateSpinner->setMaximum(MachineConfig::MAX_CLOCK_RATE);
     clockRateSpinner->setValue(config->getClockRate());
     layout->addWidget(clockRateSpinner, 2, 3);
 
-    layout->addWidget(new QLabel("Views Refresh Rate:"), 3, 1);
+    layout->addWidget(new QLabel("GUI Refresh Rate:"), 3, 1);
     refreshRateSpinner = new QSpinBox();
+    refreshRateSpinner->setAccessibleName("GUI Refresh Rate");
+    refreshRateSpinner->setAccessibleDescription("Number of CPU cycles between each refresh");
+    refreshRateSpinner->setToolTip(refreshRateSpinner->accessibleDescription());
     refreshRateSpinner->setMinimum(MachineConfig::MIN_REFRESH_RATE);
     refreshRateSpinner->setMaximum(MachineConfig::MAX_REFRESH_RATE);
     refreshRateSpinner->setValue(config->getRefreshRate());
@@ -105,6 +114,9 @@ QWidget* MachineConfigDialog::createGeneralTab()
 
     layout->addWidget(new QLabel("RAM Size (Frames):"), 4, 1);
     ramSizeSpinner = new QSpinBox();
+    ramSizeSpinner->setAccessibleName("Ram Size (Frames)");
+    ramSizeSpinner->setAccessibleDescription("Total size of accessible RAM expressed in frames");
+    ramSizeSpinner->setToolTip(ramSizeSpinner->accessibleDescription());
     ramSizeSpinner->setMinimum(MachineConfig::MIN_RAM);
     ramSizeSpinner->setMaximum(MachineConfig::MAX_RAM);
     ramSizeSpinner->setValue(config->getRamSize());
@@ -112,6 +124,9 @@ QWidget* MachineConfigDialog::createGeneralTab()
 
     layout->addWidget(new QLabel("TLB Size (Entries):"), 5, 1);
     tlbSizeList = new QComboBox();
+    tlbSizeList->setAccessibleName("TLB Size (Entries)");
+    tlbSizeList->setAccessibleDescription("Size of the TLB cache (power of 2 between 4 and 64)");
+    tlbSizeList->setToolTip(tlbSizeList->accessibleDescription());
     int currentIndex = 0;
     for (unsigned int val = MachineConfig::MIN_TLB_SIZE; val <= MachineConfig::MAX_TLB_SIZE; val <<= 1) {
         tlbSizeList->addItem(QString::number(val));
@@ -122,6 +137,7 @@ QWidget* MachineConfigDialog::createGeneralTab()
     layout->addWidget(tlbSizeList, 5, 3);
 
     stopOnInterruptBox = new QCheckBox("Pause execution on Exception");
+    stopOnInterruptBox->setAccessibleName("Pause execution on Exception");
     stopOnInterruptBox->setChecked(config->getStopOnException());
     layout->addWidget(stopOnInterruptBox, 6, 1, 1, 3);
 
@@ -134,27 +150,36 @@ QWidget* MachineConfigDialog::createGeneralTab()
     layout->addWidget(new QLabel("Execution ROM:"), 8, 1);
     romFileInfo[ROM_TYPE_BIOS].description = "Execution ROM";
     romFileInfo[ROM_TYPE_BIOS].lineEdit = new QLineEdit;
+    romFileInfo[ROM_TYPE_BIOS].lineEdit->setAccessibleName("Execution ROM");
+    romFileInfo[ROM_TYPE_BIOS].lineEdit->setAccessibleDescription("Path to Execution ROM file (*.rom.uarm)");
+    romFileInfo[ROM_TYPE_BIOS].lineEdit->setToolTip(romFileInfo[ROM_TYPE_BIOS].lineEdit->accessibleDescription());
     layout->addWidget(romFileInfo[ROM_TYPE_BIOS].lineEdit, 8, 3, 1, 2);
     romFileInfo[ROM_TYPE_BIOS].lineEdit->setText(config->getROM(ROM_TYPE_BIOS).c_str());
     fileChooserButton = new QPushButton("Browse...");
+    fileChooserButton->setAccessibleName("Browse for Execution ROM");
     connect(fileChooserButton, SIGNAL(clicked()), fileChooserMapper, SLOT(map()));
     fileChooserMapper->setMapping(fileChooserButton, ROM_TYPE_BIOS);
     layout->addWidget(fileChooserButton, 8, 5);
 
     layout->addWidget(new QLabel("<b>Boot</b>"), 10, 0, 1, 3);
 
+    /* STATIC: when dynamic loading will be possible remove this!
     coreBootCheckBox = new QCheckBox("Load core file");
     coreBootCheckBox->setChecked(config->isLoadCoreEnabled());
-    // STATIC: when dynamic loading will be possible remove this!
+
     coreBootCheckBox->setEnabled(false);
-    layout->addWidget(coreBootCheckBox, 11, 1, 1, 3);
+    layout->addWidget(coreBootCheckBox, 11, 1, 1, 3);*/
 
     layout->addWidget(new QLabel("Core file:"), 12, 1);
     romFileInfo[ROM_TYPE_CORE].description = "Core";
     romFileInfo[ROM_TYPE_CORE].lineEdit = new QLineEdit;
+    romFileInfo[ROM_TYPE_CORE].lineEdit->setAccessibleName("Core file");
+    romFileInfo[ROM_TYPE_CORE].lineEdit->setAccessibleDescription("Path to Core file (*.core.uarm)");
+    romFileInfo[ROM_TYPE_CORE].lineEdit->setToolTip(romFileInfo[ROM_TYPE_CORE].lineEdit->accessibleDescription());
     layout->addWidget(romFileInfo[ROM_TYPE_CORE].lineEdit, 12, 3, 1, 2);
     romFileInfo[ROM_TYPE_CORE].lineEdit->setText(config->getROM(ROM_TYPE_CORE).c_str());
     fileChooserButton = new QPushButton("Browse...");
+    fileChooserButton->setAccessibleName("Browse for Core file");
     connect(fileChooserButton, SIGNAL(clicked()), fileChooserMapper, SLOT(map()));
     fileChooserMapper->setMapping(fileChooserButton, ROM_TYPE_CORE);
     layout->addWidget(fileChooserButton, 12, 5);
@@ -165,15 +190,22 @@ QWidget* MachineConfigDialog::createGeneralTab()
 
     romFileInfo[ROM_TYPE_STAB].description = "Symbol Table";
     romFileInfo[ROM_TYPE_STAB].lineEdit = new QLineEdit;
+    romFileInfo[ROM_TYPE_STAB].lineEdit->setAccessibleName("Symbol Table");
+    romFileInfo[ROM_TYPE_STAB].lineEdit->setAccessibleDescription("Path to Symbol Table file (*.stab.uarm)");
+    romFileInfo[ROM_TYPE_STAB].lineEdit->setToolTip(romFileInfo[ROM_TYPE_STAB].lineEdit->accessibleDescription());
     layout->addWidget(romFileInfo[ROM_TYPE_STAB].lineEdit, 15, 3, 1, 2);
     romFileInfo[ROM_TYPE_STAB].lineEdit->setText(config->getROM(ROM_TYPE_STAB).c_str());
     fileChooserButton = new QPushButton("Browse...");
+    fileChooserButton->setAccessibleName("Browse for Symbol Table file");
     connect(fileChooserButton, SIGNAL(clicked()), fileChooserMapper, SLOT(map()));
     fileChooserMapper->setMapping(fileChooserButton, ROM_TYPE_STAB);
     layout->addWidget(fileChooserButton, 15, 5);
 
     layout->addWidget(new QLabel("Symbol Table ASID:"), 16, 1);
     stabAsidEdit = new AsidLineEdit;
+    stabAsidEdit->setAccessibleName("Symbol Table ASID");
+    stabAsidEdit->setAccessibleDescription("Default Symbol Table ASID");
+    stabAsidEdit->setToolTip(stabAsidEdit->accessibleDescription());
     stabAsidEdit->setMaximumWidth(100);
     stabAsidEdit->setAsid(config->getSymbolTableASID());
     layout->addWidget(stabAsidEdit, 16, 3);
@@ -205,6 +237,7 @@ QWidget* MachineConfigDialog::createDeviceTab()
     static const int TAB_MARGIN_RIGHT = 3;
 
     QWidget* tab = new QWidget;
+    tab->setAccessibleName("Devices Settings");
     QHBoxLayout* tabLayout = new QHBoxLayout;
     tab->setLayout(tabLayout);
 
@@ -338,13 +371,18 @@ DeviceFileChooser::DeviceFileChooser(const QString& deviceClassName,
     for (unsigned int i = 0; i < N_DEV_PER_IL; i++) {
         QLabel* fileLabel = new QLabel(QString("&%1:").arg(i));
         fileNameEdit[i] = new QLineEdit;
+        fileNameEdit[i]->setAccessibleName(deviceName+QString(" %1 file").arg(i));
+        fileNameEdit[i]->setToolTip(fileNameEdit[i]->accessibleName());
         fileLabel->setBuddy(fileNameEdit[i]);
         fileNameEdit[i]->setText(MC_Holder::getInstance()->getConfig()->getDeviceFile(il, i).c_str());
         QPushButton* bt = new QPushButton("Browse...");
+        bt->setAccessibleName("Browse for "+fileNameEdit[i]->accessibleName());
         connect(bt, SIGNAL(clicked()), signalMapper, SLOT(map()));
         signalMapper->setMapping(bt, (int) i);
         enabledCB[i] = new QCheckBox;
         enabledCB[i]->setChecked(MC_Holder::getInstance()->getConfig()->getDeviceEnabled(il, i));
+        enabledCB[i]->setAccessibleName("Enable "+deviceName+QString(" %1").arg(i));
+        enabledCB[i]->setToolTip(enabledCB[i]->accessibleName());
 
         grid->addWidget(fileLabel, i + 2, 0);
         grid->addWidget(fileNameEdit[i], i + 2, 1);
@@ -405,6 +443,8 @@ NetworkConfigWidget::NetworkConfigWidget(QWidget* parent)
     layout->addWidget(separator);
 
     QComboBox* nics = new QComboBox;
+    nics->setAccessibleName("Select Network Adapter");
+    nics->setAccessibleDescription("Select witch Adapter to configure");
     for (unsigned int i = 0; i < N_DEV_PER_IL; i++)
         nics->addItem(QString("Network Adapter %1").arg(i));
     layout->addWidget(nics);
@@ -427,6 +467,7 @@ NetworkConfigWidget::NetworkConfigWidget(QWidget* parent)
         box->setContentsMargins(0, 6, 0, 0);
 
         enabledCB[i] = new QCheckBox("&Enable");
+        enabledCB[i]->setAccessibleName(QString("Enable Network Adapter %1").arg(i));
         box->addWidget(enabledCB[i]);
 
         QWidget* form = new QWidget;
@@ -440,20 +481,25 @@ NetworkConfigWidget::NetworkConfigWidget(QWidget* parent)
 
         QLabel* fileLabel = new QLabel("Device &File:");
         fileEdit[i] = new QLineEdit;
+        fileEdit[i]->setAccessibleName(QString("Network Adapter %1 file").arg(i));
         fileLabel->setBuddy(fileEdit[i]);
         fileEdit[i]->setText(machineConfigs->getDeviceFile(il, i).c_str());
         grid->addWidget(fileLabel, 1, 0);
         grid->addWidget(fileEdit[i], 1, 1);
         QPushButton* fileBt = new QPushButton("&Browse...");
+        fileBt->setAccessibleName("Browse for "+fileEdit[i]->accessibleName());
         grid->addWidget(fileBt, 1, 2);
         connect(fileBt, SIGNAL(clicked()), signalMapper, SLOT(map()));
         signalMapper->setMapping(fileBt, (int) i);
 
         fixedMacId[i] = new QCheckBox("Fixed &MAC address");
+        fixedMacId[i]->setAccessibleName("Fixed MAC address");
+        fixedMacId[i]->setAccessibleDescription(QString("Enable fixed MAC address for Newtork Adapter %1").arg(i));
         grid->addWidget(fixedMacId[i], 2, 0, 1, 3);
         QLabel* macIdLabel = new QLabel("MAC &Address");
         grid->addWidget(macIdLabel, 3, 0);
         macIdEdit[i] = new MacIdEdit;
+        macIdEdit[i]->setAccessibleName(QString("MAC Address for Network Adapter %1").arg(i));
         macIdEdit[i]->setFont(monoLabel::getMonospaceFont());
         macIdLabel->setBuddy(macIdEdit[i]);
         if (machineConfigs->getMACId(i))

@@ -115,12 +115,14 @@ TerminalStatusWidget::TerminalStatusWidget(TerminalDevice* t, QWidget* parent)
     layout->setColumnStretch(0, 1);
 
     hwFailureCheckBox = new QCheckBox("Hardware Failure");
+    hwFailureCheckBox->setAccessibleName(hwFailureCheckBox->text());
     hwFailureCheckBox->setChecked(terminal->getDevNotWorking());
     connect(hwFailureCheckBox, SIGNAL(clicked(bool)),
             this, SLOT(onHardwareFailureButtonClicked(bool)));
     layout->addWidget(hwFailureCheckBox, 0, 0);
 
     expanderButton = new FlatPushButton(collapsedIcon, "Show Status");
+    expanderButton->setAccessibleName("Show Status");
     connect(expanderButton, SIGNAL(clicked()), this, SLOT(onExpanderButtonClicked()));
     expanderButton->setIconSize(QSize(16, 16));
     layout->addWidget(expanderButton, 0, 1);
@@ -137,11 +139,13 @@ TerminalStatusWidget::TerminalStatusWidget(TerminalDevice* t, QWidget* parent)
     statusAreaLayout->addWidget(new QLabel("TX:"), 1, 0);
 
     rxStatusLabel = new QLabel;
+    rxStatusLabel->setAccessibleName("RX Status");
     rxStatusLabel->setMinimumWidth(kStatusLabelsMinimumWidth);
     rxStatusLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     statusAreaLayout->addWidget(rxStatusLabel, 0, 1);
 
     txStatusLabel = new QLabel;
+    txStatusLabel->setAccessibleName("TX Status");
     txStatusLabel->setMinimumWidth(kStatusLabelsMinimumWidth);
     txStatusLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     statusAreaLayout->addWidget(txStatusLabel, 1, 1);
@@ -150,11 +154,13 @@ TerminalStatusWidget::TerminalStatusWidget(TerminalDevice* t, QWidget* parent)
     statusAreaLayout->addWidget(new QLabel("At:"), 1, 2);
 
     rxCompletionTime = new QLabel;
+    rxCompletionTime->setAccessibleName("RX Completion Time");
     rxCompletionTime->setMinimumWidth(kStatusLabelsMinimumWidth);
     rxCompletionTime->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     statusAreaLayout->addWidget(rxCompletionTime, 0, 3);
 
     txCompletionTime = new QLabel;
+    txCompletionTime->setAccessibleName("TX Completion Time");
     txCompletionTime->setMinimumWidth(kStatusLabelsMinimumWidth);
     txCompletionTime->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     statusAreaLayout->addWidget(txCompletionTime, 1, 3);
@@ -200,6 +206,7 @@ void TerminalStatusWidget::onExpanderButtonClicked()
         expanderButton->setText("Hide Status");
         statusAreaWidget->show();
     }
+    expanderButton->setAccessibleName(expanderButton->text());
 }
 
 #endif //QARM_TERMINAL_WINDOW_CC
