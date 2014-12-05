@@ -136,6 +136,8 @@ procDisplay::procDisplay(QWidget *parent) :
         infoReg[i][1]->setAlignment(Qt::AlignRight);
     }
 
+    setAccessibilityNames();
+
     reset();
 
     for(int i = 0; i < PIPECOLS; i++)
@@ -154,6 +156,116 @@ procDisplay::procDisplay(QWidget *parent) :
             infoL->addWidget(infoReg[i][j], i, j);
 
     this->setLayout(mainLayout);
+}
+
+void procDisplay::setAccessibilityNames(){
+    pipeline[1]->setAccessibleName("Pipeline Execute");
+    pipeline[2]->setAccessibleName("Pipeline Decode");
+    pipeline[3]->setAccessibleName("Pipeline Fetch");
+    pipeline[5]->setAccessibleName("Executing Instruction");
+
+    cpuReg[1][1]->setAccessibleName("Usr/Sys r0");
+    cpuReg[1][1]->setAccessibleDescription("User and system mode r0 or a1");
+    cpuReg[2][1]->setAccessibleName("Usr/Sys r1");
+    cpuReg[2][1]->setAccessibleDescription("User and system mode r1 or a2");
+    cpuReg[3][1]->setAccessibleName("Usr/Sys r2");
+    cpuReg[3][1]->setAccessibleDescription("User and system mode r2 or a3");
+    cpuReg[4][1]->setAccessibleName("Usr/Sys r3");
+    cpuReg[4][1]->setAccessibleDescription("User and system mode r3 or a4");
+    cpuReg[5][1]->setAccessibleName("Usr/Sys r4");
+    cpuReg[5][1]->setAccessibleDescription("User and system mode r4 or v1");
+    cpuReg[6][1]->setAccessibleName("Usr/Sys r5");
+    cpuReg[6][1]->setAccessibleDescription("User and system mode r5 or v2");
+    cpuReg[7][1]->setAccessibleName("Usr/Sys r6");
+    cpuReg[7][1]->setAccessibleDescription("User and system mode r6 or v3");
+    cpuReg[8][1]->setAccessibleName("Usr/Sys r7");
+    cpuReg[8][1]->setAccessibleDescription("User and system mode r7 or v4");
+    cpuReg[9][1]->setAccessibleName("Usr/Sys r8");
+    cpuReg[9][1]->setAccessibleDescription("User and system mode r8 or v5");
+    cpuReg[10][1]->setAccessibleName("Usr/Sys r9");
+    cpuReg[10][1]->setAccessibleDescription("User and system mode r9 or v6 or SB");
+    cpuReg[11][1]->setAccessibleName("Usr/Sys r10");
+    cpuReg[11][1]->setAccessibleDescription("User and system mode r10 or v7 or SL");
+    cpuReg[12][1]->setAccessibleName("Usr/Sys r11");
+    cpuReg[12][1]->setAccessibleDescription("User and system mode r11 or v8 or FP");
+    cpuReg[13][1]->setAccessibleName("Usr/Sys r12");
+    cpuReg[13][1]->setAccessibleDescription("User and system mode r12 or IP");
+    cpuReg[14][1]->setAccessibleName("Usr/Sys r13");
+    cpuReg[14][1]->setAccessibleDescription("User and system mode r13 or SP");
+    cpuReg[15][1]->setAccessibleName("Usr/Sys r14");
+    cpuReg[15][1]->setAccessibleDescription("User and system mode r14 or LR");
+    cpuReg[16][1]->setAccessibleName("Usr/Sys r15");
+    cpuReg[16][1]->setAccessibleDescription("User and system mode r15 or PC");
+    cpuReg[17][1]->setAccessibleName("CPSR");
+
+    cpuReg[14][2]->setAccessibleName("Svc r13");
+    cpuReg[14][2]->setAccessibleDescription("Supervisor mode r13 or SP");
+    cpuReg[15][2]->setAccessibleName("Svc r14");
+    cpuReg[15][2]->setAccessibleDescription("Supervisor mode r14 or LR");
+    cpuReg[18][2]->setAccessibleName("Svc SPSR");
+    cpuReg[18][2]->setAccessibleDescription("Supervisor mode SPSR");
+
+    cpuReg[14][3]->setAccessibleName("Abt r13");
+    cpuReg[14][3]->setAccessibleDescription("Abort mode r13 or SP");
+    cpuReg[15][3]->setAccessibleName("Abt r14");
+    cpuReg[15][3]->setAccessibleDescription("Abort mode r14 or LR");
+    cpuReg[18][3]->setAccessibleName("Abt SPSR");
+    cpuReg[18][3]->setAccessibleDescription("Abort mode SPSR");
+
+    cpuReg[14][4]->setAccessibleName("Undef r13");
+    cpuReg[14][4]->setAccessibleDescription("Undefined mode r13 or SP");
+    cpuReg[15][4]->setAccessibleName("Undef r14");
+    cpuReg[15][4]->setAccessibleDescription("Undefined mode r14 or LR");
+    cpuReg[18][4]->setAccessibleName("Undef SPSR");
+    cpuReg[18][4]->setAccessibleDescription("Undefined mode SPSR");
+
+    cpuReg[14][5]->setAccessibleName("Irq r13");
+    cpuReg[14][5]->setAccessibleDescription("Interrupt mode r13 or SP");
+    cpuReg[15][5]->setAccessibleName("Irq r14");
+    cpuReg[15][5]->setAccessibleDescription("Interrupt mode r14 or LR");
+    cpuReg[18][5]->setAccessibleName("Irq SPSR");
+    cpuReg[18][5]->setAccessibleDescription("Interrupt mode SPSR");
+
+    cpuReg[9][6]->setAccessibleName("Fiq r8");
+    cpuReg[9][6]->setAccessibleDescription("Fast Interrupt mode r8 or v5");
+    cpuReg[10][6]->setAccessibleName("Fiq r9");
+    cpuReg[10][6]->setAccessibleDescription("Fast Interrupt mode r9 or v6 or SB");
+    cpuReg[11][6]->setAccessibleName("Fiq r10");
+    cpuReg[11][6]->setAccessibleDescription("Fast Interrupt mode r10 or v7 or SL");
+    cpuReg[12][6]->setAccessibleName("Fiq r11");
+    cpuReg[12][6]->setAccessibleDescription("Fast Interrupt mode r11 or v8 or FP");
+    cpuReg[13][6]->setAccessibleName("Fiq r12");
+    cpuReg[13][6]->setAccessibleDescription("Fast Interrupt mode r12 or IP");
+    cpuReg[14][6]->setAccessibleName("Fiq r13");
+    cpuReg[14][6]->setAccessibleDescription("Fast Interrupt mode r13 or SP");
+    cpuReg[15][6]->setAccessibleName("Fiq r14");
+    cpuReg[15][6]->setAccessibleDescription("Fast Interrupt mode r14 or LR");
+    cpuReg[16][6]->setAccessibleName("Fiq r15");
+    cpuReg[16][6]->setAccessibleDescription("Fast Interrupt mode r15 or PC");
+    cpuReg[18][6]->setAccessibleName("Fiq SPSR");
+    cpuReg[18][6]->setAccessibleDescription("Fast Interrupt mode SPSR");
+
+    cp15Reg[1][2]->setAccessibleName("CP15 ID");
+    cp15Reg[1][2]->setAccessibleDescription("CP15 register r0 or ID");
+    cp15Reg[2][2]->setAccessibleName("CP15 SCB");
+    cp15Reg[2][2]->setAccessibleDescription("CP15 register r1 or SCB");
+    cp15Reg[3][2]->setAccessibleName("CP15 PTE_Hi");
+    cp15Reg[3][2]->setAccessibleDescription("CP15 register r2 or PTE, High part");
+    cp15Reg[4][2]->setAccessibleName("CP15 PTE_Low");
+    cp15Reg[4][2]->setAccessibleDescription("CP15 register r2 or PTE, Low part");
+    cp15Reg[1][4]->setAccessibleName("CP15 FA");
+    cp15Reg[1][4]->setAccessibleDescription("CP15 register r6 or FA");
+    cp15Reg[2][4]->setAccessibleName("CP15 TLBR");
+    cp15Reg[2][4]->setAccessibleDescription("CP15 register r8 or TLBR");
+    cp15Reg[3][4]->setAccessibleName("CP15 TLBI");
+    cp15Reg[3][4]->setAccessibleDescription("CP15 register r10 or TLBI");
+    cp15Reg[4][4]->setAccessibleName("CP15 Cause");
+    cp15Reg[4][4]->setAccessibleDescription("CP15 register r15 or Cause");
+
+    infoReg[1][2]->setAccessibleName("TOD_Hi");
+    infoReg[2][2]->setAccessibleName("TOD_Low");
+    infoReg[3][2]->setAccessibleName("TIMER");
+    infoReg[4][2]->setAccessibleName("Ram Size");
 }
 
 void procDisplay::reset(){
