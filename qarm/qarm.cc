@@ -181,7 +181,7 @@ void qarm::start(int speed){
         mac->setUIupdate(0);
     } else {
         time = 0;
-        mac->setUIupdate(MC_Holder::getInstance()->getConfig()->getRefreshRate());
+        mac->setUIupdate(MC_Holder::getInstance()->getConfig()->getRefreshRate(), MC_Holder::getInstance()->getConfig()->getRefreshOnPause());
     }
     clock->start(time);
 }

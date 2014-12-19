@@ -67,7 +67,9 @@ public:
 
     static const unsigned int MIN_REFRESH_RATE = 1;
     static const unsigned int MAX_REFRESH_RATE = 1000;
-    static const unsigned int DEFAULT_REFRESH_RATE = 70;
+    static const unsigned int DEFAULT_REFRESH_RATE = 600;
+
+    static const bool DEFAULT_REFRESH_ON_PAUSE = false;
 
     static const bool DEFAULT_STOP_ON_EXCEPTION = false;
     static const bool DEFAULT_STOP_ON_TLB_CHANGE = false;
@@ -104,6 +106,9 @@ public:
     void setRefreshRate(unsigned int value);
     unsigned int getRefreshRate() const { return refreshRate; }
 
+    void setRefreshOnPause(bool enabled);
+    bool getRefreshOnPause() const { return refreshOnPause; }
+
     void setTLBSize(Word size);
     Word getTLBSize() const { return tlbSize; }
 
@@ -136,6 +141,7 @@ private:
     std::string fileName;
 
     bool loadCoreFile;
+    bool refreshOnPause;
     bool stopOnException;
     bool stopOnTLBChange;
 

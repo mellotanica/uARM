@@ -56,15 +56,19 @@ breakpoint_window::breakpoint_window(machine *mac, QWidget * parent, Qt::WindowF
     connect(remove, SIGNAL(clicked()), this, SLOT(onRemoveBreakpoint()));
 
     add->setText("Add");
+    add->setAccessibleName("Add Breakpoint");
 
     remove->setText("Remove");
+    remove->setAccessibleName("Remove Breakpoint");
 
     breakpointsActive = new QCheckBox("Stop on Breakpoint", buttonsW);
+    breakpointsActive->setAccessibleName(breakpointsActive->text());
     connect(breakpointsActive, SIGNAL(toggled(bool)), mac, SLOT(toggleBP(bool)));
     breakpointsActive->setChecked(true);
     buttonsCenterL->addWidget(breakpointsActive);
 
     breakOnTLB = new QCheckBox("Stop on TLB change", buttonsW);
+    breakOnTLB->setAccessibleName(breakOnTLB->text());
     connect(breakOnTLB, SIGNAL(toggled(bool)), mac, SLOT(toggleTLBPause(bool)));
     breakOnTLB->setChecked(MC_Holder::getInstance()->getConfig()->getStopOnTLBChange());
     buttonsCenterL->addWidget(breakOnTLB);

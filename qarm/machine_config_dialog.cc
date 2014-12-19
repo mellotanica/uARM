@@ -112,6 +112,18 @@ QWidget* MachineConfigDialog::createGeneralTab()
     refreshRateSpinner->setValue(config->getRefreshRate());
     layout->addWidget(refreshRateSpinner, 3, 3);
 
+    refreshEnabledBox = new QCheckBox();
+    refreshEnabledBox->setAccessibleName("Enable constant refresh");
+    refreshEnabledBox->setAccessibleDescription("If selected, each GUI component gets refreshed each Refresh Rate cycles, else refresh will happen on execution stop");
+    refreshEnabledBox->setToolTip(refreshEnabledBox->accessibleDescription());
+    refreshEnabledBox->setText(refreshEnabledBox->accessibleName());
+    refreshEnabledBox->setChecked(!config->getRefreshOnPause());
+    if(!refreshEnabledBox->isChecked())
+        refreshRateSpinner->setEnabled(false);
+    layout->addWidget(refreshEnabledBox, 3, 4);
+
+    connect(refreshEnabledBox, SIGNAL(clicked(bool)), refreshRateSpinner, SLOT(setEnabled(bool)));
+
     layout->addWidget(new QLabel("RAM Size (Frames):"), 4, 1);
     ramSizeSpinner = new QSpinBox();
     ramSizeSpinner->setAccessibleName("Ram Size (Frames)");
@@ -331,6 +343,7 @@ void MachineConfigDialog::saveConfigChanges()
     config->setNumProcessors(cpuSpinner->value());
     config->setClockRate(clockRateSpinner->value());
     config->setRefreshRate(refreshRateSpinner->value());
+    config->setRefreshOnPause(!refreshEnabledBox->isChecked());
     config->setRamSize(ramSizeSpinner->value());
     config->setTLBSize(MachineConfig::MIN_TLB_SIZE << tlbSizeList->currentIndex());
 

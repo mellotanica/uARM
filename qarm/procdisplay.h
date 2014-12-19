@@ -52,6 +52,7 @@ private:
     monoLabel ***cpuReg, ***cp15Reg, ***infoReg;
 
     QString convertHex(Word val);
+    void setAccessibilityNames();
 };
 
 class monoLabel : public QLabel{

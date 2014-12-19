@@ -95,6 +95,8 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
             config->setClockRate(root->Get("clock-rate")->AsNumber());
         if (root->HasMember("refresh-rate"))
             config->setRefreshRate(root->Get("refresh-rate")->AsNumber());
+        if (root->HasMember("refresh-on-pause"))
+            config->setRefreshOnPause(root->Get("refresh-on-pause")->AsBool());
         if (root->HasMember("num-ram-frames"))
             config->setRamSize(root->Get("num-ram-frames")->AsNumber());
         if (root->HasMember("pause-on-exc"))
@@ -165,6 +167,7 @@ void MachineConfig::Save()
     root->Set("num-processors", (int) getNumProcessors());
     root->Set("clock-rate", (int) getClockRate());
     root->Set("refresh-rate", (int) getRefreshRate());
+    root->Set("refresh-on-pause", getRefreshOnPause());
     root->Set("tlb-size", (int) getTLBSize());
     root->Set("num-ram-frames", (int) getRamSize());
     root->Set("pause-on-exc", getStopOnException());
@@ -255,6 +258,11 @@ void MachineConfig::setRefreshRate(unsigned int value)
     refreshRate = bumpProperty(MIN_REFRESH_RATE, value, MAX_REFRESH_RATE);
 }
 
+void MachineConfig::setRefreshOnPause(bool enabled)
+{
+    refreshOnPause = enabled;
+}
+
 void MachineConfig::setROM(ROMType type, const std::string& fileName)
 {
     romFiles[type] = fileName;
@@ -336,6 +344,7 @@ void MachineConfig::resetToFactorySettings()
     setNumProcessors(DEFAULT_NUM_CPUS);
     setClockRate(DEFAULT_CLOCK_RATE);
     setRefreshRate(DEFAULT_REFRESH_RATE);
+    setRefreshOnPause(DEFAULT_REFRESH_ON_PAUSE);
     setRamSize(DEFAULT_RAM_SIZE);
     setTLBSize(DEFAULT_TLB_SIZE);
     setStopOnException(DEFAULT_STOP_ON_EXCEPTION);

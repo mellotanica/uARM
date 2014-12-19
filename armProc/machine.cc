@@ -70,6 +70,9 @@ void machine::refreshData(){
 
 void machine::refreshData(bool force){
     processor *cpu;
+    if(noUIupdates && !force){
+        return;
+    }
     if(!fullUIupdate && !force){
         if(ticksFromUpdate < refreshRate){
             ticksFromUpdate++;

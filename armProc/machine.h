@@ -48,7 +48,7 @@ public:
 	~machine();
 
     //if refRate equals 0 the ui is updated at each instruction, else refRate specifies the amount of instructions to skip
-    void setUIupdate(unsigned int refRate){refreshRate = refRate; fullUIupdate = !refRate;}
+    void setUIupdate(unsigned int refRate, bool noupdate = false){refreshRate = refRate; fullUIupdate = !refRate; noUIupdates = noupdate;}
 
     systemBus *getBus() {return sysbus;}
 
@@ -87,6 +87,7 @@ private:
     bool breakpointStatus = true;
     bool stopOnTLB = false;
     bool fullUIupdate = true;
+    bool noUIupdates = false;
     unsigned int refreshRate = 1;
     unsigned int ticksFromUpdate = 0;
     bool idleNotified = false;

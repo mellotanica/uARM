@@ -41,6 +41,7 @@ AddBreakpointDialog::AddBreakpointDialog(QWidget* parent)
 
     layout->addWidget(new QLabel("ASID:"), 0, 0);
     asidEditor = new AsidLineEdit;
+    asidEditor->setAccessibleName("Breakpoint ASID");
     asidEditor->setAsid(MC_Holder::getInstance()->getConfig()->getSymbolTableASID());
     layout->addWidget(asidEditor, 0, 1);
     asidEditor->setMinimumWidth(asidEditor->fontMetrics().width(QLatin1Char('0')) * 5);
@@ -51,6 +52,7 @@ AddBreakpointDialog::AddBreakpointDialog(QWidget* parent)
 
     layout->addWidget(new QLabel("Address:"), 0, 3);
     addressEditor = new AddressLineEdit;
+    addressEditor->setAccessibleName("Breakpoint address");
     layout->addWidget(addressEditor, 0, 4);
 
     symbolTableView = new QTreeView;
@@ -66,8 +68,6 @@ AddBreakpointDialog::AddBreakpointDialog(QWidget* parent)
 
     setWindowTitle("Add Breakpoint");
     resize(kInitialWidth, kInitialHeight);
-
-    //connect(addressEditor, SIGNAL(textChanged(const QString&)), this, SLOT(debugg()));
 }
 
 Word AddBreakpointDialog::getStartAddress() const

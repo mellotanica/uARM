@@ -55,6 +55,7 @@ private:
     QSpinBox* cpuSpinner;
     QSpinBox* clockRateSpinner;
     QSpinBox* refreshRateSpinner;
+    QCheckBox *refreshEnabledBox;
     QComboBox* tlbSizeList;
     QSpinBox* ramSizeSpinner;
     QCheckBox* stopOnInterruptBox;

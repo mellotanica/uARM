@@ -24,9 +24,6 @@
 
 #include "qarm/procdisplay.h"
 
-/*#include <iostream>
-using namespace std;*/
-
 procDisplay::procDisplay(QWidget *parent) :
     QWidget(parent)
 {
@@ -136,6 +133,8 @@ procDisplay::procDisplay(QWidget *parent) :
         infoReg[i][1]->setAlignment(Qt::AlignRight);
     }
 
+    setAccessibilityNames();
+
     reset();
 
     for(int i = 0; i < PIPECOLS; i++)
@@ -154,6 +153,10 @@ procDisplay::procDisplay(QWidget *parent) :
             infoL->addWidget(infoReg[i][j], i, j);
 
     this->setLayout(mainLayout);
+}
+
+void procDisplay::setAccessibilityNames(){
+
 }
 
 void procDisplay::reset(){
