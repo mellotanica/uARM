@@ -355,7 +355,8 @@ void MachineConfigDialog::saveConfigChanges()
     config->setROM(ROM_TYPE_STAB,
                    QFile::encodeName(romFileInfo[ROM_TYPE_STAB].lineEdit->text()).constData());
 
-    config->setLoadCoreEnabled(coreBootCheckBox->isChecked());
+    /* STATIC: when dynamic loading will be possible remove this!
+    config->setLoadCoreEnabled(coreBootCheckBox->isChecked()); */
     config->setStopOnException(stopOnInterruptBox->isChecked());
     config->setSymbolTableASID(stabAsidEdit->getAsid());
 }
