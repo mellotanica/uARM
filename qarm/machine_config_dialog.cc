@@ -340,7 +340,8 @@ void MachineConfigDialog::onDeviceClassChanged()
 
 void MachineConfigDialog::saveConfigChanges()
 {
-    config->setNumProcessors(cpuSpinner->value());
+    /* STATIC: only one core
+    config->setNumProcessors(cpuSpinner->value()); */
     config->setClockRate(clockRateSpinner->value());
     config->setRefreshRate(refreshRateSpinner->value());
     config->setRefreshOnPause(!refreshEnabledBox->isChecked());
