@@ -99,3 +99,39 @@ Returns the upper/lower part of Time of Day 64-bit register.
 \subsubsection{getCONTROL() / setCONTROL()}
 
 Manipulate System Control Register.
+
+\subsubsection{getTLB\_Index() / setTLB\_Index(unsigned int index)}
+
+Manipulate TLB Index register.
+
+\subsubsection{getTLB\_Random()}
+
+Returns TLB Random register.
+
+\subsubsection{getEntryHi() / setEntryHi(unsigned int hi) / getEntryLo() / setEntryLo(unsigned int lo)}
+
+Manipulate TLB Entry Hi and Entry Low registers.
+
+\subsubsection{getBadVAddr()}
+
+Returns BadVAddr register, which contains the faulting address in case of Page Fault Exceptions.
+
+\subsubsection{TLBWR()}
+
+Write the contents of EntryHi and EntryLo to the TLB slot indicated by TLB Random register value.
+
+\subsubsection{TLBWI()}
+
+Write the contents of EntryHi and EntryLo to the TLB slot indicated by TLB Index register value.
+
+\subsubsection{TLBR()}
+
+Read the contents of TLB slot indicated by TLB Index register value in EntryHi and EntryLo registers.
+
+\subsubsection{TLBP()}
+
+Scan the TLB searching for a pair that matches VPN in EntryHi and ASID in EntryHi or that has G flag set in EntryLo and is Valid, if a match is found, its index in the TLB cache is stored as TLB Index register value, otherwise that register will have 31st bit set to 1.
+
+\subsubsection{TLBCLR()}
+
+Set all TLB contents to 0.
