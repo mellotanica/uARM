@@ -1,31 +1,21 @@
-\begin{center}
-\begin{tabular}{|l|}
-\hline
-\\
-	\multicolumn{1}{|c|}{\textbf{Segment Table Entry}} \\
-	\begin{tabular}{r|lr|lr|lr|lr|}
-	\multicolumn{1}{r}{} & \multicolumn{1}{l}{\footnotesize 31} & \multicolumn{1}{r}{\footnotesize 30} & \multicolumn{1}{l}{\footnotesize 29} & \multicolumn{1}{r}{\footnotesize 12} & \multicolumn{1}{l}{\footnotesize 11} & \multicolumn{1}{r}{\footnotesize 5} & \multicolumn{1}{l}{\footnotesize 4} & \multicolumn{1}{r}{\footnotesize 0} \\
-	\cline{2-9}
-	\multirow{2}{*}{R2.Hi} & \multicolumn{2}{c|}{Seg} & \multicolumn{2}{c|}{\multirow{2}{*}{\ \ \ \ \ \ Virtual Page Number (VPN)}\ \ \ \ \ \ } & \multicolumn{2}{c|}{\multirow{2}{*}{\ \ \ \ \ \ \ \ \ \ ASID\ \ \ \ \ \ \ \ \ \ \ 
-}} & \multicolumn{2}{c|}{\cellcolor{gray}\ \ \ \ \ \ \ \ \  \ \ \ }\\
-	& \multicolumn{2}{c|}{No} & & & \multicolumn{2}{c|}{} & \multicolumn{2}{c|}{\cellcolor{gray}} \\
-	\cline{2-9}
-	\end{tabular} \\
-	\\
-	\begin{tabular}{r|lr|c|c|c|c|lr|}
-	\multicolumn{1}{r}{} & \multicolumn{1}{l}{\footnotesize 31} & \multicolumn{1}{r}{\footnotesize 12} & \multicolumn{1}{c}{\footnotesize 11} & \multicolumn{1}{c}{\footnotesize 10} & \multicolumn{1}{c}{\footnotesize 9} & \multicolumn{1}{c}{\footnotesize 8} & \multicolumn{1}{l}{\footnotesize 7} & \multicolumn{1}{r}{\footnotesize 0} \\
-	\cline{2-9}
-	\multirow{2}{*}{R2.Lo} & \multicolumn{2}{c|}{\multirow{2}{*}{\ \ \ \ \ \ \ \ \ \ Physical Frame Number (PFN)\ \ \ \ \ \ \ \ \ \ }} & \multirow{2}{*}{N} & \multirow{2}{*}{D} & \multirow{2}{*}{V} & \multirow{2}{*}{G} & 
-\multicolumn{2}{c|}{\cellcolor{gray}\ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ \ } \\
-	& & & & & & & \multicolumn{2}{c|}{\cellcolor{gray}}\\
-	\cline{2-9}
-	\end{tabular} \\
-	\\
+\begin{minipage}{\textwidth}
+\begin{framed}
+	\begin{center}
+		\textbf{Segment Table Entry}
+	\end{center}
+	\begin{bytefield}[endianness=big]{32}
+		\bitheader{0,4,5,11,12,29,30,31}\\
+		\begin{rightwordgroup}{R2.Hi}
+		\bitbox{2}{\footnotesize Seg.\\No} \bitbox{18}{Virtual Page Number (VPN)} \bitbox{7}{ASID} \bitbox{5}{\color{gray}\rule{\width}{\height}}
+		\end{rightwordgroup}\\
+		\bitheader{0,7-12,31}\\
+		\begin{rightwordgroup}{R2.Lo}
+		\bitbox{20}{Physical Frame Number (PFN)} \bitbox{1}{N} \bitbox{1}{D} \bitbox{1}{V} \bitbox{1}{G} \bitbox{8}{\color{gray}\rule{\width}{\height}}
+		\end{rightwordgroup}\\
+	\end{bytefield}\\
 	\begin{tabular}{ll}
 	\textbf{N} : Non Cachable bit & \textbf{V} : Valid bit \\
 	\textbf{D} : Dirty bit & \textbf{G} : Global bit \\
-	\end{tabular} \\
-	\\
-\hline
-\end{tabular}
-\end{center}
+	\end{tabular}
+\end{framed}
+\end{minipage}

@@ -1,25 +1,21 @@
-\begin{center}
-\begin{tabular}{|l|}
-\hline
-\\
-\multicolumn{1}{|c|}{\textbf{Coprocessors Access Register}}\\
-\\
-	\begin{tabular}{|p{1cm}|*{14}{p{0.5cm}|}}
-	\multicolumn{1}{c}{31 \hfill 28} & \multicolumn{1}{l}{27} & \multicolumn{1}{l}{25} & \multicolumn{1}{l}{23} & \multicolumn{1}{l}{21} & \multicolumn{1}{l}{19} & \multicolumn{1}{l}{17} & \multicolumn{1}{l}{15} & \multicolumn{1}{l}{13} & \multicolumn{1}{l}{11} & \multicolumn{1}{l}{9} & \multicolumn{1}{l}{7} & \multicolumn{1}{l}{5} & \multicolumn{1}{l}{3} & \multicolumn{1}{c}{1\hfill0} \\
-	\hline
-	SBZ & cp13 & cp12 & cp11 & cp10 & cp9 & cp8 & cp7 & cp6 & cp5 & cp4 & cp3 & cp2 & cp1 & cp0 \\
-	\hline
-	\end{tabular} \\
-	\\
+\begin{minipage}{\textwidth}
+\begin{framed}
+	\begin{center}
+		\textbf{Coprocessors Access Register}
+	\end{center}
+	\begin{bytefield}[bitwidth=10px,endianness=big]{32}
+		\bitheader{0-28,31}\\
+		\bitbox{4}{SBZ}	\small\bitboxes{2}{{cp13} {cp12} {cp11} {cp10} {cp9} {cp8} {cp7} {cp6} {cp5} {cp4} {cp3} {cp2} {cp1} {cp0}}\\
+	\end{bytefield}
 	\begin{tabular}{p{1cm}p{0.5cm}p{12cm}}
 	SBZ : & & Should Be Zero \\
-	cp* : \\
-	& 00 & Access Denied. (Accessing this coprocessor generates Undefined Exception)\\
-	& 01 & Privileged Access Only. (Accessing this coprocessor in user mode generates Undefined Exception)\\
-	& 10 & RESERVED. (Unpredictable)\\
+	cp* : & 00 & Access Denied. \\
+	&    & \scriptsize(Accessing this coprocessor generates Undefined Exception)\\
+	& 01 & Privileged Access Only. \\
+	&    & \scriptsize (Accessing this coprocessor in user mode generates Undefined Exception)\\
+	& 10 & RESERVED. \\
+	&    & \scriptsize (Unpredictable)\\
 	& 11 & Full Access.\\
 	\end{tabular} \\
-\\
-\hline
-\end{tabular}
-\end{center}
+\end{framed}
+\end{minipage}

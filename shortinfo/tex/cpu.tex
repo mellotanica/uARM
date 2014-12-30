@@ -54,6 +54,7 @@ Only the first 8 registers (R0 $\rightarrow$ R7) are general purpose, the higher
 
 The CPSR (and SPSR if active mode has one) is always accessible in ARM state via the special instructions MSR (move register to PRS) and MRS (move PRS to register). This register shows arithmetical instructions' additional results and allows to switch states/modes and interrupt handling. Its structure is shown below:
 
+\vspace{5px}
 \input{tex/tables/CPSR.tex}
 
 The first 5 bits of CPSR are used to set processor execution mode, the possible values are:

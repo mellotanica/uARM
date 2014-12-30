@@ -1,24 +1,38 @@
-\begin{center}
-\begin{tabular}{|l|}
-\hline
-\\
-\multicolumn{1}{|c|}{\textbf{Program Status Register}}\\
-\\
-	\begin{tabular}{|*{16}{p{0.5cm}|}}
-	\multicolumn{4}{c}{\textbf{\small condition code flags}} & \multicolumn{4}{c}{\textbf{\small reserved bits}} & \multicolumn{8}{c}{\textbf{\small control bits}} \\
-	\multicolumn{1}{c}{31} & \multicolumn{1}{c}{30} & \multicolumn{1}{c}{29} & \multicolumn{1}{c}{28} & \multicolumn{1}{c}{27} & \multicolumn{1}{c}{26} & \multicolumn{1}{c}{9} & \multicolumn{1}{c}{8} & \multicolumn{1}{c}{7} & \multicolumn{1}{c}{6} & \multicolumn{1}{c}{5} & \multicolumn{1}{c}{4} & \multicolumn{1}{c}{3} & \multicolumn{1}{c}{2} & \multicolumn{1}{c}{1} & \multicolumn{1}{c}{0} \\
-	\hline
-	\textbf{N} & \textbf{Z} & \textbf{C} & \textbf{V} & \textbf{$\cdot$} & \multicolumn{2}{c|}{\textbf{$\cdot$ // $\cdot$}} & \textbf{$\cdot$} & \textbf{I} & \textbf{F} & \textbf{T} & \textbf{M4} & \textbf{M3} & \textbf{M2} & \textbf{M1} & \textbf{M0} \\
-	\hline
-	\end{tabular} \\
-	\\
+\newcommand{\fakethirtytwobits}[1]{%
+	\tiny
+	\ifnum#1=1234567890
+		#1
+	\else
+		\ifnum#1>13
+			\count32=#1
+			\advance\count32 by 13
+			\the\count32%
+		\else
+			\ifnum#1<9
+				#1%
+			\else
+				\ifnum#1=11
+					$\cdots$%
+				\fi
+			\fi
+		\fi
+	\fi
+}
+\begin{minipage}{\textwidth}
+\begin{framed}
+	\begin{center}
+		\textbf{Program Status Register}
+	\end{center}
+	\begin{bytefield}[bitwidth=17px,endianness=big,bitformatting=\fakethirtytwobits]{19}
+	\bitbox[]{4}{condition code flags} \bitbox[]{7}{reserved bits} \bitbox[]{8}{control flags}\\
+	\bitheader{0-18} \\
+	\bitboxes{1}{NZCV} \bitbox{7}{\color{gray}\rule{\width}{\height}} \bitboxes{1}{IFT} \bitboxes{1}{{M4} {M3} {M2} {M1} {M0}}\\
+	\end{bytefield}
 	\begin{tabular}{ll}
 	N : Negative / less then & I : IRQ disabled \\
 	Z : Zero & F : FIQ disabled \\
 	C : Carry / Borrow / Extend & T : State bit (Thumb enabled)\\
 	V : Overflow & M : Mode bits \\
 	\end{tabular} \\
-\\
-\hline
-\end{tabular}
-\end{center}
+\end{framed}
+\end{minipage}
