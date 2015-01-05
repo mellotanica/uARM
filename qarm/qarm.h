@@ -39,7 +39,6 @@
 #include <QFile>
 #include <QDataStream>
 #include <QPointer>
-#include <QMessageBox>
 #include <QApplication>
 
 class qarm : public QMainWindow{

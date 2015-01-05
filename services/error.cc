@@ -22,12 +22,13 @@
 #ifndef BASE_ERROR_CC
 #define BASE_ERROR_CC
 
-#include <QMessageBox>
+#include "qarm/qarmmessagebox.h"
 #include "armProc/machine_config.h"
 
 void Panic(const char* message)
 {
-    QMessageBox::critical(0, "PANIC", QString("PANIC: %1").arg(message));
+    QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "PANIC", QString("PANIC: %1").arg(message).toStdString().c_str());
+    error->show();
     // WARN: is it necessary?
     MC_Holder::getInstance()->getConfig()->getApp()->quit();
 }

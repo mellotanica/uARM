@@ -23,8 +23,8 @@
 #define QARM_RAMVIEW_CC
 
 #include "ramview.h"
+#include "qarm/qarmmessagebox.h"
 #include <QHBoxLayout>
-#include <QMessageBox>
 #include <QLabel>
 #include "armProc/machine_config.h"
 
@@ -85,13 +85,14 @@ void ramView::visualize(){
     if(start > end || (end - start) > MAX_VIEWABLE_RAM){
         mainLayout->removeWidget(ramViewer);
         delete ramViewer;
-        QString message;
+        char *message;
         if(start > end){
             message = "Start address cannot be higher than End address...";
         } else {
             message = "Memory segment too large,\n max displayble size: 10 KB";
         }
-        QMessageBox::warning(this, "Warning", message, QMessageBox::Ok);
+        QarmMessageBox *warning = new QarmMessageBox(QarmMessageBox::WARNING, "Warning", message, this);
+        warning->show();
     } else if(conv && (start != startAddr || end != endAddr)){
 
         if(start & 3){

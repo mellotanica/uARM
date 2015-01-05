@@ -17,7 +17,6 @@ QarmMessageBox::QarmMessageBox(DType t, const char *title, const char *text, QWi
 {
     setModal(true);
     setWindowTitle(title);
-    setWindowIcon(parent->windowIcon());
 
     QLayout *mainLayout = new QVBoxLayout;
     QWidget *topWidget = new QWidget;
@@ -43,6 +42,11 @@ QarmMessageBox::QarmMessageBox(DType t, const char *title, const char *text, QWi
             this->setAccessibleName("Question Dialog");
             break;
     }
+    if(parent)
+        setWindowIcon(parent->windowIcon());
+    else
+        setWindowIcon(icon);
+
     QLabel *iconL = new QLabel;
     iconL->setAlignment(Qt::AlignCenter);
     //iconL->setFrameShape(QFrame::Box);

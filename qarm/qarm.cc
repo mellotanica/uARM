@@ -43,7 +43,8 @@ qarm::qarm(QApplication *app):
     QDir *defaultPath = new QDir(QDir::homePath()+"/"+DEFAULT_CONFIG_PATH);
     if(!defaultPath->exists())
         if(!defaultPath->mkdir(defaultPath->absolutePath())){   //config folder not accessible..
-            QMessageBox::critical(this, "Fatal", "Cannot create .uarm folder in home directory.\nCheck HOME environment variable.");
+            QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Fatal", "Cannot create .uarm folder in home directory.\nCheck HOME environment variable.", this);
+            error->show();
             app->exit();
         }
 
@@ -202,18 +203,19 @@ void qarm::showRam(){
         connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), ramWindow, SLOT(update()));
         ramWindow->show();
     } else {
-        QarmMessageBox *warning = new QarmMessageBox(QarmMessageBox::WARNING, "Warning", "Machine not initialized,\ncannot display memory contents.", this);
+        QarmMessageBox *warning = new QarmMessageBox(QarmMessageBox::WARNING, "Warning",
+                                                     "Machine not initialized,\ncannot display memory contents.", this);
         warning->show();
-        //QMessageBox::warning(this, "Warning", "Machine not initialized,\ncannot display memory contents.", QMessageBox::Ok);
     }
 }
 
 void qarm::selectCore(){
     if(dataLoaded){
-        QMessageBox::StandardButton reply = QMessageBox::question(this,"Caution",
-                                                                  "Program File already loaded..\nReset machine and load new Program?",
-                                                                  QMessageBox::Yes|QMessageBox::No);
-        if(reply == QMessageBox::No)
+        QarmMessageBox *question = new QarmMessageBox(QarmMessageBox::QUESTION, "Caution",
+                                                      "Program File already loaded..\nReset machine and load new Program?", this);
+        question->show();
+
+        if(question->result() == QarmMessageBox::Rejected)
             return;
         else {
             initialized = false;
@@ -229,10 +231,11 @@ void qarm::selectCore(){
 
 void qarm::selectBios(){
     if(biosLoaded){
-        QMessageBox::StandardButton reply = QMessageBox::question(this,"Caution",
-                                                                  "BIOS ROM already loaded..\nReset machine and load new BIOS?",
-                                                                  QMessageBox::Yes|QMessageBox::No);
-        if(reply == QMessageBox::No)
+        QarmMessageBox *question = new QarmMessageBox(QarmMessageBox::QUESTION, "Caution",
+                                                      "BIOS ROM already loaded..\nReset machine and load new BIOS?", this);
+        question->show();
+
+        if(question->result() == QarmMessageBox::Rejected)
             return;
         else {
             initialized = false;
@@ -251,7 +254,8 @@ bool qarm::openRAM(){
     if(coreF != ""){
         QFile f (coreF);
         if(!f.open(QIODevice::ReadOnly)) {
-            QMessageBox::critical(this, "Error", "Could not open Core file");
+            QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error", "Could not open Core file", this);
+            error->show();
             return false;
         }
         QDataStream in(&f);
@@ -261,12 +265,14 @@ bool qarm::openRAM(){
             char *buffer = new char[len];
             int sz = in.readRawData(buffer, len);
             if(sz <= 0 || (buffer[0] | buffer[1]<<8 | buffer[2]<<16 | buffer[3]<<24) != COREFILEID){
-                QMessageBox::critical(this, "Error", "Irregular Core file");
+                QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error", "Irregular Core file", this);
+                error->show();
                 return false;
             }
             sz -= 4;
             if(sz <= 0 || !mac->getBus()->loadRAM(buffer+4, (Word) sz, true)){
-                QMessageBox::critical(this, "Error", "Problems while loading Core file");
+                QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error", "Problems while loading Core file", this);
+                error->show();
                 return false;
             }
             delete [] buffer;
@@ -282,7 +288,8 @@ bool qarm::openBIOS(){
     if(biosF != ""){
         QFile f (biosF);
         if(!f.open(QIODevice::ReadOnly)) {
-            QMessageBox::critical(this, "Error", "Could not open BIOS file");
+            QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error", "Could not open BIOS file", this);
+            error->show();
             return false;
         }
         QDataStream in(&f);
@@ -290,12 +297,14 @@ bool qarm::openBIOS(){
         char *buffer = new char[len];
         Word sz = in.readRawData(buffer, len);
         if(sz <= 0 || (buffer[0] | buffer[1]<<8 | buffer[2]<<16 | buffer[3]<<24) != BIOSFILEID){
-            QMessageBox::critical(this, "Error", "Irregular BIOS file");
+            QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error", "Irregular BIOS file", this);
+            error->show();
             return false;
         }
         sz -= 8;
         if(sz <= 0 || !mac->getBus()->loadBIOS(buffer+8, (Word) sz)){
-            QMessageBox::critical(this, "Error", "Problems while flashing BIOS ROM");
+            QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error", "Problems while flashing BIOS ROM", this);
+            error->show();
             return false;
         }
         delete [] buffer;
@@ -312,7 +321,8 @@ void qarm::showConfigDialog(){
         try {
             MC_Holder::getInstance()->getConfig()->Save();
         } catch (FileError& e) {
-            QMessageBox::critical(this, QString("%1: Error").arg(application->applicationName()), e.what());
+            QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error", e.what(), this);
+            error->show();
             return;
         }
         // EDIT: no config view for now..

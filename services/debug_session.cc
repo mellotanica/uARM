@@ -28,7 +28,7 @@
 
 #include <QAction>
 #include <QTimer>
-#include <QMessageBox>
+#include "qarm/qarmmessagebox.h"
 
 #include "services/error.h"
 #include "armProc/machine_config.h"
@@ -81,11 +81,10 @@ void DebugSession::resetSymbolTable(){
         stab = new SymbolTable(config->getSymbolTableASID(),
                                config->getROM(ROM_TYPE_STAB).c_str());
     } catch (const Error& e) {
-        QMessageBox::critical(
-            mainW,
-            QString("%1: Error").arg(app->applicationName()),
-            "<b>Could not initialize debugger:</b> "
-            "invalid or missing symbol table file");
+        QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error",
+                                                   "<b>Could not initialize debugger:</b> "
+                                                   "invalid or missing symbol table file", mainW);
+        error->show();
         //machine.reset();
         symbolTable.reset();
         return;
@@ -207,51 +206,46 @@ void DebugSession::initializeMachine()
         foreach (const std::string& s, errors)
             el += QString("<li>%1</li>").arg(s.c_str());
         el += "</ul>";
-        QMessageBox::critical(
-            0, QString("%1: Error").arg(Appl()->applicationName()),
-            "Invalid and/or incomplete machine configuration: " + el);
+        QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error",
+                                                   "Invalid and/or incomplete machine configuration: " + el);
+        error->show();
         return;
     }
 
     try {
         machine.reset(new Machine(config, &breakpoints, &suspects, &tracepoints));
     } catch (const FileError& e) {
-        QMessageBox::critical(
-            Appl()->getApplWindow(),
-            QString("%1: Error").arg(Appl()->applicationName()),
-            QString("<b>Could not initialize machine:</b> "
-                    "the file `%1' is nonexistent or inaccessible").arg(e.fileName.c_str()));
+        QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error",
+                    QString("<b>Could not initialize machine:</b> "
+                    "the file `%1' is nonexistent or inaccessible").arg(e.fileName.c_str()).toStdString().c_str());
+        error->show();
         return;
     } catch (const InvalidCoreFileError& e) {
-        QMessageBox::critical(
-            Appl()->getApplWindow(),
-            QString("%1: Error").arg(Appl()->applicationName()),
+        QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error",
             QString("<b>Could not initialize machine:</b> "
                     "the file `%1' does not appear to be a valid <i>Core</i> file; "
                     "make sure you are creating the file with the <code>umps2-elf2umps</code> utility")
-            .arg(e.fileName.c_str()));
+            .arg(e.fileName.c_str()).toStdString().c_str());
+        error->show();
         return;
     } catch (const CoreFileOverflow& e) {
-        QMessageBox::critical(
-            Appl()->getApplWindow(),
-            QString("%1: Error").arg(Appl()->applicationName()),
+        QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error",
             "<b>Could not initialize machine:</b> "
             "the core file does not fit in memory; "
             "please increase available RAM and try again");
+        error->show();
         return;
     } catch (const InvalidFileFormatError& e) {
-        QMessageBox::critical(
-            Appl()->getApplWindow(),
-            QString("%1: Error").arg(Appl()->applicationName()),
+        QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error",
             QString("<b>Could not initialize machine:</b> "
-                    "the file `%1' has wrong format").arg(e.fileName.c_str()));
+                    "the file `%1' has wrong format").arg(e.fileName.c_str()).toStdString().c_str());
+        error->show();
         return;
     } catch (const EthError& e) {
-        QMessageBox::critical(
-            Appl()->getApplWindow(),
-            QString("%1: Error").arg(Appl()->applicationName()),
+        QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error",
             QString("<b>Could not initialize machine:</b> "
-                    "error initializing network device %1").arg(e.devNo));
+                    "error initializing network device %1").arg(e.devNo).toStdString().c_str());
+        error->show();
         return;
     }
 
@@ -262,11 +256,10 @@ void DebugSession::initializeMachine()
         stab = new SymbolTable(config->getSymbolTableASID(),
                                config->getROM(ROM_TYPE_STAB).c_str());
     } catch (const Error& e) {
-        QMessageBox::critical(
-            Appl()->getApplWindow(),
-            QString("%1: Error").arg(Appl()->applicationName()),
+        QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error",
             "<b>Could not initialize machine:</b> "
             "invalid or missing symbol table file");
+        error->show();
         machine.reset();
         return;
     }

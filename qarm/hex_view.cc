@@ -30,7 +30,6 @@
 #include <QTextBlock>
 #include <QPainter>
 #include <QScrollBar>
-#include <QMessageBox>
 
 #include "qarm/procdisplay.h"
 
@@ -40,6 +39,7 @@
 
 //#include "qmps/application.h"
 //#include "qmps/debug_session.h"
+//#include "qarm/qarmmessagebox.h"
 #include "qarm/hex_view_priv.h"
 //#include "qmps/ui_utils.h"
 
@@ -194,8 +194,8 @@ void HexView::keyPressEvent(QKeyEvent* event)
 
         Word paddr = start + currentWord() * WS;
         if (debugSession->getMachine()->WriteMemory(paddr, dataAtCursor())) {
-            QMessageBox::warning(this, "Warning",
-                                 QString("Could not write location %1").arg(FormatAddress(paddr)));
+            QarmMessageBox *warning = new QarmMessageBox(QarmMessageBox::WARNING, "Warning", QString("Could not write location %1").arg(FormatAddress(paddr)).toStdString().c_str(), this);
+            warning->show();
             Refresh();
         } else {
             moveCursor(QTextCursor::Right, 1 + kHorizontalSpacing * nibble);
