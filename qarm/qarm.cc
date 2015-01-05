@@ -27,6 +27,8 @@
 #include "qarm/machine_config_dialog.h"
 #include "services/error.h"
 
+#include "qarm/qarmmessagebox.h"
+
 #include <QFileDialog>
 #include <QFile>
 #include <QScrollArea>
@@ -200,7 +202,9 @@ void qarm::showRam(){
         connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), ramWindow, SLOT(update()));
         ramWindow->show();
     } else {
-        QMessageBox::warning(this, "Warning", "Machine not initialized,\ncannot display memory contents.", QMessageBox::Ok);
+        QarmMessageBox *warning = new QarmMessageBox(QarmMessageBox::WARNING, "Warning", "Machine not initialized,\ncannot display memory contents.", this);
+        warning->show();
+        //QMessageBox::warning(this, "Warning", "Machine not initialized,\ncannot display memory contents.", QMessageBox::Ok);
     }
 }
 

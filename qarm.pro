@@ -68,7 +68,8 @@ HEADERS += \
     armProc/tlbentry.h \
     qarm/tlb_model.h \
     qarm/tlb_window.h \
-    qarm/register_item_delegate.h
+    qarm/register_item_delegate.h \
+    qarm/qarmmessagebox.h
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -112,7 +113,8 @@ SOURCES += \
     armProc/tlbentry.cpp \
     qarm/tlb_model.cc \
     qarm/tlb_window.cc \
-    qarm/register_item_delegate.cc
+    qarm/register_item_delegate.cc \
+    qarm/qarmmessagebox.cpp
 
 OTHER_FILES += \
     compile \
