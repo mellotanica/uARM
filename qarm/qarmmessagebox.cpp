@@ -24,28 +24,32 @@ QarmMessageBox::QarmMessageBox(DType t, const char *title, const char *text, QWi
     QLayout *topLayout = new QHBoxLayout;
     QStyle *style = QApplication::style();
     QIcon icon;
+    QString accName;
     switch(t){
         case INFO:
             icon = style->standardIcon(QStyle::SP_MessageBoxInformation);
-            this->setAccessibleName("Information Dialog");
+            accName = QString("Information Dialog");
             break;
         case WARNING:
             icon = style->standardIcon(QStyle::SP_MessageBoxWarning);
-            this->setAccessibleName("Warning Dialog");
+            accName = QString("Warning Dialog");
             break;
         case CRITICAL:
             icon = style->standardIcon(QStyle::SP_MessageBoxCritical);
-            this->setAccessibleName("Error Dialog");
+            accName = QString("Error Dialog");
             break;
         case QUESTION:
             icon = style->standardIcon(QStyle::SP_MessageBoxQuestion);
-            this->setAccessibleName("Question Dialog");
+            accName = QString("Question Dialog");
             break;
     }
     if(parent)
         setWindowIcon(parent->windowIcon());
     else
         setWindowIcon(icon);
+
+    accName.append(" : ").append(text);
+    this->setAccessibleName(accName);
 
     QLabel *iconL = new QLabel;
     iconL->setAlignment(Qt::AlignCenter);
@@ -58,6 +62,7 @@ QarmMessageBox::QarmMessageBox(DType t, const char *title, const char *text, QWi
     QLabel *contentL = new QLabel(text);
     contentL->setAccessibleName("Dialog content");
     contentL->setAccessibleDescription(text);
+
 
     topLayout->addWidget(contentL);
 
