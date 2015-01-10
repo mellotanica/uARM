@@ -6,7 +6,7 @@ To compile uarm you need the following packages:
 
 - qmake (qt5-qmake)
 - make
-- qt >= v5.3.0 (libqt5-dev)
+- qt >= v5.3.0 (including declarative)
 - gcc (g++)
 - libelf1
 - libelf-dev
