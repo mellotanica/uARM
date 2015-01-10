@@ -15,8 +15,8 @@ if [ $QMAKERET -ne 127 ]; then
     echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
     exit 1
   fi
-  QCOMP="qtchooser -run-tool=qmake -qt=$VERSION"
-  echo "compiler command: \"$QCOMP\""
+  QMCOMP="qtchooser -run-tool=qmake -qt=$VERSION"
+  echo "compiler command: \"$QMCOMP\""
 else
   echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
   exit 1
