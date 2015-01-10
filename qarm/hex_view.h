@@ -37,7 +37,7 @@ class HexViewMargin;
 class HexView : public QPlainTextEdit
 {
     Q_OBJECT
-    Q_PROPERTY(bool reversedByteOrder READ HasReversedByteOrder WRITE setReversedByteOrder)
+//    Q_PROPERTY(bool reversedByteOrder READ HasReversedByteOrder WRITE setReversedByteOrder)
 
 public:
     enum ByteOrder {
@@ -47,7 +47,7 @@ public:
 
     HexView(Word start, Word end, machine *mac, QWidget* parent = 0);
 
-    bool HasReversedByteOrder() const { return revByteOrder; }
+    bool HasReversedByteOrder() const { return m_reversedByteOrder; }
     void setReversedByteOrder(bool setting);
 
 public slots:
@@ -104,7 +104,7 @@ private:
     const Word end;
     const Word length;
 
-    bool revByteOrder;
+    bool m_reversedByteOrder;
 
     const QString invalidByteRepr;
 

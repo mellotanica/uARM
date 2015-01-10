@@ -79,7 +79,7 @@ void TerminalView::keyPressEvent(QKeyEvent* e)
         input.chop(1);
         QPlainTextEdit::keyPressEvent(e);
     } else if (!e->text().isEmpty() && Qt::Key_Space <= key && key <= Qt::Key_nobreakspace) {
-        input.append(e->text().toAscii());
+        input.append(e->text().toLocal8Bit());
         QPlainTextEdit::keyPressEvent(e);
     }
 }

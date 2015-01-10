@@ -34,7 +34,7 @@ void readConfigs(){
         for(qint64 lineLength = def->readLine(buf, sizeof(buf)); lineLength != -1; lineLength = def->readLine(buf, sizeof(buf))){
             if(lineLength == 0 || buf[0] == '\n')         //empty line
                 continue;
-            line = QString::fromAscii(buf, lineLength);
+            line = QString::fromLocal8Bit(buf, lineLength);
             line = line.trimmed();
             if(line.startsWith('#'))    //comment line
                 continue;

@@ -81,8 +81,8 @@ HexView::HexView(Word start, Word end, machine *mac, QWidget* parent)
 
 void HexView::setReversedByteOrder(bool setting)
 {
-    if (revByteOrder != setting) {
-        revByteOrder = setting;
+    if (m_reversedByteOrder != setting) {
+        m_reversedByteOrder = setting;
         Refresh();
     }
 }
@@ -120,7 +120,7 @@ void HexView::Refresh()
                 if (bi > 0 || wi % kWordsPerRow)
                     buf += ' ';
                 unsigned int byteVal;
-                if (revByteOrder)
+                if (m_reversedByteOrder)
                     byteVal = ((unsigned char *) &data)[WS - bi - 1];
                 else
                     byteVal = ((unsigned char *) &data)[bi];
@@ -261,7 +261,7 @@ Word HexView::dataAtCursor() const
     Word data;
 
     for (unsigned int i = 0; i < WS; i++) {
-        if (revByteOrder)
+        if (m_reversedByteOrder)
             ((unsigned char *) &data)[i] = byteValue(currentWord(), WS - i - 1);
         else
             ((unsigned char *) &data)[i] = byteValue(currentWord(), i);

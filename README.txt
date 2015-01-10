@@ -4,9 +4,9 @@ UARM is a simple ARM7TDMI-based machine emulator
 
 To compile uarm you need the following packages:
 
-- qmake (qt4-qmake)
+- qmake (qt5-qmake)
 - make
-- qt >= v4.8.2 (libqt4-dev)
+- qt >= v5.3.0 (libqt5-dev)
 - gcc (g++)
 - libelf1
 - libelf-dev

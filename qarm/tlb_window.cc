@@ -37,10 +37,10 @@ tlb_window::tlb_window(machine *mac, QWidget * parent, Qt::WindowFlags flags):
     tlbView->setSelectionMode(QAbstractItemView::SingleSelection);
     tlbView->setSelectionBehavior(QAbstractItemView::SelectRows);
     tlbView->horizontalHeader()->setStretchLastSection(true);
-    tlbView->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    tlbView->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
     tlbView->horizontalHeader()->setHighlightSections(false);
     tlbView->verticalHeader()->setHighlightSections(false);
-    tlbView->verticalHeader()->setResizeMode(QHeaderView::Fixed);
+    tlbView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     tlbView->setAlternatingRowColors(true);
     tlbView->setItemDelegate(new RIDelegateHex(this));
     tlbView->resizeRowsToContents();
