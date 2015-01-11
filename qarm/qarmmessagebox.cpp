@@ -48,6 +48,8 @@ QarmMessageBox::QarmMessageBox(DType t, const char *title, const char *text, QWi
     else
         setWindowIcon(icon);
 
+    accName = accName.append(" : ");
+    accName = accName.append(text);
     this->setAccessibleName(accName);
 
     QLabel *iconL = new QLabel(this);
