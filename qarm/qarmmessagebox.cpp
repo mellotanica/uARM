@@ -48,21 +48,20 @@ QarmMessageBox::QarmMessageBox(DType t, const char *title, const char *text, QWi
     else
         setWindowIcon(icon);
 
-    accName.append(" : ").append(text);
     this->setAccessibleName(accName);
 
-    QLabel *iconL = new QLabel;
+    QLabel *iconL = new QLabel(this);
     iconL->setAlignment(Qt::AlignCenter);
     //iconL->setFrameShape(QFrame::Box);
+    iconL->setAccessibleName(accName);
     iconL->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     iconL->setMinimumSize(64, 64);
     iconL->setPixmap(icon.pixmap(256, 256, QIcon::Normal, QIcon::On));
     topLayout->addWidget(iconL);
 
-    QLabel *contentL = new QLabel(text);
+    QLabel *contentL = new QLabel(text, this);
     contentL->setAccessibleName("Dialog content");
     contentL->setAccessibleDescription(text);
-
 
     topLayout->addWidget(contentL);
 
