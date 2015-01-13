@@ -151,3 +151,6 @@ OTHER_FILES += \
     facilities/crtso.s \
     facilities/libdiv.s \
     facilities/libdiv.o
+
+DISTFILES += \
+    todo.txt
