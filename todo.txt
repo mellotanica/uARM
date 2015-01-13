@@ -6,3 +6,4 @@
 + two execution modes, one more accessible with setting flag
 + breakpoint window fix
 + compile for 5.4
++ try flat review with laptop layout
