@@ -41,6 +41,7 @@ class mainBar : public QToolBar
     Q_OBJECT
 public:
     explicit mainBar(QWidget *parent = 0);
+    bool getPowerState() { return onState; }
 
 public slots:
     void setSpeed(int speedVal);
@@ -60,9 +61,11 @@ signals:
     void hideBPW();
     void showTLB();
     void hideTLB();
+    void powerOn();
 
 private slots:
-    void poweron();
+    void doPowerOn();
+    void doPowerOff();
     void showDropDownMenu();
     void setSpeedLab(int speedVal);
     void playToggled(bool checked);
@@ -89,6 +92,7 @@ private:
     QMenu *windowMenu;
     QMenuBar *windowDropDown;
     QAction* showTerminalActions[N_DEV_PER_IL];
+    bool onState;
 };
 
 class styledButton : public QToolButton{

@@ -32,6 +32,8 @@
 mainBar::mainBar(QWidget *parent) :
     QToolBar(parent)
 {
+    onState = false;
+
     setMovable(false);
     setFloatable(false);
     setOrientation(Qt::Horizontal);
@@ -123,11 +125,12 @@ mainBar::mainBar(QWidget *parent) :
 
     windowB = new styledButton(utilsW);
     windowB->setText("Terminals");
-    windowB->setAccessibleName("Show Terminal");
+    windowB->setAccessibleName("Show Terminals Menu");
+    windowB->setEnabled(false);
     windowMenu = new QMenu(windowB);
 
     for (unsigned int i = 0; i < N_DEV_PER_IL; ++i) {
-        showTerminalActions[i] = new QAction(QString("Terminal %1").arg(i), windowMenu);
+        showTerminalActions[i] = new QAction(QString("Show Terminal %1").arg(i), windowMenu);
         showTerminalActions[i]->setShortcut(QKeySequence(QString("Alt+%1").arg(i)));
         showTerminalActions[i]->setData(QVariant(i));
         connect(showTerminalActions[i], SIGNAL(triggered()), this, SLOT(showTerminalClicked()));
@@ -163,7 +166,7 @@ mainBar::mainBar(QWidget *parent) :
     connect(this, SIGNAL(speedChanged(int)), this, SLOT(setSpeedLab(int)));
     connect(speedSl, SIGNAL(valueChanged(int)), this, SIGNAL(speedChanged(int)));
     connect(playB, SIGNAL(toggled(bool)), this, SLOT(playToggled(bool)));
-    connect(resetB, SIGNAL(clicked()), this, SLOT(poweron()));
+    connect(resetB, SIGNAL(clicked()), this, SIGNAL(powerOn()));
     connect(stepB, SIGNAL(clicked()), this, SIGNAL(step()));
     connect(stepB, SIGNAL(clicked()), this, SLOT(stop()));
     connect(ramB, SIGNAL(clicked()), this, SIGNAL(showRam()));
@@ -186,16 +189,31 @@ mainBar::mainBar(QWidget *parent) :
     this->addWidget(utilsW);
 }
 
-void mainBar::poweron(){
+void mainBar::doPowerOn(){
     QIcon *resetIco = new QIcon(LIB_PATH "icons/reset.png");
     disconnect(resetB, SIGNAL(clicked()), this, SLOT(poweron()));
     connect(resetB, SIGNAL(clicked()), this, SLOT(resetPressed()));
     playB->setEnabled(true);
     stepB->setEnabled(true);
+    windowB->setEnabled(true);
     resetB->setAccessibleName("Reset Machine");
     resetB->setToolTip(resetB->accessibleName());
     resetB->setIcon(*resetIco);
     resetPressed();
+    onState = true;
+}
+
+void mainBar::doPowerOff(){
+    QIcon *resetIco = new QIcon(LIB_PATH "icons/poweron.png");
+    disconnect(resetB, SIGNAL(clicked()), this, SLOT(resetPressed()));
+    connect(resetB, SIGNAL(clicked()), this, SIGNAL(powerOn()));
+    playB->setEnabled(false);
+    stepB->setEnabled(false);
+    windowB->setEnabled(false);
+    resetB->setAccessibleName("Power on");
+    resetB->setToolTip(resetB->accessibleName());
+    resetB->setIcon(*resetIco);
+    onState = false;
 }
 
 void mainBar::playToggled(bool checked){

@@ -88,11 +88,14 @@ qarm::qarm(QApplication *app):
     connect(toolbar, SIGNAL(speedChanged(int)), this, SLOT(speedChanged(int)));
     connect(toolbar, SIGNAL(pause()), this, SLOT(stop()));
     connect(toolbar, SIGNAL(reset()), this, SLOT(softReset()));
+    connect(toolbar, SIGNAL(powerOn()), this, SLOT(powerOn()));
     connect(toolbar, SIGNAL(showRam()), this, SLOT(showRam()));
     connect(toolbar, SIGNAL(step()), this, SLOT(step()));
     connect(toolbar, SIGNAL(showConfig()), this, SLOT(showConfigDialog()));
     connect(toolbar, SIGNAL(showTerminal(uint)), this, SLOT(showTerminal(uint)));
     connect(this, SIGNAL(setTerminalEnabled(uint,bool)), toolbar, SLOT(setTerminalEnabled(uint,bool)));
+    connect(this, SIGNAL(poweredOn()), toolbar, SLOT(doPowerOn()));
+    connect(this, SIGNAL(poweredOff()), toolbar, SLOT(doPowerOff()));
 
     connect(toolbar, SIGNAL(showBPW()), bpWindow, SLOT(show()));
     connect(toolbar, SIGNAL(hideBPW()), bpWindow, SLOT(hide()));
@@ -123,13 +126,21 @@ qarm::qarm(QApplication *app):
     setCentralWidget(mainWidget);
 }
 
+void qarm::powerOn(){
+    softReset();
+    if(initialized)
+        emit poweredOn();
+}
+
 void qarm::softReset(){
     stop();
     initialized = false;
     emit resetMachine();
     toolbar->setSpeed(IPSMAX);
     doReset = false;
-    initialize();
+    if(!initialize()){
+        emit poweredOff();
+    }
 }
 
 bool qarm::initialize(){
@@ -159,6 +170,7 @@ void qarm::step(){
     if(!initialized){
         if(!initialize()){
             emit stop();
+            emit poweredOff();
             return;
         }
     }

@@ -57,6 +57,8 @@ signals:
     void stopSig();
     void setTerminalEnabled(unsigned int devNo, bool enabled);
     void resumeExec();
+    void poweredOn();
+    void poweredOff();
 
 private slots:
     void start(int speed);
@@ -70,6 +72,7 @@ private slots:
     void showConfigDialog();
     void showTerminal(unsigned int devNo);
     void onMachineHalted();
+    void powerOn();
 
 
 private:
