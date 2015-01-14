@@ -70,7 +70,7 @@ qarm::qarm(QApplication *app):
 
     toolbar->setSpeed(IPSMAX);
 
-    centralLayout = new QVBoxLayout(mainWidget);
+    centralLayout = new QVBoxLayout();
 
     centralLayout->addWidget(new QFLine(false));
     centralLayout->addWidget(toolbar);

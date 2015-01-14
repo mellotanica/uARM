@@ -18,10 +18,10 @@ QarmMessageBox::QarmMessageBox(DType t, const char *title, const char *text, QWi
     setModal(true);
     setWindowTitle(title);
 
-    QLayout *mainLayout = new QVBoxLayout(this);
+    QLayout *mainLayout = new QVBoxLayout();
     QWidget *topWidget = new QWidget(this);
 
-    QLayout *topLayout = new QHBoxLayout(topWidget);
+    QLayout *topLayout = new QHBoxLayout();
     QStyle *style = QApplication::style();
     QIcon icon;
     QString accName;

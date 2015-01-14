@@ -34,8 +34,8 @@ ramView::ramView(machine *mac, QWidget *parent) :
 {
     setWindowFlags(Qt::Window);
     setWindowTitle("Ram Inspector");
-    mainLayout = new QVBoxLayout(this);
-    QHBoxLayout *topPanel = new QHBoxLayout(this);
+    mainLayout = new QVBoxLayout();
+    QHBoxLayout *topPanel = new QHBoxLayout();
     mainLayout->addLayout(topPanel);
 
     QRegExp rx("[0-9,a-f]{1,8}", Qt::CaseInsensitive);

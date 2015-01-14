@@ -65,7 +65,7 @@ mainBar::mainBar(QWidget *parent) :
     stepB->setEnabled(false);
 
     plusMinusW = new QWidget(this);
-    plusMinusL = new QVBoxLayout(plusMinusW);
+    plusMinusL = new QVBoxLayout();
 
     plusB = new styledButton(plusMinusW);
     plusB->setText("+");
@@ -81,8 +81,8 @@ mainBar::mainBar(QWidget *parent) :
     plusMinusW->setLayout(plusMinusL);
 
     scrollerW = new QWidget(this);
-    scrollerL = new QVBoxLayout(scrollerW);
-    QHBoxLayout *topLay = new QHBoxLayout(scrollerW);
+    scrollerL = new QVBoxLayout();
+    QHBoxLayout *topLay = new QHBoxLayout();
 
     speedLab = new QLabel("50 instr/sec", scrollerW);
     speedLab->setAccessibleName("Emulation Speed");
@@ -114,9 +114,9 @@ mainBar::mainBar(QWidget *parent) :
     setSpeedLab(speedSl->value());
 
     utilsW = new QWidget(this);
-    utilsL = new QVBoxLayout(utilsW);
-    utilsUpperL = new QHBoxLayout(utilsW);
-    utilsLowerL = new QHBoxLayout(utilsW);
+    utilsL = new QVBoxLayout();
+    utilsUpperL = new QHBoxLayout();
+    utilsLowerL = new QHBoxLayout();
 
     ramB = new styledButton(utilsW);
     ramB->setToolButtonStyle(Qt::ToolButtonTextOnly);
@@ -191,7 +191,7 @@ mainBar::mainBar(QWidget *parent) :
 
 void mainBar::doPowerOn(){
     QIcon *resetIco = new QIcon(LIB_PATH "icons/reset.png");
-    disconnect(resetB, SIGNAL(clicked()), this, SLOT(poweron()));
+    disconnect(resetB, SIGNAL(clicked()), this, SIGNAL(powerOn()));
     connect(resetB, SIGNAL(clicked()), this, SLOT(resetPressed()));
     playB->setEnabled(true);
     stepB->setEnabled(true);

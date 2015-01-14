@@ -29,22 +29,22 @@
 breakpoint_window::breakpoint_window(machine *mac, QWidget * parent, Qt::WindowFlags flags):
     QMainWindow(parent, flags)
 {
-    QWidget *mainWidget = new QWidget(this);
+    QWidget *mainWidget = new QWidget();
     QVBoxLayout *mainLayout = new QVBoxLayout(mainWidget);
 
     addWidget = new AddBreakpointDialog(mainWidget);
 
     QWidget *buttonsW = new QWidget(mainWidget);
-    QHBoxLayout *buttonsL = new QHBoxLayout(buttonsW);
+    QHBoxLayout *buttonsL = new QHBoxLayout();
 
     QWidget *buttonsLeftW = new QWidget(buttonsW);
-    QGridLayout *buttonsLeftL = new QGridLayout(buttonsLeftW);
+    QGridLayout *buttonsLeftL = new QGridLayout();
 
     QWidget *buttonsCenterW = new QWidget(buttonsW);
-    QGridLayout *buttonsCenterL = new QGridLayout(buttonsCenterW);
+    QGridLayout *buttonsCenterL = new QGridLayout();
 
     QWidget *buttonsRightW = new QWidget(buttonsW);
-    QGridLayout *buttonsRightL = new QGridLayout(buttonsRightW);
+    QGridLayout *buttonsRightL = new QGridLayout();
 
     removeBreakpointAction = new QAction("Remove Breakpoint", this);
     connect(removeBreakpointAction, SIGNAL(triggered()), this, SLOT(onRemoveBreakpoint()));

@@ -67,7 +67,7 @@ MachineConfigDialog::MachineConfigDialog(MachineConfig* config, QWidget* parent)
     connect(this, SIGNAL(accepted()), this, SLOT(saveConfigChanges()));
     connect(buttonBox, SIGNAL(rejected()), this, SLOT(reject()));
 
-    QLayout* layout = new QVBoxLayout(this);
+    QLayout* layout = new QVBoxLayout();
     layout->addWidget(tabWidget);
     layout->addWidget(buttonBox);
 
@@ -251,7 +251,6 @@ QWidget* MachineConfigDialog::createDeviceTab(QWidget *parent)
     QWidget* tab = new QWidget(parent);
     tab->setAccessibleName("Devices Settings");
     QHBoxLayout* tabLayout = new QHBoxLayout(tab);
-    tab->setLayout(tabLayout);
 
     tabLayout->setContentsMargins(TAB_MARGIN_TOP,
                                   TAB_MARGIN_BOTTOM,
@@ -266,7 +265,7 @@ QWidget* MachineConfigDialog::createDeviceTab(QWidget *parent)
 
     tabLayout->addWidget(devClassView);
 
-    devFileChooserStack = new QStackedLayout(tab);
+    devFileChooserStack = new QStackedLayout();
     tabLayout->addLayout(devFileChooserStack);
 
     connect(devClassView, SIGNAL(itemSelectionChanged()), this, SLOT(onDeviceClassChanged()));
@@ -466,7 +465,7 @@ NetworkConfigWidget::NetworkConfigWidget(QWidget* parent)
         nics->addItem(QString("Network Adapter %1").arg(i));
     layout->addWidget(nics);
 
-    QStackedLayout* nicConfigStack = new QStackedLayout(this);
+    QStackedLayout* nicConfigStack = new QStackedLayout();
     layout->addLayout(nicConfigStack);
 
     connect(nics, SIGNAL(currentIndexChanged(int)),

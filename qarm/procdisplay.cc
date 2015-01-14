@@ -27,7 +27,7 @@
 procDisplay::procDisplay(QWidget *parent) :
     QWidget(parent)
 {
-    mainLayout = new QVBoxLayout(this);
+    mainLayout = new QVBoxLayout();
     lowLayout = new QHBoxLayout;
     pipeL = new QGridLayout;
     cpuL = new QGridLayout;
