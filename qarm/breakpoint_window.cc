@@ -30,9 +30,9 @@ breakpoint_window::breakpoint_window(machine *mac, QWidget * parent, Qt::WindowF
     QMainWindow(parent, flags)
 {
     QWidget *mainWidget = new QWidget(this);
-    QVBoxLayout *mainLayout = new QVBoxLayout();
+    QVBoxLayout *mainLayout = new QVBoxLayout(mainWidget);
 
-    addWidget = new AddBreakpointDialog(this);
+    addWidget = new AddBreakpointDialog(mainWidget);
 
     QWidget *buttonsW = new QWidget(mainWidget);
     QHBoxLayout *buttonsL = new QHBoxLayout(buttonsW);
@@ -88,7 +88,7 @@ breakpoint_window::breakpoint_window(machine *mac, QWidget * parent, Qt::WindowF
 
     buttonsW->setLayout(buttonsL);
 
-    breakpointView = new QTreeView;
+    breakpointView = new QTreeView(mainWidget);
     breakpointView->setRootIsDecorated(false);
     breakpointView->setContextMenuPolicy(Qt::ActionsContextMenu);
     breakpointView->setAlternatingRowColors(false);

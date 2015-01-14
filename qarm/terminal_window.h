@@ -52,6 +52,7 @@ private:
     const unsigned int devNo;
 
     QWidget *parent;
+    QWidget *centralWidget;
     QVBoxLayout* layout;
     TerminalView* terminalView;
     TerminalStatusWidget* statusWidget;

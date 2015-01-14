@@ -27,7 +27,7 @@
 procDisplay::procDisplay(QWidget *parent) :
     QWidget(parent)
 {
-    mainLayout = new QVBoxLayout;
+    mainLayout = new QVBoxLayout(this);
     lowLayout = new QHBoxLayout;
     pipeL = new QGridLayout;
     cpuL = new QGridLayout;
@@ -48,24 +48,24 @@ procDisplay::procDisplay(QWidget *parent) :
     infoReg = new monoLabel**[INFOROWS];
 
     for(int i = 0; i < PIPECOLS; i++)
-        pipeline[i] = new monoLabel("");
+        pipeline[i] = new monoLabel("", this);
 
     for(int i = 0; i < CPUROWS; i++){
         cpuReg[i] = new monoLabel*[CPUCOLS];
         for(int j = 0; j < CPUCOLS; j++)
-            cpuReg[i][j] = new monoLabel("");
+            cpuReg[i][j] = new monoLabel("", this);
     }   
 
     for(int i = 0; i < CP15ROWS; i++){
         cp15Reg[i] = new monoLabel*[CP15COLS];
         for(int j = 0; j < CP15COLS; j++)
-            cp15Reg[i][j] = new monoLabel("");
+            cp15Reg[i][j] = new monoLabel("", this);
     }
 
     for(int i = 0; i < INFOROWS; i++){
         infoReg[i] = new monoLabel*[INFOCOLS];
         for(int j = 0; j < INFOCOLS; j++)
-            infoReg[i][j] = new monoLabel("");
+            infoReg[i][j] = new monoLabel("", this);
     }
 
     pipeline[0]->setText("Pipeline (E D F):");

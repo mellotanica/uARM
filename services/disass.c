@@ -20,13 +20,19 @@
  *
  */
 
-#include <stdint.h>
+#include "disass.h"
+
+#ifdef UARM_DUMMY_DISASSEMBLER
+void arm_disass(uint32_t addr, uint32_t instr, char *out)
+{
+    *out=0;
+}
+#else
+
 #include <stdio.h>
 #include <fcntl.h>
 #include <stdlib.h>
 #include <unistd.h>
-
-#include "disass.h"
 
 static char *dcond[16]={
 	"eq","ne","cs","cc","mi","pl","vs","vc",
@@ -329,25 +335,4 @@ void arm_disass(uint32_t addr, uint32_t instr, char *out)
 	}
 }
 
-/*int main(int argc, char *argv[]) {
-	int fd=open(argv[1],O_RDONLY);
-	int i;
-	int n=atoi(argv[2]);
-	char buf[DBUFSIZE];
-	for (i=0; i<13; i++) {
-		uint32_t instr;
-		read(fd, &instr, sizeof(instr));
-	}
-	for (i=0; i<n; i++) {
-		uint32_t instr;
-		int m=read(fd, &instr, sizeof(instr));
-		if (m < sizeof(instr))
-			break;
-		else {
-			arm_disass(i*4, instr, buf);
-			printf("%08x->%08x %s\n",i*4,instr,buf);
-		}
-	}
-	close(fd);
-	return 0;
-}*/
+#endif

@@ -39,37 +39,37 @@ mainBar::mainBar(QWidget *parent) :
     pauseIco = new QIcon(LIB_PATH "icons/pause.png");
     playIco = new QIcon(LIB_PATH "icons/play.png");
 
-    configB = new styledButton();
+    configB = new styledButton(this);
     configB->setAccessibleName("Machine Configs");
     configB->setToolTip(configB->accessibleName());
     configB->setIcon(QIcon(LIB_PATH "icons/config.png"));
 
-    playB = new styledButton();
+    playB = new styledButton(this);
     playB->setAccessibleName("Play");
     playB->setToolTip(playB->accessibleName());
     playB->setCheckable(true);
     playB->setIcon(*playIco);
     playB->setEnabled(false);
 
-    resetB = new styledButton();
+    resetB = new styledButton(this);
     resetB->setAccessibleName("Power on");
     resetB->setToolTip(resetB->accessibleName());
     resetB->setIcon(QIcon(LIB_PATH "icons/poweron.png"));
 
-    stepB = new styledButton();
+    stepB = new styledButton(this);
     stepB->setAccessibleName("Step");
     stepB->setToolTip(stepB->accessibleName());
     stepB->setIcon(QIcon(LIB_PATH "icons/step.png"));
     stepB->setEnabled(false);
 
-    plusMinusW = new QWidget;
-    plusMinusL = new QVBoxLayout;
+    plusMinusW = new QWidget(this);
+    plusMinusL = new QVBoxLayout(plusMinusW);
 
-    plusB = new styledButton();
+    plusB = new styledButton(plusMinusW);
     plusB->setText("+");
     plusB->setAccessibleName("Increase Emulation Speed");
 
-    minusB = new styledButton();
+    minusB = new styledButton(plusMinusW);
     minusB->setText("-");
     minusB->setAccessibleName("Decrease Emulation Speed");
 
@@ -78,23 +78,23 @@ mainBar::mainBar(QWidget *parent) :
 
     plusMinusW->setLayout(plusMinusL);
 
-    scrollerL = new QVBoxLayout;
-    QHBoxLayout *topLay = new QHBoxLayout;
-    scrollerW = new QWidget;
+    scrollerW = new QWidget(this);
+    scrollerL = new QVBoxLayout(scrollerW);
+    QHBoxLayout *topLay = new QHBoxLayout(scrollerW);
 
-    speedLab = new QLabel("50 instr/sec");
+    speedLab = new QLabel("50 instr/sec", scrollerW);
     speedLab->setAccessibleName("Emulation Speed");
     speedLab->setFrameStyle(QFrame::StyledPanel | QFrame::Sunken);
     speedLab->setAlignment(Qt::AlignRight);
     speedLab->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    statusLab = new QLabel("HALTED");
+    statusLab = new QLabel("HALTED", scrollerW);
     statusLab->setAccessibleName("System Status");
     statusLab->setFrameStyle(QFrame::StyledPanel);
     statusLab->setAlignment(Qt::AlignRight);
     statusLab->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed);
 
-    speedSl = new QSlider();
+    speedSl = new QSlider(scrollerW);
     speedSl->setAccessibleName("Emulation Speed Selection");
     speedSl->setOrientation(Qt::Horizontal);
     speedSl->setMinimum(IPSMIN);
@@ -111,40 +111,39 @@ mainBar::mainBar(QWidget *parent) :
 
     setSpeedLab(speedSl->value());
 
-    utilsW = new QWidget;
-    utilsL = new QVBoxLayout;
-    utilsUpperL = new QHBoxLayout;
-    utilsLowerL = new QHBoxLayout;
+    utilsW = new QWidget(this);
+    utilsL = new QVBoxLayout(utilsW);
+    utilsUpperL = new QHBoxLayout(utilsW);
+    utilsLowerL = new QHBoxLayout(utilsW);
 
-    ramB = new styledButton();
+    ramB = new styledButton(utilsW);
     ramB->setToolButtonStyle(Qt::ToolButtonTextOnly);
     ramB->setText("RAM");
     ramB->setAccessibleName("RAM contents viewer");
 
+    windowB = new styledButton(utilsW);
+    windowB->setText("Terminals");
+    windowB->setAccessibleName("Show Terminal");
+    windowMenu = new QMenu(windowB);
+
     for (unsigned int i = 0; i < N_DEV_PER_IL; ++i) {
-        showTerminalActions[i] = new QAction(QString("Terminal %1").arg(i), this);
+        showTerminalActions[i] = new QAction(QString("Terminal %1").arg(i), windowMenu);
         showTerminalActions[i]->setShortcut(QKeySequence(QString("Alt+%1").arg(i)));
         showTerminalActions[i]->setData(QVariant(i));
         connect(showTerminalActions[i], SIGNAL(triggered()), this, SLOT(showTerminalClicked()));
         showTerminalActions[i]->setEnabled(false);
     }
 
-    windowB = new styledButton();
-    windowB->setText("Terminals");
-    windowB->setAccessibleName("Show Terminal");
-
-    windowMenu = new QMenu;
-
     for (unsigned int i = 0; i < N_DEV_PER_IL; ++i)
         windowMenu->addAction(showTerminalActions[i]);
 
-    breakpB = new styledButton();
+    breakpB = new styledButton(utilsW);
     breakpB->setText("Breakpoints");
     breakpB->setAccessibleName("Breakpoint Selector");
     breakpB->setCheckable(true);
     breakpB->setEnabled(true);
 
-    tlbB = new styledButton();
+    tlbB = new styledButton(utilsW);
     tlbB->setText("TLB");
     tlbB->setAccessibleName("TLB contents viewer");
     tlbB->setCheckable(true);

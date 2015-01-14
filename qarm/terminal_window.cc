@@ -39,6 +39,8 @@
 #include "qarm/flat_push_button.h"
 #include "qarm/qarm.h"
 
+/* FIXME: this class has problems.. */
+
 TerminalWindow::TerminalWindow(unsigned int devNo, QWidget* parent)
     : QMainWindow(parent),
       devNo(devNo),
@@ -49,14 +51,14 @@ TerminalWindow::TerminalWindow(unsigned int devNo, QWidget* parent)
 
     TerminalDevice* terminal = getTerminal(devNo);
 
-    QWidget* centralWidget = new QWidget;
+    centralWidget = new QWidget(this);
 
     layout = new QVBoxLayout(centralWidget);
     layout->setContentsMargins(0, 0, 0, 0);
     setCentralWidget(centralWidget);
-    terminalView = new TerminalView(terminal);
+    terminalView = new TerminalView(terminal, centralWidget);
     layout->addWidget(terminalView);
-    statusWidget = new TerminalStatusWidget(terminal);
+    statusWidget = new TerminalStatusWidget(terminal, centralWidget);
     layout->addWidget(statusWidget);
 
     /*STATIC: default geometry for each window for now..
@@ -88,10 +90,10 @@ void TerminalWindow::onMachineReset()
 
     TerminalDevice* terminal = getTerminal(devNo);
 
-    terminalView = new TerminalView(terminal);
+    terminalView = new TerminalView(terminal, centralWidget);
     layout->addWidget(terminalView);
 
-    statusWidget = new TerminalStatusWidget(terminal);
+    statusWidget = new TerminalStatusWidget(terminal, centralWidget);
     layout->addWidget(statusWidget);
 }
 
@@ -114,20 +116,20 @@ TerminalStatusWidget::TerminalStatusWidget(TerminalDevice* t, QWidget* parent)
     layout->setContentsMargins(5, 0, 5, 0);
     layout->setColumnStretch(0, 1);
 
-    hwFailureCheckBox = new QCheckBox("Hardware Failure");
+    hwFailureCheckBox = new QCheckBox("Hardware Failure", this);
     hwFailureCheckBox->setAccessibleName(hwFailureCheckBox->text());
     hwFailureCheckBox->setChecked(terminal->getDevNotWorking());
     connect(hwFailureCheckBox, SIGNAL(clicked(bool)),
             this, SLOT(onHardwareFailureButtonClicked(bool)));
     layout->addWidget(hwFailureCheckBox, 0, 0);
 
-    expanderButton = new FlatPushButton(collapsedIcon, "Show Status");
+    expanderButton = new FlatPushButton(collapsedIcon, "Show Status", this);
     expanderButton->setAccessibleName("Show Status");
     connect(expanderButton, SIGNAL(clicked()), this, SLOT(onExpanderButtonClicked()));
     expanderButton->setIconSize(QSize(16, 16));
     layout->addWidget(expanderButton, 0, 1);
 
-    statusAreaWidget = new QWidget;
+    statusAreaWidget = new QWidget(this);
     QGridLayout* statusAreaLayout = new QGridLayout(statusAreaWidget);
     statusAreaLayout->setContentsMargins(0, 0, 0, 5);
     statusAreaLayout->setVerticalSpacing(5);
@@ -135,31 +137,31 @@ TerminalStatusWidget::TerminalStatusWidget(TerminalDevice* t, QWidget* parent)
     statusAreaLayout->setColumnStretch(1, 1);
     statusAreaLayout->setColumnStretch(3, 1);
 
-    statusAreaLayout->addWidget(new QLabel("RX:"), 0, 0);
-    statusAreaLayout->addWidget(new QLabel("TX:"), 1, 0);
+    statusAreaLayout->addWidget(new QLabel("RX:", statusAreaWidget), 0, 0);
+    statusAreaLayout->addWidget(new QLabel("TX:", statusAreaWidget), 1, 0);
 
-    rxStatusLabel = new QLabel;
+    rxStatusLabel = new QLabel(statusAreaWidget);
     rxStatusLabel->setAccessibleName("RX Status");
     rxStatusLabel->setMinimumWidth(kStatusLabelsMinimumWidth);
     rxStatusLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     statusAreaLayout->addWidget(rxStatusLabel, 0, 1);
 
-    txStatusLabel = new QLabel;
+    txStatusLabel = new QLabel(statusAreaWidget);
     txStatusLabel->setAccessibleName("TX Status");
     txStatusLabel->setMinimumWidth(kStatusLabelsMinimumWidth);
     txStatusLabel->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     statusAreaLayout->addWidget(txStatusLabel, 1, 1);
 
-    statusAreaLayout->addWidget(new QLabel("At:"), 0, 2);
-    statusAreaLayout->addWidget(new QLabel("At:"), 1, 2);
+    statusAreaLayout->addWidget(new QLabel("At:", statusAreaWidget), 0, 2);
+    statusAreaLayout->addWidget(new QLabel("At:", statusAreaWidget), 1, 2);
 
-    rxCompletionTime = new QLabel;
+    rxCompletionTime = new QLabel(statusAreaWidget);
     rxCompletionTime->setAccessibleName("RX Completion Time");
     rxCompletionTime->setMinimumWidth(kStatusLabelsMinimumWidth);
     rxCompletionTime->setFrameStyle(QFrame::Panel | QFrame::Sunken);
     statusAreaLayout->addWidget(rxCompletionTime, 0, 3);
 
-    txCompletionTime = new QLabel;
+    txCompletionTime = new QLabel(statusAreaWidget);
     txCompletionTime->setAccessibleName("TX Completion Time");
     txCompletionTime->setMinimumWidth(kStatusLabelsMinimumWidth);
     txCompletionTime->setFrameStyle(QFrame::Panel | QFrame::Sunken);

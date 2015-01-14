@@ -34,33 +34,33 @@ ramView::ramView(machine *mac, QWidget *parent) :
 {
     setWindowFlags(Qt::Window);
     setWindowTitle("Ram Inspector");
-    mainLayout = new QVBoxLayout;
-    QHBoxLayout *topPanel = new QHBoxLayout;
+    mainLayout = new QVBoxLayout(this);
+    QHBoxLayout *topPanel = new QHBoxLayout(this);
     mainLayout->addLayout(topPanel);
 
     QRegExp rx("[0-9,a-f]{1,8}", Qt::CaseInsensitive);
-    QRegExpValidator *hexValidator = new QRegExpValidator(rx);
+    QRegExpValidator *hexValidator = new QRegExpValidator(rx, this);
 
-    startEd = new QLineEdit;
+    startEd = new QLineEdit(this);
     startEd->setAccessibleName("Start Address");
     startEd->setToolTip(startEd->accessibleName());
     startEd->setAccessibleDescription("Start address in hexadecimal format without leading 0x");
     startEd->setValidator(hexValidator);
     startEd->setMaxLength(8);
 
-    endEd = new QLineEdit;
+    endEd = new QLineEdit(this);
     endEd->setAccessibleName("End Address");
     endEd->setToolTip(endEd->accessibleName());
     endEd->setAccessibleDescription("End address in hexadecimal format without leading 0x");
     endEd->setValidator(hexValidator);
     endEd->setMaxLength(8);
 
-    visualizeB = new QPushButton("Display Portion");
+    visualizeB = new QPushButton("Display Portion", this);
     visualizeB->setAccessibleName("Display Selected Portion");
 
-    topPanel->addWidget(new QLabel("0x"));
+    topPanel->addWidget(new QLabel("0x", this));
     topPanel->addWidget(startEd);
-    topPanel->addWidget(new QLabel("-> 0x"));
+    topPanel->addWidget(new QLabel("-> 0x", this));
     topPanel->addWidget(endEd);
     topPanel->addWidget(visualizeB);
 
@@ -110,7 +110,7 @@ void ramView::visualize(){
             mainLayout->removeWidget(ramViewer);
             delete ramViewer;
         }
-        ramViewer = new HexView(start, end, mac);
+        ramViewer = new HexView(start, end, mac, this);
         mainLayout->addWidget(ramViewer);
     }
 }

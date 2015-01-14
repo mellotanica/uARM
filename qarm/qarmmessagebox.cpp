@@ -18,10 +18,10 @@ QarmMessageBox::QarmMessageBox(DType t, const char *title, const char *text, QWi
     setModal(true);
     setWindowTitle(title);
 
-    QLayout *mainLayout = new QVBoxLayout;
-    QWidget *topWidget = new QWidget;
+    QLayout *mainLayout = new QVBoxLayout(this);
+    QWidget *topWidget = new QWidget(this);
 
-    QLayout *topLayout = new QHBoxLayout;
+    QLayout *topLayout = new QHBoxLayout(topWidget);
     QStyle *style = QApplication::style();
     QIcon icon;
     QString accName;
@@ -52,7 +52,7 @@ QarmMessageBox::QarmMessageBox(DType t, const char *title, const char *text, QWi
     accName = accName.append(text);
     this->setAccessibleName(accName);
 
-    QLabel *iconL = new QLabel(this);
+    QLabel *iconL = new QLabel(topWidget);
     iconL->setAlignment(Qt::AlignCenter);
     //iconL->setFrameShape(QFrame::Box);
     iconL->setAccessibleName(accName);
@@ -61,19 +61,18 @@ QarmMessageBox::QarmMessageBox(DType t, const char *title, const char *text, QWi
     iconL->setPixmap(icon.pixmap(256, 256, QIcon::Normal, QIcon::On));
     topLayout->addWidget(iconL);
 
-    QLabel *contentL = new QLabel(text, this);
+    QLabel *contentL = new QLabel(text, topWidget);
     contentL->setAccessibleName("Dialog content");
     contentL->setAccessibleDescription(text);
-
     topLayout->addWidget(contentL);
 
     topWidget->setLayout(topLayout);
 
     QDialogButtonBox *buttonBox;
     if(t == QUESTION){
-        buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel);
+        buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok | QDialogButtonBox::Cancel, this);
     } else {
-        buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok);
+        buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok, this);
     }
 
     connect(buttonBox, SIGNAL(accepted()), this, SLOT(accept()));

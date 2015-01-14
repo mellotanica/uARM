@@ -1,9 +1,9 @@
 + device tab labels
-+ general tab layout must
 + check widget and layouts father wiget reference on creation
 + terminals button should be disabled if no terminal is available
 + register view as a single text area per processor mode with register lable and value in each row
 + two execution modes, one more accessible with setting flag
-+ breakpoint window fix
++ flatten every layout in accessible mode
++ breakpoint window fix (function name not accessible)
 + compile for 5.4
 + try flat review with laptop layout

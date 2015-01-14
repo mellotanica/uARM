@@ -39,8 +39,8 @@ AddBreakpointDialog::AddBreakpointDialog(QWidget* parent)
 {
     QGridLayout* layout = new QGridLayout(this);
 
-    layout->addWidget(new QLabel("ASID:"), 0, 0);
-    asidEditor = new AsidLineEdit;
+    layout->addWidget(new QLabel("ASID:", this), 0, 0);
+    asidEditor = new AsidLineEdit(this);
     asidEditor->setAccessibleName("Breakpoint ASID");
     asidEditor->setAsid(MC_Holder::getInstance()->getConfig()->getSymbolTableASID());
     layout->addWidget(asidEditor, 0, 1);
@@ -50,12 +50,12 @@ AddBreakpointDialog::AddBreakpointDialog(QWidget* parent)
 
     layout->setColumnMinimumWidth(2, 12);
 
-    layout->addWidget(new QLabel("Address:"), 0, 3);
-    addressEditor = new AddressLineEdit;
+    layout->addWidget(new QLabel("Address:", this), 0, 3);
+    addressEditor = new AddressLineEdit(this);
     addressEditor->setAccessibleName("Breakpoint address");
     layout->addWidget(addressEditor, 0, 4);
 
-    symbolTableView = new QTreeView;
+    symbolTableView = new QTreeView(this);
     symbolTableView->setSortingEnabled(true);
     symbolTableView->sortByColumn(0, Qt::AscendingOrder);
     symbolTableView->setAlternatingRowColors(true);

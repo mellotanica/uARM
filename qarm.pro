@@ -7,6 +7,7 @@ QMAKE_LIBS += -ldl
 CONFIG += qt debug
 
 DEFINES += UARM_MACHINE_COMPILING
+#DEFINES += UARM_DUMMY_DISASSEMBLER
 
 HEADERS += \
     armProc/types.h \

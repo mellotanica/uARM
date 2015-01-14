@@ -41,13 +41,14 @@ public:
     MachineConfigDialog(MachineConfig* config, QWidget* parent = 0);
 
 private:
-    QWidget* createGeneralTab();
-    QWidget* createDeviceTab();
+    QWidget* createGeneralTab(QWidget *parent);
+    QWidget* createDeviceTab(QWidget *parent);
     void registerDeviceClass(const QString& label,
                              const QString& icon,
                              unsigned int   devClassIndex,
                              const QString& deviceClassName,
                              const QString& deviceName,
+                             QWidget*       parent,
                              bool           selected = false);
 
     MachineConfig* const config;

@@ -64,13 +64,13 @@ qarm::qarm(QApplication *app):
     setWindowTitle("uARM");
     setWindowIcon(QIcon(LIB_PATH "icons/window_default-48.png"));
 
-    mainWidget = new QWidget;
-    toolbar = new mainBar;
-    display = new procDisplay(this);
+    mainWidget = new QWidget(this);
+    toolbar = new mainBar(mainWidget);
+    display = new procDisplay(mainWidget);
 
     toolbar->setSpeed(IPSMAX);
 
-    centralLayout = new QVBoxLayout;
+    centralLayout = new QVBoxLayout(mainWidget);
 
     centralLayout->addWidget(new QFLine(false));
     centralLayout->addWidget(toolbar);

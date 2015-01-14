@@ -29,7 +29,7 @@
 tlb_window::tlb_window(machine *mac, QWidget * parent, Qt::WindowFlags flags):
     QMainWindow(parent, flags)
 {
-    tlbView = new QTableView;
+    tlbView = new QTableView(this);
     TLBModel *innermodel = new TLBModel(mac, this);
     connect(this, SIGNAL(onMachineReset()), innermodel, SLOT(onMachineReset()));
     connect(innermodel, SIGNAL(dataChanged(QModelIndex,QModelIndex)), tlbView, SLOT(dataChanged(QModelIndex,QModelIndex)));

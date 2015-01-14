@@ -55,7 +55,7 @@ MacIdEdit::MacIdEdit(QWidget* parent)
 {
     setText("00:00:00:00:00:00");
     setInputMask("HH:HH:HH:HH:HH:HH");
-    setValidator(new Validator);
+    setValidator(new Validator(parent));
 }
 
 uint8_t* MacIdEdit::getMacId(uint8_t* id) const

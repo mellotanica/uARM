@@ -24,6 +24,8 @@
 
 #define DBUFSIZE 128
 
+#include <stdint.h>
+
 void arm_disass(uint32_t addr, uint32_t instr, char *out);
 
 #endif // DISASS_H
