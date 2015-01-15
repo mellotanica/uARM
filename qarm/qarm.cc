@@ -46,7 +46,7 @@ qarm::qarm(QApplication *app):
     if(configDir.isEmpty()){
         configDir = QDir::homePath()+"/."+DEFAULT_CONFIG_PATH;
     } else {
-        configDir.append("/"DEFAULT_CONFIG_PATH);
+        configDir.append(QString("/").append(DEFAULT_CONFIG_PATH));
     }
     QDir *defaultPath = new QDir(configDir);
     if(!defaultPath->exists())
