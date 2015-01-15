@@ -31,6 +31,7 @@
 
 #include <QFileDialog>
 #include <QFile>
+#include <QStandardPaths>
 #include <QScrollArea>
 #include <QMetaObject>
 #include <QIcon>
@@ -40,7 +41,14 @@ qarm::qarm(QApplication *app):
 {
     // INFO: machine config init
     std::string error;
-    QDir *defaultPath = new QDir(QDir::homePath()+"/"+DEFAULT_CONFIG_PATH);
+
+    QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    if(configDir.isEmpty()){
+        configDir = QDir::homePath()+"/."+DEFAULT_CONFIG_PATH;
+    } else {
+        configDir.append("/"+DEFAULT_CONFIG_PATH);
+    }
+    QDir *defaultPath = new QDir(configDir);
     if(!defaultPath->exists())
         if(!defaultPath->mkdir(defaultPath->absolutePath())){   //config folder not accessible..
             QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Fatal", "Cannot create .uarm folder in home directory.\nCheck HOME environment variable.", this);
