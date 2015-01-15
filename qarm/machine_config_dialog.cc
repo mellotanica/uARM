@@ -314,6 +314,7 @@ void MachineConfigDialog::registerDeviceClass(const QString& label,
     else
         devfc = new DeviceFileChooser(devClassName, devName, devClassIndex, parent);
 
+    devfc->setAccessibleName(devClassName+" Properties");
     connect(this, SIGNAL(accepted()), devfc, SLOT(Save()));
     devFileChooserStack->addWidget(devfc);
 
