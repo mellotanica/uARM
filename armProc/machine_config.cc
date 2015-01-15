@@ -145,14 +145,14 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
     return config.release();
 }
 
-MachineConfig* MachineConfig::Create(const std::string& fileName, QApplication *app)
+MachineConfig* MachineConfig::Create(const std::string& fileName, const std::string& homedir, QApplication *app)
 {
     std::auto_ptr<MachineConfig> config(new MachineConfig(fileName, app));
 
     // The constructor initializes all the basic fields to sane
     // initial values; in addition, we enable a terminal device for
     // newly created configs.
-    config->setDeviceFile(EXT_IL_INDEX(IL_TERMINAL), 0, "term0.umps");
+    config->setDeviceFile(EXT_IL_INDEX(IL_TERMINAL), 0, homedir+"/term0.umps");
     config->setDeviceEnabled(EXT_IL_INDEX(IL_TERMINAL), 0, true);
 
     config->Save();

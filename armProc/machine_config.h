@@ -78,7 +78,7 @@ public:
     static const Word MAX_ASID = MAXASID-1;
 
     static MachineConfig* LoadFromFile(const std::string& fileName, std::string& error, QApplication *app);
-    static MachineConfig* Create(const std::string& fileName, QApplication *app);
+    static MachineConfig* Create(const std::string& fileName, const std::string& homedir, QApplication *app);
 
     const std::string& getFileName() const { return fileName; }
 
