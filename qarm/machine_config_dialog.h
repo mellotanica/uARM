@@ -68,13 +68,11 @@ private:
         QLineEdit* lineEdit;
     } romFileInfo[N_ROM_TYPES];
 
-    QListWidget* devClassView;
+    QComboBox* devClassView;
     QStackedLayout* devFileChooserStack;
 
 private Q_SLOTS:
     void getROMFileName(int index);
-
-    void onDeviceClassChanged();
 
     void saveConfigChanges();
 };

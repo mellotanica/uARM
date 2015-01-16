@@ -35,8 +35,6 @@
 #include <QVBoxLayout>
 #include <QHBoxLayout>
 #include <QDialogButtonBox>
-#include <QListWidget>
-#include <QListWidgetItem>
 #include <QStackedLayout>
 #include <QLabel>
 #include <QSpinBox>
@@ -250,25 +248,22 @@ QWidget* MachineConfigDialog::createDeviceTab(QWidget *parent)
 
     QWidget* tab = new QWidget(parent);
     tab->setAccessibleName("Devices Settings");
-    QHBoxLayout* tabLayout = new QHBoxLayout(tab);
+    QVBoxLayout* tabLayout = new QVBoxLayout(tab);
 
     tabLayout->setContentsMargins(TAB_MARGIN_TOP,
                                   TAB_MARGIN_BOTTOM,
                                   TAB_MARGIN_LEFT,
                                   TAB_MARGIN_RIGHT);
 
-    devClassView = new QListWidget(tab);
-    devClassView->setIconSize(QSize(32, 32));
-    devClassView->setSelectionMode(QAbstractItemView::SingleSelection);
-    devClassView->setSizePolicy(QSizePolicy::Fixed, QSizePolicy::Preferred);
-    devClassView->setMaximumWidth(180);
+    devClassView = new QComboBox(tab);
+    devClassView->setAccessibleName("Device Type");
 
     tabLayout->addWidget(devClassView);
 
     devFileChooserStack = new QStackedLayout();
     tabLayout->addLayout(devFileChooserStack);
 
-    connect(devClassView, SIGNAL(itemSelectionChanged()), this, SLOT(onDeviceClassChanged()));
+    connect(devClassView, SIGNAL(currentIndexChanged(int)), devFileChooserStack, SLOT(setCurrentIndex(int)));
 
     registerDeviceClass("Disks\n Interrupt Line 3",
                         LIB_PATH "icons/disk-32.png",
@@ -318,10 +313,7 @@ void MachineConfigDialog::registerDeviceClass(const QString& label,
     connect(this, SIGNAL(accepted()), devfc, SLOT(Save()));
     devFileChooserStack->addWidget(devfc);
 
-    QListWidgetItem* item = new QListWidgetItem(QIcon(icon), label, devClassView);
-    item->setData(Qt::UserRole, QVariant(devClassIndex));
-    devClassView->addItem(item);
-    item->setSelected(selected);
+    devClassView->addItem(QIcon(icon), devClassName);
 }
 
 void MachineConfigDialog::getROMFileName(int index)
@@ -331,13 +323,6 @@ void MachineConfigDialog::getROMFileName(int index)
     QString fileName = QFileDialog::getOpenFileName(this, title);
     if (!fileName.isEmpty())
         romFileInfo[index].lineEdit->setText(fileName);
-}
-
-void MachineConfigDialog::onDeviceClassChanged()
-{
-    QList<QListWidgetItem*> selected = devClassView->selectedItems();
-    assert(selected.size() == 1);
-    devFileChooserStack->setCurrentIndex(selected[0]->data(Qt::UserRole).toInt());
 }
 
 void MachineConfigDialog::saveConfigChanges()
