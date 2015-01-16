@@ -49,8 +49,7 @@ private:
                              unsigned int   devClassIndex,
                              const QString& deviceClassName,
                              const QString& deviceName,
-                             QWidget*       parent,
-                             bool           selected = false);
+                             QWidget*       parent);
 
     MachineConfig* const config;
 

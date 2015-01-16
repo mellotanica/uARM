@@ -34,7 +34,7 @@ class DeviceFileChooser : public QWidget {
     Q_OBJECT
 
 public:
-    DeviceFileChooser(const QString& deviceClassName,
+    DeviceFileChooser(const QString& label,
                       const QString& deviceName,
                       unsigned int   line,
                       QWidget*       parent = 0);
@@ -59,7 +59,7 @@ class NetworkConfigWidget : public QWidget {
     Q_OBJECT
 
 public:
-    NetworkConfigWidget(QWidget* parent = 0);
+    NetworkConfigWidget(const QString& label, QWidget* parent = 0);
 
 public Q_SLOTS:
     void Save();
