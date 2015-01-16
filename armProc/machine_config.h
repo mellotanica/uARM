@@ -74,6 +74,8 @@ public:
     static const bool DEFAULT_STOP_ON_EXCEPTION = false;
     static const bool DEFAULT_STOP_ON_TLB_CHANGE = false;
 
+    static const bool DEFAULT_ACCESSIBLE_MODE = false;
+
     static const Word MIN_ASID = 0;
     static const Word MAX_ASID = MAXASID-1;
 
@@ -121,6 +123,9 @@ public:
     void setSymbolTableASID(Word asid);
     Word getSymbolTableASID() const { return symbolTableASID; }
 
+    void setAccessibleMode(bool enabled);
+    bool getAccessibleMode() const { return accessibleMode; }
+
     unsigned int getDeviceType(unsigned int il, unsigned int devNo) const;
     bool getDeviceEnabled(unsigned int il, unsigned int devNo) const;
     void setDeviceEnabled(unsigned int il, unsigned int devNo, bool setting);
@@ -144,6 +149,8 @@ private:
     bool refreshOnPause;
     bool stopOnException;
     bool stopOnTLBChange;
+
+    bool accessibleMode;
 
     Word ramSize;
     unsigned int cpus;

@@ -58,6 +58,7 @@ MachineConfigDialog::MachineConfigDialog(MachineConfig* config, QWidget* parent)
     QTabWidget* tabWidget = new QTabWidget(this);
     tabWidget->addTab(createGeneralTab(tabWidget), "&General");
     tabWidget->addTab(createDeviceTab(tabWidget), "&Devices");
+    tabWidget->addTab(createAccessibilityTab(tabWidget), "&Accessibility");
 
     QDialogButtonBox* buttonBox = new QDialogButtonBox(QDialogButtonBox::Ok |
                                                        QDialogButtonBox::Cancel, this);
@@ -78,7 +79,7 @@ QWidget* MachineConfigDialog::createGeneralTab(QWidget *parent)
     tabWidget->setAccessibleName("General Settings");
 
     QGridLayout* layout = new QGridLayout(tabWidget);
-    layout->setContentsMargins(11, 13, 11, 11);
+    layout->setContentsMargins(5, 5, 5, 5);
 
     layout->addWidget(new QLabel("<b>Hardware</b>", tabWidget), 0, 0, 1, 3);
 
@@ -239,12 +240,30 @@ QWidget* MachineConfigDialog::createGeneralTab(QWidget *parent)
     return tabWidget;
 }
 
+QWidget* MachineConfigDialog::createAccessibilityTab(QWidget *parent){
+    QWidget* tab = new QWidget(parent);
+    tab->setAccessibleName("Accessibility Settings");
+    QVBoxLayout* tabLayout = new QVBoxLayout(tab);
+
+    tabLayout->setContentsMargins(5, 5, 5, 5);
+
+    tabLayout->addWidget(new QLabel("<b>Accessibility Settings</b>", tab));
+
+    accessibleModeCheckBox = new QCheckBox("Enable Increased Accessibility \n(Restart Needed)", tab);
+    accessibleModeCheckBox->setChecked(config->getAccessibleMode());
+    tabLayout->addWidget(accessibleModeCheckBox);
+
+    tabLayout->addStretch();
+
+    return tab;
+}
+
 QWidget* MachineConfigDialog::createDeviceTab(QWidget *parent)
 {
-    static const int TAB_MARGIN_TOP = 3;
-    static const int TAB_MARGIN_BOTTOM = 3;
-    static const int TAB_MARGIN_LEFT = 3;
-    static const int TAB_MARGIN_RIGHT = 3;
+    static const int TAB_MARGIN_TOP = 5;
+    static const int TAB_MARGIN_BOTTOM = 5;
+    static const int TAB_MARGIN_LEFT = 5;
+    static const int TAB_MARGIN_RIGHT = 5;
 
     QWidget* tab = new QWidget(parent);
     tab->setAccessibleName("Devices Settings");
@@ -258,6 +277,7 @@ QWidget* MachineConfigDialog::createDeviceTab(QWidget *parent)
     devClassView = new QComboBox(tab);
     devClassView->setAccessibleName("Device Type");
 
+    tabLayout->addWidget(new QLabel("<b>Devices settings</b>", tab));
     tabLayout->addWidget(devClassView);
 
     devFileChooserStack = new QStackedLayout();
@@ -346,6 +366,8 @@ void MachineConfigDialog::saveConfigChanges()
     config->setLoadCoreEnabled(coreBootCheckBox->isChecked()); */
     config->setStopOnException(stopOnInterruptBox->isChecked());
     config->setSymbolTableASID(stabAsidEdit->getAsid());
+
+    config->setAccessibleMode(accessibleModeCheckBox->isChecked());
 }
 
 

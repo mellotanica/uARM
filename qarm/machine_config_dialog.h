@@ -43,6 +43,7 @@ public:
 private:
     QWidget* createGeneralTab(QWidget *parent);
     QWidget* createDeviceTab(QWidget *parent);
+    QWidget* createAccessibilityTab(QWidget *parent);
     void registerDeviceClass(const QString& label,
                              const QString& icon,
                              unsigned int   devClassIndex,
@@ -61,6 +62,7 @@ private:
     QSpinBox* ramSizeSpinner;
     QCheckBox* stopOnInterruptBox;
     QCheckBox* coreBootCheckBox;
+    QCheckBox* accessibleModeCheckBox;
     AsidLineEdit* stabAsidEdit;
 
     struct {

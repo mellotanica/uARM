@@ -103,6 +103,8 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
             config->setStopOnException(root->Get("pause-on-exc")->AsBool());
         if (root->HasMember("pause-on-tlb"))
             config->setStopOnTLBChange(root->Get("pause-on-tlb")->AsBool());
+        if (root->HasMember("accessible-mode"))
+            config->setAccessibleMode(root->Get("accessible-mode")->AsBool());
 
         if (root->HasMember("boot")) {
             JsonObject* bootOpt = root->Get("boot")->AsObject();
@@ -172,6 +174,7 @@ void MachineConfig::Save()
     root->Set("num-ram-frames", (int) getRamSize());
     root->Set("pause-on-exc", getStopOnException());
     root->Set("pause-on-tlb", getStopOnTLBChange());
+    root->Set("accessible-mode", getAccessibleMode());
 
     JsonObject* bootOpt = new JsonObject;
     bootOpt->Set("load-core-file", isLoadCoreEnabled());
@@ -263,6 +266,10 @@ void MachineConfig::setRefreshOnPause(bool enabled)
     refreshOnPause = enabled;
 }
 
+void MachineConfig::setAccessibleMode(bool enabled){
+    accessibleMode = enabled;
+}
+
 void MachineConfig::setROM(ROMType type, const std::string& fileName)
 {
     romFiles[type] = fileName;
@@ -349,6 +356,8 @@ void MachineConfig::resetToFactorySettings()
     setTLBSize(DEFAULT_TLB_SIZE);
     setStopOnException(DEFAULT_STOP_ON_EXCEPTION);
     setStopOnTLBChange(DEFAULT_STOP_ON_TLB_CHANGE);
+
+    setAccessibleMode(DEFAULT_ACCESSIBLE_MODE);
 
     // STATIC: this is a temp bios, there needs to be a more complete one..
     setROM(ROM_TYPE_BIOS, "/usr/include/uarm/BIOS.rom.uarm");
