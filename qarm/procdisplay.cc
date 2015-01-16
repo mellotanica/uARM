@@ -24,15 +24,34 @@
 
 #include "qarm/procdisplay.h"
 
+#define convertHex(val) { "0x" + QString("%1").arg(val, 8, 16, QChar('0')).toUpper() }
+
+#define BUSHEADER "Bus registers and Pipeline contents"
+#define USRHEADER "USR/SYS registers contents"
+#define SVCHEADER "SVC registers contents"
+#define ABTHEADER "ABT registers contents"
+#define UNDHEADER "UND registers contents"
+#define IRQHEADER "IRQ registers contents"
+#define FIQHEADER "FIQ registers contents"
+#define CP15HEADER "CP15 registers contents"
+
 procDisplay::procDisplay(QWidget *parent) :
     QWidget(parent)
 {
-    mainLayout = new QVBoxLayout();
-    lowLayout = new QHBoxLayout;
-    pipeL = new QGridLayout;
-    cpuL = new QGridLayout;
-    cp15L = new QGridLayout;
-    infoL = new QGridLayout;
+    if(MC_Holder::getInstance()->getConfig()->getAccessibleMode()){
+        this->setLayout(createAccessibleLayout());
+    } else {
+        this->setLayout(createStandardLayout());
+    }
+}
+
+QVBoxLayout *procDisplay::createStandardLayout(){
+    QVBoxLayout *mainLayout = new QVBoxLayout();
+    QHBoxLayout *lowLayout = new QHBoxLayout;
+    QGridLayout *pipeL = new QGridLayout;
+    QGridLayout *cpuL = new QGridLayout;
+    QGridLayout *cp15L = new QGridLayout;
+    QGridLayout *infoL = new QGridLayout;
     lowLayout->addLayout(cp15L);
     lowLayout->addWidget(new QFLine(true));
     lowLayout->addLayout(infoL);
@@ -54,7 +73,7 @@ procDisplay::procDisplay(QWidget *parent) :
         cpuReg[i] = new monoLabel*[CPUCOLS];
         for(int j = 0; j < CPUCOLS; j++)
             cpuReg[i][j] = new monoLabel("", this);
-    }   
+    }
 
     for(int i = 0; i < CP15ROWS; i++){
         cp15Reg[i] = new monoLabel*[CP15COLS];
@@ -133,9 +152,9 @@ procDisplay::procDisplay(QWidget *parent) :
         infoReg[i][1]->setAlignment(Qt::AlignRight);
     }
 
-    setAccessibilityNames();
+    setAccessibilityLabels();
 
-    reset();
+    resetLabels(0x22222222);
 
     for(int i = 0; i < PIPECOLS; i++)
         pipeL->addWidget(pipeline[i],0,i);
@@ -152,10 +171,10 @@ procDisplay::procDisplay(QWidget *parent) :
         for(int j = 0; j < INFOCOLS; j++)
             infoL->addWidget(infoReg[i][j], i, j);
 
-    this->setLayout(mainLayout);
+    return mainLayout;
 }
 
-void procDisplay::setAccessibilityNames(){
+void procDisplay::setAccessibilityLabels(){
     pipeline[1]->setAccessibleName("Pipeline Execute");
     pipeline[2]->setAccessibleName("Pipeline Decode");
     pipeline[3]->setAccessibleName("Pipeline Fetch");
@@ -265,46 +284,47 @@ void procDisplay::setAccessibilityNames(){
     infoReg[4][2]->setAccessibleName("Ram Size");
 }
 
-void procDisplay::reset(){
-    pipeline[1]->setText(convertHex(0));
-    pipeline[2]->setText(convertHex(0));
-    pipeline[3]->setText(convertHex(0));
+void procDisplay::resetLabels(int val){
+    pipeline[1]->setText(convertHex(val));
+    pipeline[2]->setText(convertHex(val));
+    pipeline[3]->setText(convertHex(val));
     pipeline[5]->setText("NOP");
 
     for(int i = 0; i < 17; i++)
-        cpuReg[i+1][1]->setText(convertHex(0));
+        cpuReg[i+1][1]->setText(convertHex(val));
     for(int i = 0; i < 7; i++)
-        cpuReg[i+9][6]->setText(convertHex(0));
-    cpuReg[18][6]->setText(convertHex(0));
-    cpuReg[14][2]->setText(convertHex(0));
-    cpuReg[15][2]->setText(convertHex(0));
-    cpuReg[18][2]->setText(convertHex(0));
-    cpuReg[14][3]->setText(convertHex(0));
-    cpuReg[15][3]->setText(convertHex(0));
-    cpuReg[18][3]->setText(convertHex(0));
-    cpuReg[14][5]->setText(convertHex(0));
-    cpuReg[15][5]->setText(convertHex(0));
-    cpuReg[18][5]->setText(convertHex(0));
-    cpuReg[14][4]->setText(convertHex(0));
-    cpuReg[15][4]->setText(convertHex(0));
-    cpuReg[18][4]->setText(convertHex(0));
+        cpuReg[i+9][6]->setText(convertHex(val));
+    cpuReg[18][6]->setText(convertHex(val));
+    cpuReg[14][2]->setText(convertHex(val));
+    cpuReg[15][2]->setText(convertHex(val));
+    cpuReg[18][2]->setText(convertHex(val));
+    cpuReg[14][3]->setText(convertHex(val));
+    cpuReg[15][3]->setText(convertHex(val));
+    cpuReg[18][3]->setText(convertHex(val));
+    cpuReg[14][5]->setText(convertHex(val));
+    cpuReg[15][5]->setText(convertHex(val));
+    cpuReg[18][5]->setText(convertHex(val));
+    cpuReg[14][4]->setText(convertHex(val));
+    cpuReg[15][4]->setText(convertHex(val));
+    cpuReg[18][4]->setText(convertHex(val));
 
-    cp15Reg[1][2]->setText(convertHex(0));
-    cp15Reg[2][2]->setText(convertHex(0));
-    cp15Reg[3][2]->setText(convertHex(0));
-    cp15Reg[4][2]->setText(convertHex(0));
-    cp15Reg[1][4]->setText(convertHex(0));
-    cp15Reg[2][4]->setText(convertHex(0));
-    cp15Reg[3][4]->setText(convertHex(0));
-    cp15Reg[4][4]->setText(convertHex(0));
+    cp15Reg[1][2]->setText(convertHex(val));
+    cp15Reg[2][2]->setText(convertHex(val));
+    cp15Reg[3][2]->setText(convertHex(val));
+    cp15Reg[4][2]->setText(convertHex(val));
+    cp15Reg[1][4]->setText(convertHex(val));
+    cp15Reg[2][4]->setText(convertHex(val));
+    cp15Reg[3][4]->setText(convertHex(val));
+    cp15Reg[4][4]->setText(convertHex(val));
 
-    infoReg[1][2]->setText(convertHex(0));
-    infoReg[2][2]->setText(convertHex(0));
-    infoReg[3][2]->setText(convertHex(0));
-    infoReg[4][2]->setText(convertHex(MC_Holder::getInstance()->getConfig()->getRamSize()*BYTES_PER_FRAME));
+    infoReg[1][2]->setText(convertHex(val));
+    infoReg[2][2]->setText(convertHex(val));
+    infoReg[3][2]->setText(convertHex(val));
+    infoReg[4][2]->setText(convertHex(val));
+    memsize = MC_Holder::getInstance()->getConfig()->getRamSize()*BYTES_PER_FRAME;
 }
 
-void procDisplay::updateVals(Word *cpu, Word *cp15, Word *ppln, Word todH, Word todL, Word timer, QString ass){
+void procDisplay::updateLabels(Word *cpu, Word *cp15, Word *ppln, Word todH, Word todL, Word timer, QString ass){
     pipeline[1]->setText(convertHex(ppln[2]));
     pipeline[2]->setText(convertHex(ppln[1]));
     pipeline[3]->setText(convertHex(ppln[0]));
@@ -340,37 +360,337 @@ void procDisplay::updateVals(Word *cpu, Word *cp15, Word *ppln, Word todH, Word 
     infoReg[1][2]->setText(convertHex(todH));
     infoReg[2][2]->setText(convertHex(todL));
     infoReg[3][2]->setText(convertHex(timer));
+    infoReg[4][2]->setText(convertHex(memsize));
 }
 
-QString procDisplay::convertHex(Word val){
-    QString ret = "0x";
-    Word mask = 0xF0000000;
-    int count = 28;
-    int ref = (val & mask) >> count;
-    while(mask > 0){
-        switch(ref){
-        case 0: ret += "0"; break;
-        case 1: ret += "1"; break;
-        case 2: ret += "2"; break;
-        case 3: ret += "3"; break;
-        case 4: ret += "4"; break;
-        case 5: ret += "5"; break;
-        case 6: ret += "6"; break;
-        case 7: ret += "7"; break;
-        case 8: ret += "8"; break;
-        case 9: ret += "9"; break;
-        case 10: ret += "A"; break;
-        case 11: ret += "B"; break;
-        case 12: ret += "C"; break;
-        case 13: ret += "D"; break;
-        case 14: ret += "E"; break;
-        case 15: ret += "F"; break;
-        }
-        mask >>= 4;
-        count -= 4;
-        ref = (val & mask) >> count;
-    }
-    return ret;
+QHBoxLayout *procDisplay::createAccessibleLayout(){
+    QHBoxLayout *mainLayout = new QHBoxLayout();
+
+    busTA = new QTextEdit(this);
+    usrTA = new QTextEdit(this);
+    srvTA = new QTextEdit(this);
+    abtTA = new QTextEdit(this);
+    undTA = new QTextEdit(this);
+    irqTA = new QTextEdit(this);
+    fiqTA = new QTextEdit(this);
+    cp15TA = new QTextEdit(this);
+
+    busTA->setReadOnly(true);
+    usrTA->setReadOnly(true);
+    srvTA->setReadOnly(true);
+    abtTA->setReadOnly(true);
+    undTA->setReadOnly(true);
+    irqTA->setReadOnly(true);
+    fiqTA->setReadOnly(true);
+    cp15TA->setReadOnly(true);
+
+    busTA->setAccessibleName(BUSHEADER);
+    usrTA->setAccessibleName(USRHEADER);
+    srvTA->setAccessibleName(SVCHEADER);
+    abtTA->setAccessibleName(ABTHEADER);
+    undTA->setAccessibleName(UNDHEADER);
+    irqTA->setAccessibleName(IRQHEADER);
+    fiqTA->setAccessibleName(FIQHEADER);
+    cp15TA->setAccessibleName(CP15HEADER);
+
+    mainLayout->addWidget(busTA);
+    mainLayout->addWidget(usrTA);
+    mainLayout->addWidget(srvTA);
+    mainLayout->addWidget(abtTA);
+    mainLayout->addWidget(undTA);
+    mainLayout->addWidget(irqTA);
+    mainLayout->addWidget(fiqTA);
+    mainLayout->addWidget(cp15TA);
+
+    resetTexts();
+
+    return mainLayout;
+}
+
+void procDisplay::resetTexts(){
+    busTA->setText(QString("Bus Resgisters contents:\n")+
+                   "Tod_Hi: "+QString(convertHex(0))+"\n"+
+                   "Tod_Lo: "+QString(convertHex(0))+"\n"+
+                   "Timer: "+QString(convertHex(0))+"\n"+
+                   "Ram Size: "+QString(convertHex(0))+"\n"+
+                   "Pipeline contents:\n"+
+                   "Fetch: "+QString(convertHex(0))+"\n"+
+                   "Decode: "+QString(convertHex(0))+"\n"+
+                   "Execute: "+QString(convertHex(0))+"\n"+
+                   "Execute (ARM): ");
+
+    usrTA->setText(QString(USRHEADER)+
+                   "r0(a1): "+QString(convertHex(0))+"\n"+
+                   "r1(a2): "+QString(convertHex(0))+"\n"+
+                   "r2(a3): "+QString(convertHex(0))+"\n"+
+                   "r3(a4): "+QString(convertHex(0))+"\n"+
+                   "r4(v1): "+QString(convertHex(0))+"\n"+
+                   "r5(v2): "+QString(convertHex(0))+"\n"+
+                   "r6(v3): "+QString(convertHex(0))+"\n"+
+                   "r7(v4): "+QString(convertHex(0))+"\n"+
+                   "r8(v5): "+QString(convertHex(0))+"\n"+
+                   "r9(SB): "+QString(convertHex(0))+"\n"+
+                   "r10(SL): "+QString(convertHex(0))+"\n"+
+                   "r11(FP): "+QString(convertHex(0))+"\n"+
+                   "r12(IP): "+QString(convertHex(0))+"\n"+
+                   "r13(SP): "+QString(convertHex(0))+"\n"+
+                   "r14(LR): "+QString(convertHex(0))+"\n"+
+                   "r15(PC): "+QString(convertHex(0))+"\n"+
+                   "CPSR: "+QString(convertHex(0)));
+
+    srvTA->setText(QString(SVCHEADER)+
+                   "r0(a1): "+QString(convertHex(0))+"\n"+
+                   "r1(a2): "+QString(convertHex(0))+"\n"+
+                   "r2(a3): "+QString(convertHex(0))+"\n"+
+                   "r3(a4): "+QString(convertHex(0))+"\n"+
+                   "r4(v1): "+QString(convertHex(0))+"\n"+
+                   "r5(v2): "+QString(convertHex(0))+"\n"+
+                   "r6(v3): "+QString(convertHex(0))+"\n"+
+                   "r7(v4): "+QString(convertHex(0))+"\n"+
+                   "r8(v5): "+QString(convertHex(0))+"\n"+
+                   "r9(SB): "+QString(convertHex(0))+"\n"+
+                   "r10(SL): "+QString(convertHex(0))+"\n"+
+                   "r11(FP): "+QString(convertHex(0))+"\n"+
+                   "r12(IP): "+QString(convertHex(0))+"\n"+
+                   "r13(SP): "+QString(convertHex(0))+"\n"+
+                   "r14(LR): "+QString(convertHex(0))+"\n"+
+                   "r15(PC): "+QString(convertHex(0))+"\n"+
+                   "CPSR: "+QString(convertHex(0))+"\n"+
+                   "SPSR: "+QString(convertHex(0)));
+
+    abtTA->setText(QString(ABTHEADER)+
+                   "r0(a1): "+QString(convertHex(0))+"\n"+
+                   "r1(a2): "+QString(convertHex(0))+"\n"+
+                   "r2(a3): "+QString(convertHex(0))+"\n"+
+                   "r3(a4): "+QString(convertHex(0))+"\n"+
+                   "r4(v1): "+QString(convertHex(0))+"\n"+
+                   "r5(v2): "+QString(convertHex(0))+"\n"+
+                   "r6(v3): "+QString(convertHex(0))+"\n"+
+                   "r7(v4): "+QString(convertHex(0))+"\n"+
+                   "r8(v5): "+QString(convertHex(0))+"\n"+
+                   "r9(SB): "+QString(convertHex(0))+"\n"+
+                   "r10(SL): "+QString(convertHex(0))+"\n"+
+                   "r11(FP): "+QString(convertHex(0))+"\n"+
+                   "r12(IP): "+QString(convertHex(0))+"\n"+
+                   "r13(SP): "+QString(convertHex(0))+"\n"+
+                   "r14(LR): "+QString(convertHex(0))+"\n"+
+                   "r15(PC): "+QString(convertHex(0))+"\n"+
+                   "CPSR: "+QString(convertHex(0))+"\n"+
+                   "SPSR: "+QString(convertHex(0)));
+
+    undTA->setText(QString(UNDHEADER)+
+                   "r0(a1): "+QString(convertHex(0))+"\n"+
+                   "r1(a2): "+QString(convertHex(0))+"\n"+
+                   "r2(a3): "+QString(convertHex(0))+"\n"+
+                   "r3(a4): "+QString(convertHex(0))+"\n"+
+                   "r4(v1): "+QString(convertHex(0))+"\n"+
+                   "r5(v2): "+QString(convertHex(0))+"\n"+
+                   "r6(v3): "+QString(convertHex(0))+"\n"+
+                   "r7(v4): "+QString(convertHex(0))+"\n"+
+                   "r8(v5): "+QString(convertHex(0))+"\n"+
+                   "r9(SB): "+QString(convertHex(0))+"\n"+
+                   "r10(SL): "+QString(convertHex(0))+"\n"+
+                   "r11(FP): "+QString(convertHex(0))+"\n"+
+                   "r12(IP): "+QString(convertHex(0))+"\n"+
+                   "r13(SP): "+QString(convertHex(0))+"\n"+
+                   "r14(LR): "+QString(convertHex(0))+"\n"+
+                   "r15(PC): "+QString(convertHex(0))+"\n"+
+                   "CPSR: "+QString(convertHex(0))+"\n"+
+                   "SPSR: "+QString(convertHex(0)));
+
+    irqTA->setText(QString(IRQHEADER)+
+                   "r0(a1): "+QString(convertHex(0))+"\n"+
+                   "r1(a2): "+QString(convertHex(0))+"\n"+
+                   "r2(a3): "+QString(convertHex(0))+"\n"+
+                   "r3(a4): "+QString(convertHex(0))+"\n"+
+                   "r4(v1): "+QString(convertHex(0))+"\n"+
+                   "r5(v2): "+QString(convertHex(0))+"\n"+
+                   "r6(v3): "+QString(convertHex(0))+"\n"+
+                   "r7(v4): "+QString(convertHex(0))+"\n"+
+                   "r8(v5): "+QString(convertHex(0))+"\n"+
+                   "r9(SB): "+QString(convertHex(0))+"\n"+
+                   "r10(SL): "+QString(convertHex(0))+"\n"+
+                   "r11(FP): "+QString(convertHex(0))+"\n"+
+                   "r12(IP): "+QString(convertHex(0))+"\n"+
+                   "r13(SP): "+QString(convertHex(0))+"\n"+
+                   "r14(LR): "+QString(convertHex(0))+"\n"+
+                   "r15(PC): "+QString(convertHex(0))+"\n"+
+                   "CPSR: "+QString(convertHex(0))+"\n"+
+                   "SPSR: "+QString(convertHex(0)));
+
+    fiqTA->setText(QString(FIQHEADER)+
+                   "r0(a1): "+QString(convertHex(0))+"\n"+
+                   "r1(a2): "+QString(convertHex(0))+"\n"+
+                   "r2(a3): "+QString(convertHex(0))+"\n"+
+                   "r3(a4): "+QString(convertHex(0))+"\n"+
+                   "r4(v1): "+QString(convertHex(0))+"\n"+
+                   "r5(v2): "+QString(convertHex(0))+"\n"+
+                   "r6(v3): "+QString(convertHex(0))+"\n"+
+                   "r7(v4): "+QString(convertHex(0))+"\n"+
+                   "r8(v5): "+QString(convertHex(0))+"\n"+
+                   "r9(SB): "+QString(convertHex(0))+"\n"+
+                   "r10(SL): "+QString(convertHex(0))+"\n"+
+                   "r11(FP): "+QString(convertHex(0))+"\n"+
+                   "r12(IP): "+QString(convertHex(0))+"\n"+
+                   "r13(SP): "+QString(convertHex(0))+"\n"+
+                   "r14(LR): "+QString(convertHex(0))+"\n"+
+                   "r15(PC): "+QString(convertHex(0))+"\n"+
+                   "CPSR: "+QString(convertHex(0))+"\n"+
+                   "SPSR: "+QString(convertHex(0)));
+
+    cp15TA->setText(QString(CP15HEADER)+
+                   "ID(r0): "+QString(convertHex(0))+"\n"+
+                   "SCB(r1): "+QString(convertHex(0))+"\n"+
+                   "PTE_Hi(r2): "+QString(convertHex(0))+"\n"+
+                   "PTE_Low(r2): "+QString(convertHex(0))+"\n"+
+                   "FA(r6): "+QString(convertHex(0))+"\n"+
+                   "TLBR(r8): "+QString(convertHex(0))+"\n"+
+                   "TLBI(r10): "+QString(convertHex(0))+"\n"+
+                   "CAUSE(r15): "+QString(convertHex(0)));
+
+    memsize = MC_Holder::getInstance()->getConfig()->getRamSize()*BYTES_PER_FRAME;
+}
+
+void procDisplay::updateTexts(Word *cpu, Word *cp15, Word *ppln, Word todH, Word todL, Word timer, QString ass){
+    busTA->setText(QString("Bus Resgisters contents:\n")+
+                   "Tod_Hi: "+QString(convertHex(todH))+"\n"+
+                   "Tod_Lo: "+QString(convertHex(todL))+"\n"+
+                   "Timer: "+QString(convertHex(timer))+"\n"+
+                   "Ram Size: "+QString(convertHex(memsize))+"\n"+
+                   "Pipeline contents:\n"+
+                   "Fetch: "+QString(convertHex(ppln[PIPELINE_FETCH]))+"\n"+
+                   "Decode: "+QString(convertHex(ppln[PIPELINE_DECODE]))+"\n"+
+                   "Execute: "+QString(convertHex(ppln[PIPELINE_EXECUTE]))+"\n"+
+                   "Execute (ARM): "+ass);
+
+    usrTA->setText(QString(USRHEADER)+
+                   "r0(a1): "+QString(convertHex(cpu[0]))+"\n"+
+                   "r1(a2): "+QString(convertHex(cpu[1]))+"\n"+
+                   "r2(a3): "+QString(convertHex(cpu[2]))+"\n"+
+                   "r3(a4): "+QString(convertHex(cpu[3]))+"\n"+
+                   "r4(v1): "+QString(convertHex(cpu[4]))+"\n"+
+                   "r5(v2): "+QString(convertHex(cpu[5]))+"\n"+
+                   "r6(v3): "+QString(convertHex(cpu[6]))+"\n"+
+                   "r7(v4): "+QString(convertHex(cpu[7]))+"\n"+
+                   "r8(v5): "+QString(convertHex(cpu[8]))+"\n"+
+                   "r9(SB): "+QString(convertHex(cpu[9]))+"\n"+
+                   "r10(SL): "+QString(convertHex(cpu[10]))+"\n"+
+                   "r11(FP): "+QString(convertHex(cpu[11]))+"\n"+
+                   "r12(IP): "+QString(convertHex(cpu[12]))+"\n"+
+                   "r13(SP): "+QString(convertHex(cpu[13]))+"\n"+
+                   "r14(LR): "+QString(convertHex(cpu[14]))+"\n"+
+                   "r15(PC): "+QString(convertHex(cpu[15]))+"\n"+
+                   "CPSR: "+QString(convertHex(cpu[REG_CPSR])));
+
+    srvTA->setText(QString(SVCHEADER)+
+                   "r0(a1): "+QString(convertHex(cpu[0]))+"\n"+
+                   "r1(a2): "+QString(convertHex(cpu[1]))+"\n"+
+                   "r2(a3): "+QString(convertHex(cpu[2]))+"\n"+
+                   "r3(a4): "+QString(convertHex(cpu[3]))+"\n"+
+                   "r4(v1): "+QString(convertHex(cpu[4]))+"\n"+
+                   "r5(v2): "+QString(convertHex(cpu[5]))+"\n"+
+                   "r6(v3): "+QString(convertHex(cpu[6]))+"\n"+
+                   "r7(v4): "+QString(convertHex(cpu[7]))+"\n"+
+                   "r8(v5): "+QString(convertHex(cpu[8]))+"\n"+
+                   "r9(SB): "+QString(convertHex(cpu[9]))+"\n"+
+                   "r10(SL): "+QString(convertHex(cpu[10]))+"\n"+
+                   "r11(FP): "+QString(convertHex(cpu[11]))+"\n"+
+                   "r12(IP): "+QString(convertHex(cpu[12]))+"\n"+
+                   "r13(SP): "+QString(convertHex(cpu[REG_SVC_BASE]))+"\n"+
+                   "r14(LR): "+QString(convertHex(cpu[REG_SVC_BASE+1]))+"\n"+
+                   "r15(PC): "+QString(convertHex(cpu[15]))+"\n"+
+                   "CPSR: "+QString(convertHex(cpu[REG_CPSR]))+"\n"+
+                   "SPSR: "+QString(convertHex(cpu[REG_SPSR_SVC])));
+
+    abtTA->setText(QString(ABTHEADER)+
+                   "r0(a1): "+QString(convertHex(cpu[0]))+"\n"+
+                   "r1(a2): "+QString(convertHex(cpu[1]))+"\n"+
+                   "r2(a3): "+QString(convertHex(cpu[2]))+"\n"+
+                   "r3(a4): "+QString(convertHex(cpu[3]))+"\n"+
+                   "r4(v1): "+QString(convertHex(cpu[4]))+"\n"+
+                   "r5(v2): "+QString(convertHex(cpu[5]))+"\n"+
+                   "r6(v3): "+QString(convertHex(cpu[6]))+"\n"+
+                   "r7(v4): "+QString(convertHex(cpu[7]))+"\n"+
+                   "r8(v5): "+QString(convertHex(cpu[8]))+"\n"+
+                   "r9(SB): "+QString(convertHex(cpu[9]))+"\n"+
+                   "r10(SL): "+QString(convertHex(cpu[10]))+"\n"+
+                   "r11(FP): "+QString(convertHex(cpu[11]))+"\n"+
+                   "r12(IP): "+QString(convertHex(cpu[12]))+"\n"+
+                   "r13(SP): "+QString(convertHex(cpu[REG_ABT_BASE]))+"\n"+
+                   "r14(LR): "+QString(convertHex(cpu[REG_ABT_BASE+1]))+"\n"+
+                   "r15(PC): "+QString(convertHex(cpu[15]))+"\n"+
+                   "CPSR: "+QString(convertHex(cpu[REG_CPSR]))+"\n"+
+                   "SPSR: "+QString(convertHex(cpu[REG_SPSR_ABT])));
+
+    undTA->setText(QString(UNDHEADER)+
+                   "r0(a1): "+QString(convertHex(cpu[0]))+"\n"+
+                   "r1(a2): "+QString(convertHex(cpu[1]))+"\n"+
+                   "r2(a3): "+QString(convertHex(cpu[2]))+"\n"+
+                   "r3(a4): "+QString(convertHex(cpu[3]))+"\n"+
+                   "r4(v1): "+QString(convertHex(cpu[4]))+"\n"+
+                   "r5(v2): "+QString(convertHex(cpu[5]))+"\n"+
+                   "r6(v3): "+QString(convertHex(cpu[6]))+"\n"+
+                   "r7(v4): "+QString(convertHex(cpu[7]))+"\n"+
+                   "r8(v5): "+QString(convertHex(cpu[8]))+"\n"+
+                   "r9(SB): "+QString(convertHex(cpu[9]))+"\n"+
+                   "r10(SL): "+QString(convertHex(cpu[10]))+"\n"+
+                   "r11(FP): "+QString(convertHex(cpu[11]))+"\n"+
+                   "r12(IP): "+QString(convertHex(cpu[12]))+"\n"+
+                   "r13(SP): "+QString(convertHex(cpu[REG_UNDEF_BASE]))+"\n"+
+                   "r14(LR): "+QString(convertHex(cpu[REG_UNDEF_BASE+1]))+"\n"+
+                   "r15(PC): "+QString(convertHex(cpu[15]))+"\n"+
+                   "CPSR: "+QString(convertHex(cpu[REG_CPSR]))+"\n"+
+                   "SPSR: "+QString(convertHex(cpu[REG_SPSR_UND])));
+
+    irqTA->setText(QString(IRQHEADER)+
+                   "r0(a1): "+QString(convertHex(cpu[0]))+"\n"+
+                   "r1(a2): "+QString(convertHex(cpu[1]))+"\n"+
+                   "r2(a3): "+QString(convertHex(cpu[2]))+"\n"+
+                   "r3(a4): "+QString(convertHex(cpu[3]))+"\n"+
+                   "r4(v1): "+QString(convertHex(cpu[4]))+"\n"+
+                   "r5(v2): "+QString(convertHex(cpu[5]))+"\n"+
+                   "r6(v3): "+QString(convertHex(cpu[6]))+"\n"+
+                   "r7(v4): "+QString(convertHex(cpu[7]))+"\n"+
+                   "r8(v5): "+QString(convertHex(cpu[8]))+"\n"+
+                   "r9(SB): "+QString(convertHex(cpu[9]))+"\n"+
+                   "r10(SL): "+QString(convertHex(cpu[10]))+"\n"+
+                   "r11(FP): "+QString(convertHex(cpu[11]))+"\n"+
+                   "r12(IP): "+QString(convertHex(cpu[12]))+"\n"+
+                   "r13(SP): "+QString(convertHex(cpu[REG_IRQ_BASE]))+"\n"+
+                   "r14(LR): "+QString(convertHex(cpu[REG_IRQ_BASE+1]))+"\n"+
+                   "r15(PC): "+QString(convertHex(cpu[15]))+"\n"+
+                   "CPSR: "+QString(convertHex(cpu[REG_CPSR]))+"\n"+
+                   "SPSR: "+QString(convertHex(cpu[REG_SPSR_IRQ])));
+
+    fiqTA->setText(QString(FIQHEADER)+
+                   "r0(a1): "+QString(convertHex(cpu[0]))+"\n"+
+                   "r1(a2): "+QString(convertHex(cpu[1]))+"\n"+
+                   "r2(a3): "+QString(convertHex(cpu[2]))+"\n"+
+                   "r3(a4): "+QString(convertHex(cpu[3]))+"\n"+
+                   "r4(v1): "+QString(convertHex(cpu[4]))+"\n"+
+                   "r5(v2): "+QString(convertHex(cpu[5]))+"\n"+
+                   "r6(v3): "+QString(convertHex(cpu[6]))+"\n"+
+                   "r7(v4): "+QString(convertHex(cpu[7]))+"\n"+
+                   "r8(v5): "+QString(convertHex(cpu[REG_FIQ_BASE]))+"\n"+
+                   "r9(SB): "+QString(convertHex(cpu[REG_FIQ_BASE+1]))+"\n"+
+                   "r10(SL): "+QString(convertHex(cpu[REG_FIQ_BASE+2]))+"\n"+
+                   "r11(FP): "+QString(convertHex(cpu[REG_FIQ_BASE+3]))+"\n"+
+                   "r12(IP): "+QString(convertHex(cpu[REG_FIQ_BASE+4]))+"\n"+
+                   "r13(SP): "+QString(convertHex(cpu[REG_SVC_BASE+5]))+"\n"+
+                   "r14(LR): "+QString(convertHex(cpu[REG_SVC_BASE+6]))+"\n"+
+                   "r15(PC): "+QString(convertHex(cpu[15]))+"\n"+
+                   "CPSR: "+QString(convertHex(cpu[REG_CPSR]))+"\n"+
+                   "SPSR: "+QString(convertHex(cpu[REG_SPSR_FIQ])));
+
+    cp15TA->setText(QString(CP15HEADER)+
+                   "ID(r0): "+QString(convertHex(cp15[CP15_REG0_IDC]))+"\n"+
+                   "SCB(r1): "+QString(convertHex(cp15[CP15_REG1_SCB]))+"\n"+
+                   "PTE_Hi(r2): "+QString(convertHex(cp15[CP15_REG2_EntryHi]))+"\n"+
+                   "PTE_Low(r2): "+QString(convertHex(cp15[CP15_REG2_EntryLo]))+"\n"+
+                   "FA(r6): "+QString(convertHex(cp15[CP15_REG6_FA]))+"\n"+
+                   "TLBR(r8): "+QString(convertHex(cp15[CP15_REG8_TLBR]))+"\n"+
+                   "TLBI(r10): "+QString(convertHex(cp15[CP15_REG10_TLBI]))+"\n"+
+                   "CAUSE(r15): "+QString(convertHex(cp15[CP15_REG15_CAUSE])));
 }
 
 #endif //QARM_PROCDISPLAY_CC

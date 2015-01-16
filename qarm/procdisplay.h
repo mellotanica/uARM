@@ -25,6 +25,7 @@
 #include <QWidget>
 #include <QGridLayout>
 #include <QLabel>
+#include <QTextEdit>
 #include <sstream>
 #include <iomanip>
 #include "qarm/QLine.h"
@@ -41,18 +42,24 @@ public:
     explicit procDisplay(QWidget *parent = 0);
         
 public slots:
-    void updateVals(Word *cpu, Word *cp15, Word *pipeline, Word todH, Word todL, Word timer, QString ass);
-    void reset();
+    void resetLabels(int val = 0);
+    void updateLabels(Word *cpu, Word *cp15, Word *pipeline, Word todH, Word todL, Word timer, QString ass);
+    void resetTexts();
+    void updateTexts(Word *cpu, Word *cp15, Word *pipeline, Word todH, Word todL, Word timer, QString ass);
+
 
 private:
-    QVBoxLayout *mainLayout;
-    QGridLayout *pipeL, *cpuL, *cp15L, *infoL;
-    QHBoxLayout *lowLayout;
+    Word memsize;
+
     monoLabel **pipeline;
     monoLabel ***cpuReg, ***cp15Reg, ***infoReg;
 
-    QString convertHex(Word val);
-    void setAccessibilityNames();
+    QTextEdit *busTA, *usrTA, *srvTA, *abtTA, *undTA, *irqTA, *fiqTA, *cp15TA;
+
+    QVBoxLayout *createStandardLayout();
+    QHBoxLayout *createAccessibleLayout();
+
+    void setAccessibilityLabels();
 };
 
 class monoLabel : public QLabel{

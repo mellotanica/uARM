@@ -47,6 +47,7 @@ public:
     qarm(QApplication *app);
     machine *getMachine() {return mac;}
     MachineConfig *getMachineConfig() {return MC_Holder::getInstance()->getConfig();}
+    virtual void show();
 
 protected:
     virtual void closeEvent(QCloseEvent* event);
@@ -63,6 +64,7 @@ signals:
 private slots:
     void start(int speed);
     void step();
+    void pause();
     void stop();
     void speedChanged(int speed);
     void softReset();

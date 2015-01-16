@@ -94,7 +94,7 @@ qarm::qarm(QApplication *app):
 
     connect(toolbar, SIGNAL(play(int)), this, SLOT(start(int)));
     connect(toolbar, SIGNAL(speedChanged(int)), this, SLOT(speedChanged(int)));
-    connect(toolbar, SIGNAL(pause()), this, SLOT(stop()));
+    connect(toolbar, SIGNAL(pause()), this, SLOT(pause()));
     connect(toolbar, SIGNAL(reset()), this, SLOT(softReset()));
     connect(toolbar, SIGNAL(powerOn()), this, SLOT(powerOn()));
     connect(toolbar, SIGNAL(showRam()), this, SLOT(showRam()));
@@ -118,8 +118,14 @@ qarm::qarm(QApplication *app):
 
     connect(this, SIGNAL(resetMachine()), mac, SLOT(reset()));
     connect(this, SIGNAL(resetMachine()), this, SIGNAL(resetDisplay()));
-    connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), display, SLOT(updateVals(Word*,Word*,Word*,Word,Word,Word,QString)));
-    connect(this, SIGNAL(resetDisplay()), display, SLOT(reset()));
+    if(MC_Holder::getInstance()->getConfig()->getAccessibleMode()) {
+        connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), display, SLOT(updateTexts(Word*,Word*,Word*,Word,Word,Word,QString)));
+        connect(this, SIGNAL(resetDisplay()), display, SLOT(resetTexts()));
+    } else {
+        connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), display, SLOT(updateLabels(Word*,Word*,Word*,Word,Word,Word,QString)));
+        connect(this, SIGNAL(resetDisplay()), display, SLOT(resetLabels()));
+    }
+
     connect(this, SIGNAL(resetMachine()), tlbWindow, SIGNAL(onMachineReset()));
 
     connect(this, SIGNAL(stopSig()), clock, SLOT(stop()));
@@ -138,6 +144,11 @@ void qarm::powerOn(){
     softReset();
     if(initialized)
         emit poweredOn();
+}
+
+void qarm::pause(){
+    mac->refreshData(true);
+    stop();
 }
 
 void qarm::softReset(){
@@ -345,8 +356,6 @@ void qarm::showConfigDialog(){
             error->show();
             return;
         }
-        // EDIT: no config view for now..
-        //configView->Update();
     }
 }
 
@@ -379,6 +388,11 @@ void qarm::closeEvent(QCloseEvent* event)
     Appl()->settings.setValue("MonitorWindow/ShowStopMask", viewStopMaskAction->isChecked());
     */
     event->accept();
+}
+
+void qarm::show(){
+    QMainWindow::show();
+    emit resetDisplay();
 }
 
 void qarm::onMachineHalted()
