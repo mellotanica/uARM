@@ -376,13 +376,21 @@ QHBoxLayout *procDisplay::createAccessibleLayout(){
     cp15TA = new QTextEdit(this);
 
     busTA->setReadOnly(true);
+    busTA->setLineWrapMode(QTextEdit::NoWrap);
     usrTA->setReadOnly(true);
+    usrTA->setLineWrapMode(QTextEdit::NoWrap);
     srvTA->setReadOnly(true);
+    srvTA->setLineWrapMode(QTextEdit::NoWrap);
     abtTA->setReadOnly(true);
+    abtTA->setLineWrapMode(QTextEdit::NoWrap);
     undTA->setReadOnly(true);
+    undTA->setLineWrapMode(QTextEdit::NoWrap);
     irqTA->setReadOnly(true);
+    irqTA->setLineWrapMode(QTextEdit::NoWrap);
     fiqTA->setReadOnly(true);
+    fiqTA->setLineWrapMode(QTextEdit::NoWrap);
     cp15TA->setReadOnly(true);
+    cp15TA->setLineWrapMode(QTextEdit::NoWrap);
 
     busTA->setAccessibleName(BUSHEADER);
     usrTA->setAccessibleName(USRHEADER);
@@ -417,9 +425,9 @@ void procDisplay::resetTexts(){
                    "Fetch: "+QString(convertHex(0))+"\n"+
                    "Decode: "+QString(convertHex(0))+"\n"+
                    "Execute: "+QString(convertHex(0))+"\n"+
-                   "Execute (ARM): ");
+                   "Execute (ARM): NOP");
 
-    usrTA->setText(QString(USRHEADER)+
+    usrTA->setText(QString(USRHEADER)+"\n"+
                    "r0(a1): "+QString(convertHex(0))+"\n"+
                    "r1(a2): "+QString(convertHex(0))+"\n"+
                    "r2(a3): "+QString(convertHex(0))+"\n"+
@@ -438,7 +446,7 @@ void procDisplay::resetTexts(){
                    "r15(PC): "+QString(convertHex(0))+"\n"+
                    "CPSR: "+QString(convertHex(0)));
 
-    srvTA->setText(QString(SVCHEADER)+
+    srvTA->setText(QString(SVCHEADER)+"\n"+
                    "r0(a1): "+QString(convertHex(0))+"\n"+
                    "r1(a2): "+QString(convertHex(0))+"\n"+
                    "r2(a3): "+QString(convertHex(0))+"\n"+
@@ -458,7 +466,7 @@ void procDisplay::resetTexts(){
                    "CPSR: "+QString(convertHex(0))+"\n"+
                    "SPSR: "+QString(convertHex(0)));
 
-    abtTA->setText(QString(ABTHEADER)+
+    abtTA->setText(QString(ABTHEADER)+"\n"+
                    "r0(a1): "+QString(convertHex(0))+"\n"+
                    "r1(a2): "+QString(convertHex(0))+"\n"+
                    "r2(a3): "+QString(convertHex(0))+"\n"+
@@ -478,7 +486,7 @@ void procDisplay::resetTexts(){
                    "CPSR: "+QString(convertHex(0))+"\n"+
                    "SPSR: "+QString(convertHex(0)));
 
-    undTA->setText(QString(UNDHEADER)+
+    undTA->setText(QString(UNDHEADER)+"\n"+
                    "r0(a1): "+QString(convertHex(0))+"\n"+
                    "r1(a2): "+QString(convertHex(0))+"\n"+
                    "r2(a3): "+QString(convertHex(0))+"\n"+
@@ -498,7 +506,7 @@ void procDisplay::resetTexts(){
                    "CPSR: "+QString(convertHex(0))+"\n"+
                    "SPSR: "+QString(convertHex(0)));
 
-    irqTA->setText(QString(IRQHEADER)+
+    irqTA->setText(QString(IRQHEADER)+"\n"+
                    "r0(a1): "+QString(convertHex(0))+"\n"+
                    "r1(a2): "+QString(convertHex(0))+"\n"+
                    "r2(a3): "+QString(convertHex(0))+"\n"+
@@ -518,7 +526,7 @@ void procDisplay::resetTexts(){
                    "CPSR: "+QString(convertHex(0))+"\n"+
                    "SPSR: "+QString(convertHex(0)));
 
-    fiqTA->setText(QString(FIQHEADER)+
+    fiqTA->setText(QString(FIQHEADER)+"\n"+
                    "r0(a1): "+QString(convertHex(0))+"\n"+
                    "r1(a2): "+QString(convertHex(0))+"\n"+
                    "r2(a3): "+QString(convertHex(0))+"\n"+
@@ -538,7 +546,7 @@ void procDisplay::resetTexts(){
                    "CPSR: "+QString(convertHex(0))+"\n"+
                    "SPSR: "+QString(convertHex(0)));
 
-    cp15TA->setText(QString(CP15HEADER)+
+    cp15TA->setText(QString(CP15HEADER)+"\n"+
                    "ID(r0): "+QString(convertHex(0))+"\n"+
                    "SCB(r1): "+QString(convertHex(0))+"\n"+
                    "PTE_Hi(r2): "+QString(convertHex(0))+"\n"+

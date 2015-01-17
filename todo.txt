@@ -1,6 +1,5 @@
 + breakpoint window fix (function name not accessible)
 * two execution modes, one more accessible with setting flag
-    - register view as a single text area per processor mode with register lable and value in each row
     ? flatten every layout in accessible mode
-+ compile for 5.4
+? compile for 5.4
 + try flat review with laptop layout
