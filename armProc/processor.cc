@@ -321,7 +321,7 @@ bool processor::condCheck(Byte cond){
 				return true;
 			else
 				return false;
-			break;
+            break;
 		case 14:	//AL
 			return true;
 			break;
@@ -393,7 +393,8 @@ void processor::AssertIRQ(unsigned int il)
 
     // If in standby mode, go back to being a power hog.
     if (status == PS_IDLE){
-        status = PS_RUNNING;
+        if((il == IL_TIMER && timerEnabled()) || interruptsEnabled())
+            status = PS_RUNNING;
     }
 }
 

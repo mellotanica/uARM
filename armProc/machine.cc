@@ -81,14 +81,14 @@ void machine::refreshData(bool force){
             ticksFromUpdate = 0;
         }
         cpu = sysbus->getProcessor(0);
-        if(cpu->getStatus() == PS_IDLE){
+        /*if(cpu->getStatus() == PS_IDLE){
             if(idleNotified)
                 return;
             else
                 idleNotified = true;
         } else {
             idleNotified = false;
-        }
+        }*/
     }
     else
         cpu = sysbus->getProcessor(0);
