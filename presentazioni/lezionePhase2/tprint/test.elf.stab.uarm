@@ -1,7 +1,0 @@
-MPSA00000005 00000001
-msg                              :OBJ:0x00010550:0x00000004:GLB
-breakfunc                        :FUN:0x00008254:0x00000014:GLB
-init                             :FUN:0x000083A4:0x000000AC:GLB
-main                             :FUN:0x000084E8:0x00000058:GLB
-waitForInt                       :FUN:0x00008268:0x0000013C:GLB
-iprint                           :FUN:0x00008450:0x00000098:GLB
