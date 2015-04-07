@@ -92,7 +92,7 @@ int main(){
 	statep = (state_t*) INT_NEWAREA;
 	STST(statep);
 	statep->pc = (unsigned int) intCallback;
-	statep->sp = *ramtop + RAM_BASE - PAGE_SIZE;
+	statep->sp = RAM_TOP - FRAME_SIZE;
 	notify_interrupt = 1;
 
 	tprint("main: enabling interrutps\n");
