@@ -3,3 +3,4 @@
     ? flatten every layout in accessible mode
 ? compile for 5.4
 + try flat review with laptop layout
+? check elf2uarm against gcc-4.9.2
