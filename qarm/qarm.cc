@@ -63,9 +63,9 @@ qarm::qarm(QApplication *app):
     }
 
     std::string defaultFName = defaultPath->absolutePath().toStdString()+"/"+DEFAULT_CONFIG_FILE;
-    MC_Holder::getInstance()->setConfig(MachineConfig::LoadFromFile(defaultFName, error, app));
+    MC_Holder::getInstance()->setConfig(MachineConfig::LoadFromFile(defaultFName, error, app, this));
     if(MC_Holder::getInstance()->getConfig() == NULL)
-        MC_Holder::getInstance()->setConfig(MachineConfig::Create(defaultFName, QDir::homePath().toStdString(), app));
+        MC_Holder::getInstance()->setConfig(MachineConfig::Create(defaultFName, QDir::homePath().toStdString(), app, this));
 
     mac = new machine(debugger->getBreakpoints(),debugger->getSuspects(),debugger->getTracepoints());
 
@@ -422,6 +422,10 @@ void qarm::onMachineHalted()
         showCpuWindowActions[i]->setEnabled(false);
 
     editConfigAction->setEnabled(true);*/
+}
+
+void qarm::kill(){
+    this->destroy();
 }
 
 #endif //QARM_QARM_CC

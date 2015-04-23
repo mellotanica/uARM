@@ -56,8 +56,8 @@ processor::~processor(){
         delete execThumb;
         execThumb = NULL;
     }
-    delete [] cpu_registers;
-    delete [] prefetchFault;
+    //delete [] cpu_registers;
+    //delete [] prefetchFault;
     tlb.~scoped_array();
 }
 
@@ -143,7 +143,7 @@ Word *processor::getVisibleRegister(Byte num){
         Panic("Invalid Processor Mode\n");
 			break;
 	}
-	return NULL;
+    return &cpu_registers[bus->get_unpredictable() % CPU_REGISTERS_NUM];
 }
 
 void processor::barrelShifter(bool immediate, Byte byte, Byte half){
@@ -1047,7 +1047,7 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
     Word writeBackAddr = *rn + ((U ? 1 : -1) * 4 * regn);
 
     //first address points always to lower most stored register
-    Word paddr, address = *rn + ((U ? 1 : -1) * (P ? 4 : 0)) - (U ? 0 : ((regn - 1) * 4));
+    Word *preg, paddr, address = *rn + ((U ? 1 : -1) * (P ? 4 : 0)) - (U ? 0 : ((regn - 1) * 4));
 	if(load){		//LDM
 		if(S){	//user bank transfer / mode change
 			if(getMode() == MODE_USER){	// S bit should be set only in privileged mode
@@ -1114,18 +1114,19 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
             for(unsigned i = 0; i < (sizeof(HalfWord) * 8); i++){
 				if(list & (1<<i)){		// if register i is marked store it
                     if(!firstChecked){	// if first register to be stored is base address register
-						firstChecked = true;
-                        if(mapVirtual(address, &paddr, WRITE) ||
+                        firstChecked = true;
+                        if(preg == NULL || mapVirtual(address, &paddr, WRITE) ||
                                 !checkAbort(bus->writeW(&paddr, *getVisibleRegister(i), true))){   // store the initial value before writing back return address
                             dataAbortTrap();
                             return;
                         }
-                    } else
-                        if(mapVirtual(address, &paddr, WRITE) ||
+                    } else{
+                        if(preg == NULL || mapVirtual(address, &paddr, WRITE) ||
                                 !checkAbort(bus->writeW(&paddr, *getVisibleRegister(i), true))){
                             dataAbortTrap();
                             return;
                         }
+                    }
 
 					address += 4;
 				}

@@ -63,7 +63,7 @@ const char* const MachineConfig::deviceKeyPrefix[N_EXT_IL] = {
     "terminal"
 };
 
-MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::string& error, QApplication *app)
+MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::string& error, QApplication *app, qarm *widget)
 {
     std::ifstream inputStream(fileName.c_str());
     if (inputStream.fail()) {
@@ -86,7 +86,7 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
         return NULL;
     }
 
-    std::auto_ptr<MachineConfig> config(new MachineConfig(fileName, app));
+    std::auto_ptr<MachineConfig> config(new MachineConfig(fileName, app, widget));
 
     try {
         if (root->HasMember("num-processors"))
@@ -147,9 +147,9 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
     return config.release();
 }
 
-MachineConfig* MachineConfig::Create(const std::string& fileName, const std::string& homedir, QApplication *app)
+MachineConfig* MachineConfig::Create(const std::string& fileName, const std::string& homedir, QApplication *app, qarm *widget)
 {
-    std::auto_ptr<MachineConfig> config(new MachineConfig(fileName, app));
+    std::auto_ptr<MachineConfig> config(new MachineConfig(fileName, app, widget));
 
     // The constructor initializes all the basic fields to sane
     // initial values; in addition, we enable a terminal device for
@@ -213,9 +213,10 @@ void MachineConfig::Save()
     file.flush();
 }
 
-MachineConfig::MachineConfig(const std::string& fn, QApplication *app)
+MachineConfig::MachineConfig(const std::string& fn, QApplication *app, qarm *widget)
     : fileName(fn),
-      app(app)
+      app(app),
+      mainWidget(widget)
 {
     resetToFactorySettings();
 }

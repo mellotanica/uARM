@@ -52,8 +52,24 @@ void readConfigs(){
 }
 
 int main(int argn, char **argv){
+    int i;
     QApplication app(argn, argv);
     readConfigs();
+    //FIXME: ugly debug dump
+    if(argn > 1){
+        for(i = 1; i < argn; i++){
+            if(!strcmp(argv[i], "--dumpExec") && i < (argn - 1)){
+                MC_Holder::getInstance()->dumpExecution = true;
+                MC_Holder::getInstance()->dumpFilename = strdup(argv[i+1]);
+                FILE*f = fopen(argv[i+1], "w");
+                fprintf(f, "EXEC start:\n\n");
+                fclose(f);
+                break;
+            }
+            else
+                MC_Holder::getInstance()->dumpExecution = false;
+        }
+    }
     app.setFont(monoLabel::getMonospaceFont(), "procDisplay");
     qarm *wid = new qarm(&app);
     wid->show();

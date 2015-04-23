@@ -24,13 +24,18 @@
 
 #include "qarm/qarmmessagebox.h"
 #include "armProc/machine_config.h"
+#include "qarm/qarm.h"
+#include <QObject>
 
 void Panic(const char* message)
 {
     QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "PANIC", QString("PANIC: %1").arg(message).toStdString().c_str());
     error->show();
-    // WARN: is it necessary?
-    MC_Holder::getInstance()->getConfig()->getApp()->quit();
+
+    MC_Holder::getInstance()->getConfig()->getMainWidget()->stop();
+    MC_Holder::getInstance()->getConfig()->getMainWidget()->setDisabled(true);
+
+    error->connect(error, SIGNAL(accepted()), MC_Holder::getInstance()->getConfig()->getApp(), SLOT(quit()));
 }
 
 #endif //BASE_ERROR_CC

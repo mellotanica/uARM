@@ -28,6 +28,7 @@
 //#include "armProc/coprocessor_interface.h"
 
 #include <QString>
+#include <QThread>
 
 machine::machine(StoppointSet* breakpoints,
                  StoppointSet* suspects,

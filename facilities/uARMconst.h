@@ -52,11 +52,12 @@
 #define VERHOGEN 3
 #define PASSEREN 4
 #define SPECTRAPVEC 5
-#define GETCPUTIME 6
-#define WAITCLOCK 7
-#define WAITIO 8
+#define GETPID 6
+#define GETCPUTIME 7
+#define WAITCLOCK 8
+#define WAITIO 9
 
-#define SYSCALL_MAX 8
+#define SYSCALL_MAX 9
 
 #define SPECTLB 0
 #define SPECPGMT 1

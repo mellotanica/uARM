@@ -34,6 +34,8 @@
 
 #include <QApplication>
 
+class qarm;
+
 enum ROMType {
     ROM_TYPE_BIOS,
     ROM_TYPE_CORE,
@@ -44,7 +46,6 @@ enum ROMType {
 typedef struct {
     unsigned int monofont_size;
 } main_configs_s;
-
 
 class MachineConfig {
 public:
@@ -79,8 +80,8 @@ public:
     static const Word MIN_ASID = 0;
     static const Word MAX_ASID = MAXASID-1;
 
-    static MachineConfig* LoadFromFile(const std::string& fileName, std::string& error, QApplication *app);
-    static MachineConfig* Create(const std::string& fileName, const std::string& homedir, QApplication *app);
+    static MachineConfig* LoadFromFile(const std::string& fileName, std::string& error, QApplication *app, qarm *widget);
+    static MachineConfig* Create(const std::string& fileName, const std::string& homedir, QApplication *app, qarm *widget);
 
     const std::string& getFileName() const { return fileName; }
 
@@ -137,8 +138,10 @@ public:
     QApplication* getApp() {return app;}
     QString getAppPath() {return app->applicationDirPath();}
 
+    qarm *getMainWidget() {return mainWidget;}
+
 private:
-    MachineConfig(const std::string& fileName, QApplication *app);
+    MachineConfig(const std::string& fileName, QApplication *app, qarm *widget);
 
     void resetToFactorySettings();
     bool validFileMagic(Word tag, const char* fName);
@@ -166,6 +169,7 @@ private:
     scoped_array<uint8_t> macId[N_DEV_PER_IL];
 
     QApplication *app;
+    qarm *mainWidget;
 
     static const char* const deviceKeyPrefix[N_EXT_IL];
 };
@@ -185,6 +189,10 @@ public:
     void setConfig(MachineConfig *conf) {config = conf;}
 
     main_configs_s mainConfigs;
+
+    // FIXME: ugly debug support
+    bool dumpExecution;
+    char* dumpFilename;
 };
 
 #endif // UARM_MACHINE_CONFIG_H

@@ -29,7 +29,7 @@ cp15::cp15(systemBus *bus): coprocessor(bus) {
 }
 
 cp15::~cp15(){
-    delete [] cp15_registers;
+    //delete [] cp15_registers;
 }
 
 void cp15::reset(){

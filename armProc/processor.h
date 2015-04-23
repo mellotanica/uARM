@@ -26,6 +26,7 @@
 #include "armProc/bus.h"
 #include "armProc/cp15.h"
 #include "armProc/tlbentry.h"
+#include "armProc/machine_config.h"
 
 enum ProcessorStatus {
     PS_HALTED,
@@ -194,6 +195,12 @@ private:
 		}
 		isOPcodeARM = isARM;
 		mnemonicOPcode = mnemonic;
+        //FIXME: ugly debug solution
+        if(MC_Holder::getInstance()->dumpExecution && strcmp(mnemonic.c_str(), "Unknown")){
+            FILE* dumpFile = fopen(MC_Holder::getInstance()->dumpFilename, "a");
+            fprintf(dumpFile, "0x%X : 0x%X - %s\n", cpu_registers[REG_PC], pipeline[PIPELINE_EXECUTE], mnemonic.c_str());
+            fclose(dumpFile);
+        }
     }
 };
 

@@ -48,6 +48,7 @@ public:
     machine *getMachine() {return mac;}
     MachineConfig *getMachineConfig() {return MC_Holder::getInstance()->getConfig();}
     virtual void show();
+    void kill();
 
 protected:
     virtual void closeEvent(QCloseEvent* event);
@@ -61,11 +62,13 @@ signals:
     void poweredOn();
     void poweredOff();
 
+public slots:
+    void stop();
+
 private slots:
     void start(int speed);
     void step();
     void pause();
-    void stop();
     void speedChanged(int speed);
     void softReset();
     void selectCore();
