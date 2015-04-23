@@ -40,6 +40,7 @@
 #include <QDataStream>
 #include <QPointer>
 #include <QApplication>
+#include <QShortcut>
 
 class qarm : public QMainWindow{
     Q_OBJECT
@@ -88,6 +89,8 @@ private:
 
     breakpoint_window *bpWindow;
     tlb_window *tlbWindow;
+
+    QShortcut *closeSc;
 
     QWidget *mainWidget;
     procDisplay *display;

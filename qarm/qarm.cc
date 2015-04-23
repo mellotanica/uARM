@@ -67,6 +67,9 @@ qarm::qarm(QApplication *app):
     if(MC_Holder::getInstance()->getConfig() == NULL)
         MC_Holder::getInstance()->setConfig(MachineConfig::Create(defaultFName, QDir::homePath().toStdString(), app, this));
 
+    closeSc = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this, NULL, NULL, Qt::ApplicationShortcut);
+    connect(closeSc, SIGNAL(activated()), application, SLOT(quit()));
+
     mac = new machine(debugger->getBreakpoints(),debugger->getSuspects(),debugger->getTracepoints());
 
     setWindowTitle("uARM");
