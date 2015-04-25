@@ -249,9 +249,11 @@ void systemBus::Skip(uint32_t cycles)
     writeW(&addr, timer);
 }
 
-bool systemBus::prefetch(Word addr){ //fetches one instruction per execution from exact given address
+bool systemBus::prefetch(Word addr, bool exec){ //fetches one instruction per execution from exact given address
     //STATIC: should check if accessing VM not bus
-    HandleBusAccess(addr, EXEC, NULL);
+    if(exec){ //only check for breakpoints if loading exec stage
+        HandleBusAccess(addr, EXEC, NULL);
+    }
     pipeline[PIPELINE_EXECUTE] = pipeline[PIPELINE_DECODE];
     pipeline[PIPELINE_DECODE] = pipeline[PIPELINE_FETCH];
     if(readW(&addr, &pipeline[PIPELINE_FETCH]) != ABT_NOABT)
@@ -261,8 +263,8 @@ bool systemBus::prefetch(Word addr){ //fetches one instruction per execution fro
 
 bool systemBus::fetch(Word pc, bool armMode){
     //STATIC: should check if accessing VM not bus
-    HandleBusAccess(pc, EXEC, NULL);
     Word addr = pc - (armMode ? 8 : 4);
+    HandleBusAccess(addr, EXEC, NULL);
     if(readW(&addr, &pipeline[PIPELINE_EXECUTE]) != ABT_NOABT)
         return false;
     addr += 4;

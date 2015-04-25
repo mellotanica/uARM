@@ -363,7 +363,7 @@ void processor::prefetch() {
         if(mapVirtual(vpc, &ppc, EXEC)){
             prefetchFault[i] = true;
         } else
-            prefetchFault[i] = !bus->prefetch(ppc);
+            prefetchFault[i] = !bus->prefetch(ppc, i==PIPELINE_EXECUTE);
     }
     //if prefetch happened in thumb mode pc must be advanced by two halfwords
     *getPC() += (cpu_registers[REG_CPSR] & T_MASK ? 4 : 8);

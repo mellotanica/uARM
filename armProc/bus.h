@@ -64,7 +64,7 @@ public:
     bool loadBIOS(char *buffer, Word size);
     bool loadRAM(char *buffer, Word size, bool kernel);
 
-    bool prefetch(Word addr);
+    bool prefetch(Word addr, bool exec);
     bool fetch(Word pc, bool armMode);
 	
     ramMemory *getRam() {return ram;}
