@@ -79,7 +79,7 @@ private slots:
     void showTerminal(unsigned int devNo);
     void onMachineHalted();
     void powerOn();
-
+    void closeFWindow();
 
 private:
     QApplication *application;

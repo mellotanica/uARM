@@ -35,6 +35,7 @@
 #include <QScrollArea>
 #include <QMetaObject>
 #include <QIcon>
+#include <QWindow>
 
 qarm::qarm(QApplication *app):
     application(app)
@@ -68,7 +69,7 @@ qarm::qarm(QApplication *app):
         MC_Holder::getInstance()->setConfig(MachineConfig::Create(defaultFName, QDir::homePath().toStdString(), app, this));
 
     closeSc = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this, NULL, NULL, Qt::ApplicationShortcut);
-    connect(closeSc, SIGNAL(activated()), application, SLOT(quit()));
+    connect(closeSc, SIGNAL(activated()), this, SLOT(closeFWindow()));
 
     mac = new machine(debugger->getBreakpoints(),debugger->getSuspects(),debugger->getTracepoints());
 
@@ -425,6 +426,10 @@ void qarm::onMachineHalted()
         showCpuWindowActions[i]->setEnabled(false);
 
     editConfigAction->setEnabled(true);*/
+}
+
+void qarm::closeFWindow(){
+    application->focusWindow()->close();
 }
 
 void qarm::kill(){

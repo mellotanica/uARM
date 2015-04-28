@@ -140,7 +140,9 @@ Word *processor::getVisibleRegister(Byte num){
 			return &cpu_registers[REG_UNDEF_BASE+(num-13)];
 			break;
 		default:
-        Panic("Invalid Processor Mode\n");
+            char *message = (char*)malloc(strlen("Invalid Processor Mode\n0x00000000\n")*sizeof(char));
+            sprintf(message, "Invalid Processor Mode\n0x%08X\n", cpu_registers[REG_CPSR]);
+            Panic(message);
 			break;
 	}
     return &cpu_registers[bus->get_unpredictable() % CPU_REGISTERS_NUM];
