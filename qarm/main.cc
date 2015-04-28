@@ -56,6 +56,7 @@ int main(int argn, char **argv){
     QApplication app(argn, argv);
     readConfigs();
     //FIXME: ugly debug dump
+    MC_Holder::getInstance()->dumpExecution = false;
     if(argn > 1){
         for(i = 1; i < argn; i++){
             if(!strcmp(argv[i], "--dumpExec") && i < (argn - 1)){
@@ -66,8 +67,6 @@ int main(int argn, char **argv){
                 fclose(f);
                 break;
             }
-            else
-                MC_Holder::getInstance()->dumpExecution = false;
         }
     }
     app.setFont(monoLabel::getMonospaceFont(), "procDisplay");
