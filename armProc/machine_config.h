@@ -51,7 +51,7 @@ class MachineConfig {
 public:
     static const Word MIN_RAM = 8;
     static const Word MAX_RAM = 1024;
-    static const Word DEFAULT_RAM_SIZE = 256;
+    static const Word DEFAULT_RAM_SIZE = 512;
 
     static const Word MIN_TLB_SIZE = 4;
     static const Word MAX_TLB_SIZE = 64;
