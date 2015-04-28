@@ -24,14 +24,14 @@ fi
 
 ./configure
 
-$QMCOMP qarm.pro
-make
-make clean
-
 $QMCOMP elf2uarm.pro
 make
 make clean
 
 $QMCOMP mkdev.pro
+make
+make clean
+
+$QMCOMP qarm.pro
 make
 make clean
