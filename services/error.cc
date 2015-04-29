@@ -40,6 +40,8 @@ void Panic(const char* message)
         MC_Holder::getInstance()->getConfig()->getMainWidget()->stop();
         MC_Holder::getInstance()->getConfig()->getMainWidget()->setDisabled(true);
 
+        printf("uARM PANIC: %s\n", message);
+
         error->connect(error, SIGNAL(accepted()), MC_Holder::getInstance()->getConfig()->getApp(), SLOT(quit()));
     }
 }
