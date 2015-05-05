@@ -56,6 +56,10 @@
  */
 static Elf* elf;
 static Elf32_Ehdr* elfHeader;
+static Elf32_Shdr *section_headers;
+static Elf32_Phdr *program_headers;
+static long archive_file_offset;
+static int shdr_num, phdr_num;
 
 static const size_t kBlockSize = 4096;
 
@@ -124,6 +128,82 @@ const char* fileName = NULL;
 // Be verbose
 static bool verbose = false;
 
+void printShdr(){
+    int i;
+    Elf32_Shdr *iter;
+    printf("sections header:\n");
+    for(i = 0, iter = section_headers; i < elfHeader->e_shnum; i++, iter++){
+        printf("- name: 0x%x, type: 0x%x, addraign: 0x%x\naddr: 0x%x, offset: 0x%x, size: 0x%x\n",
+               iter->sh_name, iter->sh_type, iter->sh_addralign,
+               iter->sh_addr, iter->sh_offset, iter->sh_size);
+    }
+}
+
+void printPhdr(){
+    int i;
+    Elf32_Phdr *iter;
+    printf("program header:\n");
+    for(i = 0, iter = program_headers; i < elfHeader->e_phnum; i++, iter++){
+        printf("- type: 0x%x, vaddr: 0x%x, paddr: 0x%x\n, offset: 0x%x, fsize: 0x%x, memsize: 0x%x\n",
+               iter->p_type, iter->p_vaddr, iter->p_paddr,
+               iter->p_offset, iter->p_filesz, iter->p_memsz);
+    }
+}
+
+// from binutils' readelf.c
+static void *
+get_data (void * var, FILE * file, long offset, size_t size, size_t nmemb)
+{
+  void * mvar;
+
+  if (size == 0 || nmemb == 0)
+    return NULL;
+
+  if (fseek (file, archive_file_offset + offset, SEEK_SET))
+    return NULL;
+
+  mvar = var;
+  if (mvar == NULL)
+    {
+      /* Check for overflow.  */
+      if (nmemb < (~(size_t) 0 - 1) / size)
+    /* + 1 so that we can '\0' terminate invalid string table sections.  */
+    mvar = malloc (size * nmemb + 1);
+
+      if (mvar == NULL)
+        return NULL;
+
+      ((char *) mvar)[size * nmemb] = '\0';
+    }
+
+  if (fread (mvar, size, nmemb, file) != nmemb)
+    {
+      if (mvar != var)
+        free (mvar);
+      return NULL;
+    }
+
+  return mvar;
+}
+
+void setupHeaders(const char * filename){
+    FILE *file = fopen(filename, "rb");
+
+    if(file == NULL){
+        fatalError("Cannot access %s: %s", fileName, strerror(errno));
+    }
+
+    //do i have to move this??
+    archive_file_offset = 0;
+
+    section_headers = (Elf32_Shdr *) get_data (NULL, file, elfHeader->e_shoff,
+                                              elfHeader->e_shentsize, elfHeader->e_shnum);
+    program_headers = (Elf32_Phdr *) get_data (NULL, file, elfHeader->e_phoff,
+                                              elfHeader->e_phentsize, elfHeader->e_phnum);
+
+    printShdr();
+    printPhdr();
+}
 
 int main(int argc, char** argv)
 {
@@ -183,6 +263,8 @@ int main(int argc, char** argv)
         fatalError("%s: unsupported ELF file version", fileName);
     if (elfHeader->e_machine != EM_ARM)
         fatalError("%s: invalid machine type (ARM expected)", fileName);
+
+    setupHeaders(fileName);
 
     switch (fileId) {
     case BIOSFILEID:
@@ -310,44 +392,6 @@ static Elf_Scn* getSectionByType(Elf32_Word type)
     return NULL;
 }
 
-
-/*
- * Retreive the starting $gp value
- */
-/* EDIT:unused function!
-static Elf32_Addr getGPValue()
-{
-    Elf_Scn *dynscn = getSectionByType(SHT_DYNAMIC);
-    Elf32_Shdr *dynhdr = elf32_getshdr(dynscn);
-    Elf_Data *d = elf_getdata(dynscn, NULL);
-    GElf_Dyn dyn;
-
-    int nentries, jmax, j;
-    nentries = 0;
-    jmax = (int) (dynhdr->sh_size / dynhdr->sh_entsize);
-
-    for (j = 0; j < jmax; j++) {
-                if (gelf_getdyn(d, j, &dyn) != &dyn) {
-                    warnx("gelf_getdyn failed: %s",
-                        elf_errmsg(-1));
-                    continue;
-                }
-                nentries ++;
-                if (dyn.d_tag == DT_NULL)
-                    break;
-    }
-
-    for (j = 0; j < nentries; j++) {
-                if (gelf_getdyn(d, j, &dyn) != &dyn)
-                    continue;
-                // Dump dynamic entry type.
-                if(dyn.d_tag == DT_PLTGOT)
-                    return dyn.d_un.d_ptr;
-    }
-
-    return (Elf32_Addr) -1;
-}*/
-
 /*
  * Convert an ELF executable into a uARM a.out or core executable.
  */
@@ -363,13 +407,6 @@ static void elf2aout(bool isCore)
 
     // Set program entry
     header[AOUT_HE_ENTRY] = elfHeader->e_entry;
-
-    // Set initial $gp entry
-    /*
-    header[AOUT_HE_GP_VALUE] = getGPValue();
-    if (header[AOUT_HE_GP_VALUE] == (Elf32_Addr) -1)
-        fatalError("Can not obtain initial $gp value");
-        */
 
     // Obtain the program header table
     Elf32_Phdr* pht = elf32_getphdr(elf);
