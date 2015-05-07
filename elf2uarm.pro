@@ -8,7 +8,8 @@ HEADERS += \
     services/util.h \
     services/debug.h \
     armProc/blockdev_params.h \
-    armProc/aout.h
+    armProc/aout.h \
+    facilities/arch.h
 
 SOURCES += \
     services/elf2arm.cc

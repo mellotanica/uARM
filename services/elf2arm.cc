@@ -50,6 +50,18 @@
 #include "services/debug.h"
 #include "armProc/blockdev_params.h"
 #include "armProc/aout.h"
+#include "facilities/arch.h"
+
+struct span_s {
+    Elf32_Addr begin;
+    Elf32_Addr end;
+    Elf32_Off offset;
+};
+
+struct phskip_s {
+    bool skip;
+    Elf32_Off amount;
+};
 
 /*
  * Functions throughtout this module close over this global!
@@ -58,11 +70,10 @@ static Elf* elf;
 static Elf32_Ehdr* elfHeader;
 static Elf32_Shdr *section_headers;
 static Elf32_Phdr *program_headers;
+static struct phskip_s *phskip;
 static long archive_file_offset;
-static int shdr_num, phdr_num;
 
 static const size_t kBlockSize = 4096;
-
 
 #define forEachSection(sd) \
     for (sd = elf_nextscn(elf, NULL); sd != NULL; sd = elf_nextscn(elf, sd))
@@ -133,8 +144,8 @@ void printShdr(){
     Elf32_Shdr *iter;
     printf("sections header:\n");
     for(i = 0, iter = section_headers; i < elfHeader->e_shnum; i++, iter++){
-        printf("- name: 0x%x, type: 0x%x, addraign: 0x%x\naddr: 0x%x, offset: 0x%x, size: 0x%x\n",
-               iter->sh_name, iter->sh_type, iter->sh_addralign,
+        printf("[%d] name: 0x%08x,   type: 0x%08x, addraign: 0x%08x\n    addr: 0x%08x, offset: 0x%08x,     size: 0x%08x\n",
+               i, iter->sh_name, iter->sh_type, iter->sh_addralign,
                iter->sh_addr, iter->sh_offset, iter->sh_size);
     }
 }
@@ -144,9 +155,28 @@ void printPhdr(){
     Elf32_Phdr *iter;
     printf("program header:\n");
     for(i = 0, iter = program_headers; i < elfHeader->e_phnum; i++, iter++){
-        printf("- type: 0x%x, vaddr: 0x%x, paddr: 0x%x\n, offset: 0x%x, fsize: 0x%x, memsize: 0x%x\n",
-               iter->p_type, iter->p_vaddr, iter->p_paddr,
-               iter->p_offset, iter->p_filesz, iter->p_memsz);
+        printf("[%d] paddr: 0x%08x, memsz: 0x%08x, offset:: 0x%08x\n",
+               i, iter->p_paddr, iter->p_memsz, iter->p_offset);
+    }
+}
+
+void printSpans(struct span_s *span, int num){
+    int i;
+    struct span_s *iter;
+    printf("spans:\n");
+    for(i = 0, iter = span; i < num; i++, iter++){
+        printf("[%d] begin: 0x%08x, end: 0x%08x, offset: 0x%08x\n",
+               i, iter->begin, iter->end, iter->offset);
+    }
+}
+
+void printSkips(){
+    int i;
+    struct phskip_s *iter;
+    printf("skips:\n");
+    for(i = 0, iter = phskip; i < elfHeader->e_phnum; i++, iter++){
+        printf("[%d] skip: %d, amount: 0x%08x\n",
+               i, iter->skip, iter->amount);
     }
 }
 
@@ -188,6 +218,7 @@ get_data (void * var, FILE * file, long offset, size_t size, size_t nmemb)
 
 void setupHeaders(const char * filename){
     FILE *file = fopen(filename, "rb");
+    int i, j, spans_num;
 
     if(file == NULL){
         fatalError("Cannot access %s: %s", fileName, strerror(errno));
@@ -197,12 +228,51 @@ void setupHeaders(const char * filename){
     archive_file_offset = 0;
 
     section_headers = (Elf32_Shdr *) get_data (NULL, file, elfHeader->e_shoff,
-                                              elfHeader->e_shentsize, elfHeader->e_shnum);
+                                               elfHeader->e_shentsize, elfHeader->e_shnum);
     program_headers = (Elf32_Phdr *) get_data (NULL, file, elfHeader->e_phoff,
-                                              elfHeader->e_phentsize, elfHeader->e_phnum);
+                                               elfHeader->e_phentsize, elfHeader->e_phnum);
+
+    struct span_s *tspan = (struct span_s *) calloc(elfHeader->e_shnum, sizeof(struct span_s));
+
+    for(i = 0; i < elfHeader->e_shnum; i++){
+        if(section_headers[i].sh_type == SHT_PROGBITS && section_headers[i].sh_addr >= RAM_BASE){
+            tspan[spans_num].begin = section_headers[i].sh_addr;
+            tspan[spans_num].end = tspan[spans_num].begin + section_headers[i].sh_size;
+            tspan[spans_num].offset = section_headers[i].sh_offset;
+            spans_num ++;
+        }
+    }
 
     printShdr();
+    printSpans(tspan, spans_num);
+
+    phskip = (struct phskip_s *)calloc(elfHeader->e_phnum, sizeof(struct phskip_s));
+    for(i = 0; i < elfHeader->e_phnum; i++){
+        phskipip[i].skip = false;
+        phskip[i].amount = 0;
+        for(j = 0; j < spans_num; j++){
+            if(program_headers[i].p_paddr <= tspan[j].begin && (program_headers[i].p_paddr + program_headers[i].p_memsz) >= tspan[j].end){ //contained section
+                if(program_headers[i].p_paddr == tspan[j].begin){ //one section begins at the beginning of the program data
+                    phskip[i].skip = false;
+                    break;
+                }
+                if(phskip[i].amount == 0){ //no offset set for this section
+                    phskip[i].skip = true;
+                    phskip[i].amount = tspan[j].offset;
+                    continue;
+                }
+                if(phskip[i].amount > tspan[j].offset){ //section begins earlier than previously checked ones
+                    phskip[i].amount = tspan[j].offset;
+                    continue;
+                }
+            }
+        }
+    }
+
+    free(tspan);
+
     printPhdr();
+    printSkips();
 }
 
 int main(int argc, char** argv)
@@ -450,8 +520,8 @@ static void elf2aout(bool isCore)
             foundTextSeg = true;
             header[AOUT_HE_TEXT_MEMSZ] = pht[i].p_memsz;
             header[AOUT_HE_TEXT_VADDR] = pht[i].p_vaddr;
-            header[AOUT_HE_TEXT_FILESZ] = (pht[i].p_memsz / kBlockSize) * kBlockSize;
-            if (header[AOUT_HE_TEXT_FILESZ] < pht[i].p_memsz)
+            header[AOUT_HE_TEXT_FILESZ] = (header[AOUT_HE_TEXT_MEMSZ] / kBlockSize) * kBlockSize;
+            if (header[AOUT_HE_TEXT_FILESZ] < header[AOUT_HE_TEXT_MEMSZ])
                 header[AOUT_HE_TEXT_FILESZ] += kBlockSize;
             textBuf = new uint8_t[header[AOUT_HE_TEXT_FILESZ]];
             std::fill_n(textBuf, header[AOUT_HE_TEXT_FILESZ], 0);
@@ -469,7 +539,6 @@ static void elf2aout(bool isCore)
         dataBuf = NULL;
     }
 
-    header[AOUT_HE_TEXT_OFFSET] = 0;
     header[AOUT_HE_TEXT_OFFSET] = 0;
     header[AOUT_HE_DATA_OFFSET] = header[AOUT_HE_TEXT_FILESZ];
 

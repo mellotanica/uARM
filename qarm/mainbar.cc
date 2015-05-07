@@ -199,7 +199,6 @@ void mainBar::doPowerOn(){
     resetB->setAccessibleName("Reset Machine");
     resetB->setToolTip(resetB->accessibleName());
     resetB->setIcon(*resetIco);
-    resetPressed();
     onState = true;
 }
 
