@@ -54,6 +54,8 @@
 #include "armProc/vde_network.h"
 #include "armProc/machine.h"
 
+#include "armProc/aout.h"
+
 
 // last operation result description
 HIDDEN const char* const opResult[2] = {

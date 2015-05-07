@@ -31,7 +31,7 @@
 #include <boost/bind.hpp>
 
 #include "armProc/const.h"
-#include "armProc/blockdev_params.h"
+#include "armProc/aout.h"
 #include "services/disass.h"
 #include "services/utility.h"
 #include "services/error.h"

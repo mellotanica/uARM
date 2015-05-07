@@ -308,24 +308,31 @@ bool systemBus::loadBIOS(char *buffer, Word size){
 
 bool systemBus::loadRAM(char *buffer, Word size, bool kernel){
     if(kernel){
-        Word address = RAMBASEADDR;
+        Word address = ((Byte) buffer[(AOUT_HE_TEXT_VADDR*WS)])| ((Byte) buffer[(AOUT_HE_TEXT_VADDR*WS)+1]) << 8 | ((Byte) buffer[(AOUT_HE_TEXT_VADDR*WS)+2]) << 16 | ((Byte) buffer[(AOUT_HE_TEXT_VADDR*WS)+3]) << 24;
         Word dataVAddr = 0, textSize = 0;
         bool textSet = false;
+        //copy provided data only for legit ram addresses
         for(Word i = 0; i < size; i++, address++){
-            if(textSet && i >= textSize){
-                address = dataVAddr;
-                textSet = false;
+            if(address >= RAMBASEADDR){
+                if(textSet && i >= textSize){
+                    address = dataVAddr;
+                    textSet = false;
+                }
+                if(i/4 == (AOUT_HE_DATA_VADDR+1) && i%4 == 0){
+                    Word taddr = address-4;
+                    readW(&taddr, &dataVAddr);
+                }
+                if(!textSet && (i/4 == (AOUT_HE_TEXT_FILESZ+1) && i%4 == 0)){
+                    Word taddr = address-4;
+                    readW(&taddr, &textSize);
+                    textSet = true;
+                }
+                writeB(&address, (Byte) buffer[i]);
             }
-            if(i/4 == (AOUT_HE_DATA_VADDR+1) && i%4 == 0){
-                Word taddr = address-4;
-                readW(&taddr, &dataVAddr);
-            }
-            if(!textSet && (i/4 == (AOUT_HE_TEXT_FILESZ+1) && i%4 == 0)){
-                Word taddr = address-4;
-                readW(&taddr, &textSize);
-                textSet = true;
-            }
-            writeB(&address, (Byte) buffer[i]);
+        }
+        //now make sure core header is at its place at the beginning of ram
+        for(Word i = 0, address = RAMBASEADDR; i < WS*N_AOUT_HDR_ENT; i++, address++){
+            writeB(&address, (Byte)buffer[i]);
         }
         return true;
     }

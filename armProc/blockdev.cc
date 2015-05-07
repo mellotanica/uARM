@@ -35,7 +35,7 @@
 #include "armProc/blockdev_params.h"
 #include "services/utility.h"
 #include "armProc/blockdev.h"
-
+#include "armProc/aout.h"
 
 // This method returns an empty (unitialized) 512 byte Block
 Block::Block()
@@ -116,7 +116,7 @@ DriveParams::DriveParams(FILE * diskFile, SWord * fileOfs)
 	Block * blk = new Block();
 	
 	rewind(diskFile);
-	if (blk->ReadBlock(diskFile, 0) || blk->getWord(0) != DISKFILEID)
+    if (blk->ReadBlock(diskFile, 0) || blk->getWord(0) != DISKFILEID)
 		// errors in file reading or disk file magic number missing
 		ret = 0;
 	else

@@ -29,14 +29,6 @@
 #ifndef UARM_BLOCKDEV_PARAMS_H
 #define UARM_BLOCKDEV_PARAMS_H
 
-// file recognition tags (magic numbers) 
-#define DISKFILEID	0x0053504D 
-#define TAPEFILEID	0x0153504D
-#define BIOSFILEID	0x0253504D
-#define COREFILEID	0x0353504D
-#define AOUTFILEID	0x0453504D
-#define STABFILEID	0x4153504D
-
 // tape markers
 #define TAPESTART	3
 #define TAPEEOB	2

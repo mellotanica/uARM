@@ -52,26 +52,11 @@
 #include "armProc/aout.h"
 #include "facilities/arch.h"
 
-struct span_s {
-    Elf32_Addr begin;
-    Elf32_Addr end;
-    Elf32_Off offset;
-};
-
-struct phskip_s {
-    bool skip;
-    Elf32_Off amount;
-};
-
 /*
  * Functions throughtout this module close over this global!
  */
 static Elf* elf;
 static Elf32_Ehdr* elfHeader;
-static Elf32_Shdr *section_headers;
-static Elf32_Phdr *program_headers;
-static struct phskip_s *phskip;
-static long archive_file_offset;
 
 static const size_t kBlockSize = 4096;
 
@@ -139,141 +124,6 @@ const char* fileName = NULL;
 // Be verbose
 static bool verbose = false;
 
-void printShdr(){
-    int i;
-    Elf32_Shdr *iter;
-    printf("sections header:\n");
-    for(i = 0, iter = section_headers; i < elfHeader->e_shnum; i++, iter++){
-        printf("[%d] name: 0x%08x,   type: 0x%08x, addraign: 0x%08x\n    addr: 0x%08x, offset: 0x%08x,     size: 0x%08x\n",
-               i, iter->sh_name, iter->sh_type, iter->sh_addralign,
-               iter->sh_addr, iter->sh_offset, iter->sh_size);
-    }
-}
-
-void printPhdr(){
-    int i;
-    Elf32_Phdr *iter;
-    printf("program header:\n");
-    for(i = 0, iter = program_headers; i < elfHeader->e_phnum; i++, iter++){
-        printf("[%d] paddr: 0x%08x, memsz: 0x%08x, offset:: 0x%08x\n",
-               i, iter->p_paddr, iter->p_memsz, iter->p_offset);
-    }
-}
-
-void printSpans(struct span_s *span, int num){
-    int i;
-    struct span_s *iter;
-    printf("spans:\n");
-    for(i = 0, iter = span; i < num; i++, iter++){
-        printf("[%d] begin: 0x%08x, end: 0x%08x, offset: 0x%08x\n",
-               i, iter->begin, iter->end, iter->offset);
-    }
-}
-
-void printSkips(){
-    int i;
-    struct phskip_s *iter;
-    printf("skips:\n");
-    for(i = 0, iter = phskip; i < elfHeader->e_phnum; i++, iter++){
-        printf("[%d] skip: %d, amount: 0x%08x\n",
-               i, iter->skip, iter->amount);
-    }
-}
-
-// from binutils' readelf.c
-static void *
-get_data (void * var, FILE * file, long offset, size_t size, size_t nmemb)
-{
-  void * mvar;
-
-  if (size == 0 || nmemb == 0)
-    return NULL;
-
-  if (fseek (file, archive_file_offset + offset, SEEK_SET))
-    return NULL;
-
-  mvar = var;
-  if (mvar == NULL)
-    {
-      /* Check for overflow.  */
-      if (nmemb < (~(size_t) 0 - 1) / size)
-    /* + 1 so that we can '\0' terminate invalid string table sections.  */
-    mvar = malloc (size * nmemb + 1);
-
-      if (mvar == NULL)
-        return NULL;
-
-      ((char *) mvar)[size * nmemb] = '\0';
-    }
-
-  if (fread (mvar, size, nmemb, file) != nmemb)
-    {
-      if (mvar != var)
-        free (mvar);
-      return NULL;
-    }
-
-  return mvar;
-}
-
-void setupHeaders(const char * filename){
-    FILE *file = fopen(filename, "rb");
-    int i, j, spans_num;
-
-    if(file == NULL){
-        fatalError("Cannot access %s: %s", fileName, strerror(errno));
-    }
-
-    //do i have to move this??
-    archive_file_offset = 0;
-
-    section_headers = (Elf32_Shdr *) get_data (NULL, file, elfHeader->e_shoff,
-                                               elfHeader->e_shentsize, elfHeader->e_shnum);
-    program_headers = (Elf32_Phdr *) get_data (NULL, file, elfHeader->e_phoff,
-                                               elfHeader->e_phentsize, elfHeader->e_phnum);
-
-    struct span_s *tspan = (struct span_s *) calloc(elfHeader->e_shnum, sizeof(struct span_s));
-
-    for(i = 0; i < elfHeader->e_shnum; i++){
-        if(section_headers[i].sh_type == SHT_PROGBITS && section_headers[i].sh_addr >= RAM_BASE){
-            tspan[spans_num].begin = section_headers[i].sh_addr;
-            tspan[spans_num].end = tspan[spans_num].begin + section_headers[i].sh_size;
-            tspan[spans_num].offset = section_headers[i].sh_offset;
-            spans_num ++;
-        }
-    }
-
-    printShdr();
-    printSpans(tspan, spans_num);
-
-    phskip = (struct phskip_s *)calloc(elfHeader->e_phnum, sizeof(struct phskip_s));
-    for(i = 0; i < elfHeader->e_phnum; i++){
-        phskipip[i].skip = false;
-        phskip[i].amount = 0;
-        for(j = 0; j < spans_num; j++){
-            if(program_headers[i].p_paddr <= tspan[j].begin && (program_headers[i].p_paddr + program_headers[i].p_memsz) >= tspan[j].end){ //contained section
-                if(program_headers[i].p_paddr == tspan[j].begin){ //one section begins at the beginning of the program data
-                    phskip[i].skip = false;
-                    break;
-                }
-                if(phskip[i].amount == 0){ //no offset set for this section
-                    phskip[i].skip = true;
-                    phskip[i].amount = tspan[j].offset;
-                    continue;
-                }
-                if(phskip[i].amount > tspan[j].offset){ //section begins earlier than previously checked ones
-                    phskip[i].amount = tspan[j].offset;
-                    continue;
-                }
-            }
-        }
-    }
-
-    free(tspan);
-
-    printPhdr();
-    printSkips();
-}
 
 int main(int argc, char** argv)
 {
@@ -333,8 +183,6 @@ int main(int argc, char** argv)
         fatalError("%s: unsupported ELF file version", fileName);
     if (elfHeader->e_machine != EM_ARM)
         fatalError("%s: invalid machine type (ARM expected)", fileName);
-
-    setupHeaders(fileName);
 
     switch (fileId) {
     case BIOSFILEID:
@@ -473,7 +321,10 @@ static void elf2aout(bool isCore)
 
     uint32_t header[N_AOUT_HDR_ENT];
     std::fill_n(header, N_AOUT_HDR_ENT, 0);
-    header[AOUT_HE_TAG] = AOUTFILEID;
+    if(isCore)
+        header[AOUT_HE_TAG] = COREFILEID;
+    else
+        header[AOUT_HE_TAG] = AOUTFILEID;
 
     // Set program entry
     header[AOUT_HE_ENTRY] = elfHeader->e_entry;
@@ -580,18 +431,19 @@ static void elf2aout(bool isCore)
     if (file == NULL)
         fatalError("Cannot create a.out file `%s'", outName.c_str());
 
+    /* i don't need this...
     // If it's a core file, write the RRF padding first (padding clears the bios reserved frame)
     if (isCore) {
         uint32_t tag = toTargetEndian(COREFILEID);
         if (fwrite(&tag, sizeof(tag), 1, file) != 1)
             fatalError("Error writing a.out file `%s'", outName.c_str());
-        /* i don't need this...
         uint32_t pad = 0;
         for (size_t i = 0; i < 1024; i++)
             if (fwrite(&pad, sizeof(pad), 1, file) != 1)
                 fatalError("Error writing a.out file `%s'", outName.c_str());
-                */
+
     }
+    */
 
     // Write the segments, finally.
     if (fwrite(textBuf, 1, header[AOUT_HE_TEXT_FILESZ], file) != header[AOUT_HE_TEXT_FILESZ])

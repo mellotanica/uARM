@@ -304,8 +304,7 @@ bool qarm::openRAM(){
                 error->show();
                 return false;
             }
-            sz -= 4;
-            if(sz <= 0 || !mac->getBus()->loadRAM(buffer+4, (Word) sz, true)){
+            if(sz <= 0 || !mac->getBus()->loadRAM(buffer, (Word) sz, true)){
                 QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error", "Problems while loading Core file", this);
                 error->show();
                 return false;
