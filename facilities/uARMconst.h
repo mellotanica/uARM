@@ -52,16 +52,19 @@
 #define VERHOGEN 3
 #define PASSEREN 4
 #define SPECTRAPVEC 5
-#define GETPID 6
-#define GETCPUTIME 7
-#define WAITCLOCK 8
-#define WAITIO 9
+#define GETCPUTIME 6
+#define WAITCLOCK 7
+#define WAITIO 8
+#define GETPID 9
+#define GETPPID 10
 
-#define SYSCALL_MAX 9
+#define SYSCALL_MAX 10
 
-#define SPECTLB 0
-#define SPECPGMT 1
-#define SPECSYSBP 2
+#define BIOS_SRV_SWI 8
+#define BIOS_SRV_BP 9
+
+#define IS_SWI_BP(instr) ((instr & BIOS_SRV_BP) == BIOS_SRV_BP)
+#define IS_SWI_SYS(instr) ((instr & BIOS_SRV_SWI) == BIOS_SRV_SWI)
 
 /* VM/IO support level (phase3)-handled SYSCALL values */
 #define READTERMINAL 13
