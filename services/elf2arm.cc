@@ -43,8 +43,13 @@
 #include <stdarg.h>
 #include <errno.h>
 
+#ifdef MACOS_BUILD
+#include <libelf/libelf.h>
+#include <libelf/gelf.h>
+#else
 #include <libelf.h>
 #include <gelf.h>
+#endif
 
 #include "services/util.h"
 #include "services/debug.h"

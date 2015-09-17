@@ -13,3 +13,9 @@ HEADERS += \
 
 SOURCES += \
     services/elf2arm.cc
+
+macx:INCLUDEPATH += -I /usr/local/include
+macx:LIBS += -L/usr/local/lib
+macx:LIBS += -L/usr/local/lib
+macx:CONFIG-=app_bundle
+macx:DEFINES += MACOS_BUILD

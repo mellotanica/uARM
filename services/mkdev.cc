@@ -38,6 +38,7 @@
 #include <armProc/const.h>
 #include <armProc/types.h>
 #include <armProc/blockdev_params.h>
+#include <armProc/aout.h>
 
 #define UARMFILETYPE	".uarm"
 

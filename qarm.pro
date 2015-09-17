@@ -155,3 +155,9 @@ OTHER_FILES += \
 
 DISTFILES += \
     todo.txt
+
+#OS X specific
+macx:INCLUDEPATH += -I /usr/local/include
+macx:LIBS += -L /usr/local/lib
+macx:HEADERS += services/fmemopen.h
+macx:SOURCES += services/fmemopen.c

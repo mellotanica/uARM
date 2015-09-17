@@ -89,7 +89,8 @@ systemBus::~systemBus(){
         delete [] bios;
         bios = NULL;
     }
-    delete [] pipeline;
+    //if uncommented, next line throws error when building for OS X
+    //delete [] pipeline;
     for(unsigned int i = 0; i < MachineConfig::MAX_CPUS; i++){
         if(cpus[i] != NULL)
             delete cpus[i];
