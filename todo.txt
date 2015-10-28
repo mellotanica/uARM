@@ -4,3 +4,7 @@
 = compile for 5.4
 + try flat review with laptop layout
 ? check elf2uarm against gcc-4.9.2
+
+! .o files should be placed in /usr/lib by package
+
+! check if data section is correctly loaded
