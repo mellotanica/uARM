@@ -22,17 +22,6 @@
 #ifndef UARMCONST_H
 #define UARMCONST_H
 
-/* Maxi number of overall (eg, system, daemons, user) concurrent processes */
-#define MAXPROC 20
-
-#define UPROCMAX 3  /* number of usermode processes (not including master proc
-                                             and system daemons */
-
-#define DELAY_DAEMON_ASID UPROCMAX   /* to avoid overlapping ASIDs */
-/* #define ANOTHER_DAEMON_ASID UPROCMAX + 1
-   #define YET_ANOTHER_DAEMON_ASID UPROCMAX + 2
-     etc. */
-
 /* Addresses for new and old areas (where new and old processor states are
    stored on exceptions) */
 #define EXCV_BASE 0x00007000
@@ -46,38 +35,11 @@
 #define SYSBK_OLDAREA (EXCV_BASE + (6 * STATE_T_SIZE))
 #define SYSBK_NEWAREA (EXCV_BASE + (7 * STATE_T_SIZE))
 
-/* nucleus (phase2)-handled SYSCALL values */
-#define CREATEPROCESS 1
-#define TERMINATEPROCESS 2
-#define VERHOGEN 3
-#define PASSEREN 4
-#define SPECTRAPVEC 5
-#define GETCPUTIME 6
-#define WAITCLOCK 7
-#define WAITIO 8
-#define GETPID 9
-#define GETPPID 10
-
-#define SYSCALL_MAX 10
-
 #define BIOS_SRV_SWI 8
 #define BIOS_SRV_BP 9
 
 #define IS_SWI_BP(instr) ((instr & BIOS_SRV_BP) == BIOS_SRV_BP)
 #define IS_SWI_SYS(instr) ((instr & BIOS_SRV_SWI) == BIOS_SRV_SWI)
-
-/* VM/IO support level (phase3)-handled SYSCALL values */
-#define READTERMINAL 13
-#define WRITETERMINAL 14
-#define VSEMVIRT 15
-#define PSEMVIRT 16
-#define DELAY 17
-#define DISK_PUT 18
-#define DISK_GET 19
-#define WRITEPRINTER 20
-#define TERMINATE 21
-
-#define SYSCALL_TOT 21
 
 #define DEV_USED_INTS 5 /* Number of ints reserved for devices: 3,4,5,6,7 */
 
@@ -137,11 +99,6 @@
 
 /* Size of a device register group */
 #define DEV_REGBLOCK_SIZE (DEV_REG_SIZE * DEV_PER_INT)
-
-/* Scheduling constants */
-#define SCHED_TIME_SLICE 5000     /* in microseconds, aka 5 milliseconds */
-#define SCHED_PSEUDO_CLOCK 100000 /* pseudo-clock tick "slice" length */
-#define SCHED_BOGUS_SLICE 500000  /* just to make sure */
 
 /* Utility definitions for the status register: use suggested operation
     to set/clear status register fields*/
