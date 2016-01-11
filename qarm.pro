@@ -2,7 +2,7 @@ QT += core gui widgets
 
 TARGET = uarm
 
-QMAKE_CXXFLAGS += -std=c++11
+CONFIG += c++11
 QMAKE_LIBS += -ldl
 CONFIG += qt debug
 
@@ -156,8 +156,9 @@ OTHER_FILES += \
 DISTFILES += \
     todo.txt
 
-#OS X specific
-macx:INCLUDEPATH += -I /usr/local/include
-macx:LIBS += -L /usr/local/lib
-macx:HEADERS += services/fmemopen.h
-macx:SOURCES += services/fmemopen.c
+macx {
+    INCLUDEPATH += /usr/local/include
+    LIBS += -L/usr/local/lib
+    HEADERS += services/fmemopen.h
+    SOURCES += services/fmemopen.c
+}

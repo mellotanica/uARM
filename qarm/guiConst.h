@@ -25,7 +25,7 @@
 #define DEFAULT_CONFIG_FILE "machine.uarm.cfg"
 #define DEFAULT_CONFIG_PATH "uarm"
 
-#define LIB_PATH "/usr/lib/uarm/"
+#define LIB_PATH "/usr/local/lib/uarm/"
 
 #define PIPECOLS    6
 #define CPUCOLS     8
