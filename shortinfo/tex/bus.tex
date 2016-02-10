@@ -176,7 +176,7 @@ These structures take 80 bytes each. Given this value, the BIOS code will look f
 \texttt{0x7380} & Syscall New \\
 \end{tabular}
 
-\subsubsection{ASOD 0}
+\subsubsection{ASID 0}
 The first ASID is reserved for kernel address space and is automatically enabled in any Privileged mode, this way if a User mode program performs a System Call, the kernel routine has access to its address space and to the program's address space through saved processor state.
 
 \section{Memory address space}
