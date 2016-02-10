@@ -57,7 +57,7 @@
 #define USEG3	3
 
 // segments base addresses
-#define KSEG0BASE	0x20000000UL
+#define KSEG0BASE	0x00008000UL
 #define USEG2BASE	0x80000000UL
 #define USEG3BASE	0xC0000000UL
 

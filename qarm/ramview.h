@@ -48,9 +48,11 @@ private:
     machine *mac;
     Word startAddr = 0, endAddr = 0;
 
+    void newRamLabel(QWidget *parent = 0);
+
     HexView *ramViewer = NULL;
     QVBoxLayout *mainLayout;
-    QLineEdit *startEd, *endEd;
+    QLineEdit *startEd, *endEd, *ramLabel;
     QPushButton *visualizeB;
 };
 

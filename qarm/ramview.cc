@@ -70,6 +70,13 @@ ramView::ramView(machine *mac, QWidget *parent) :
     connect(visualizeB, SIGNAL(clicked()), this, SLOT(visualize()));
 }
 
+void ramView::newRamLabel(QWidget *parent){
+    ramLabel = new QLineEdit(parent);
+    ramLabel->setAccessibleName("Ram Portion Label");
+    ramLabel->setToolTip(ramLabel->accessibleName());
+    ramLabel->setAccessibleDescription("Editable label usefull to note down ram portion meaning");
+}
+
 void ramView::update(){
     if(ramViewer != NULL)
         ramViewer->Refresh();
@@ -83,8 +90,10 @@ void ramView::visualize(){
     conv &= res;
 
     if(start > end || (end - start) > MAX_VIEWABLE_RAM){
+	mainLayout->removeWidget(ramLabel);
         mainLayout->removeWidget(ramViewer);
-        delete ramViewer;
+        delete ramLabel;
+	delete ramViewer;
         char *message;
         if(start > end){
             message = "Start address cannot be higher than End address...";
@@ -109,7 +118,11 @@ void ramView::visualize(){
         if(ramViewer != NULL){
             mainLayout->removeWidget(ramViewer);
             delete ramViewer;
-        }
+	    ramLabel->clear();
+        } else {
+	    newRamLabel(this);
+	    mainLayout->addWidget(ramLabel);
+	}
         ramViewer = new HexView(start, end, mac, this);
         mainLayout->addWidget(ramViewer);
     }
