@@ -32,7 +32,6 @@
 
 #include "services/error.h"
 #include "armProc/machine_config.h"
-//#include "qmps/application.h"
 
 /*
 const unsigned int DebugSession::kIterCycles[kNumSpeedLevels] = {
@@ -224,7 +223,7 @@ void DebugSession::initializeMachine()
         QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error",
             QString("<b>Could not initialize machine:</b> "
                     "the file `%1' does not appear to be a valid <i>Core</i> file; "
-                    "make sure you are creating the file with the <code>umps2-elf2umps</code> utility")
+                    "make sure you are creating the file with the <code>elf2uarm</code> utility")
             .arg(e.fileName.c_str()).toStdString().c_str());
         error->show();
         return;

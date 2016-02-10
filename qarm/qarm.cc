@@ -37,25 +37,31 @@
 #include <QIcon>
 #include <QWindow>
 
-qarm::qarm(QApplication *app):
+qarm::qarm(QApplication *app, QFile *confFile):
     application(app)
 {
     // INFO: machine config init
     std::string error;
+    std::string configFilePath;
 
-    QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    if(configDir.isEmpty()){
-        configDir = QDir::homePath()+"/."+DEFAULT_CONFIG_PATH;
+    if(confFile == NULL){
+    	QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    	if(configDir.isEmpty()){
+        	configDir = QDir::homePath()+"/."+DEFAULT_CONFIG_PATH;
+    	} else {
+        	configDir.append(QString("/").append(DEFAULT_CONFIG_PATH));
+    	}
+    	QDir *defaultPath = new QDir(configDir);
+   	if(!defaultPath->exists())
+        	if(!defaultPath->mkdir(defaultPath->absolutePath())){   //config folder not accessible..
+        	    QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Fatal", "Cannot create uarm folder in config directory!", this);
+        	    error->show();
+        	    app->exit();
+        	}
+	configFilePath = defaultPath->absolutePath().toStdString()+"/"+DEFAULT_CONFIG_FILE;
     } else {
-        configDir.append(QString("/").append(DEFAULT_CONFIG_PATH));
+	configFilePath = confFile->fileName().toStdString();
     }
-    QDir *defaultPath = new QDir(configDir);
-    if(!defaultPath->exists())
-        if(!defaultPath->mkdir(defaultPath->absolutePath())){   //config folder not accessible..
-            QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Fatal", "Cannot create .uarm folder in home directory.\nCheck HOME environment variable.", this);
-            error->show();
-            app->exit();
-        }
 
     DebugSession *debugger;
     if((debugger = DebuggerHolder::getInstance()->getDebugSession()) == NULL){
@@ -63,10 +69,9 @@ qarm::qarm(QApplication *app):
         DebuggerHolder::getInstance()->setDebugSession(debugger);
     }
 
-    std::string defaultFName = defaultPath->absolutePath().toStdString()+"/"+DEFAULT_CONFIG_FILE;
-    MC_Holder::getInstance()->setConfig(MachineConfig::LoadFromFile(defaultFName, error, app, this));
+    MC_Holder::getInstance()->setConfig(MachineConfig::LoadFromFile(configFilePath, error, app, this));
     if(MC_Holder::getInstance()->getConfig() == NULL)
-        MC_Holder::getInstance()->setConfig(MachineConfig::Create(defaultFName, QDir::homePath().toStdString(), app, this));
+        MC_Holder::getInstance()->setConfig(MachineConfig::Create(configFilePath, QDir::homePath().toStdString(), app, this));
 
     closeSc = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this, NULL, NULL, Qt::ApplicationShortcut);
     connect(closeSc, SIGNAL(activated()), this, SLOT(closeFWindow()));

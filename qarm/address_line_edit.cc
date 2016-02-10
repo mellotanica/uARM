@@ -29,7 +29,6 @@
 #include <QValidator>
 
 #include "services/lang.h"
-//#include "umps/umps/const.h"
 #include "qarm/procdisplay.h"
 #include "armProc/machine_config.h"
 

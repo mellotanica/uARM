@@ -266,7 +266,7 @@ TLB_H:
 
     MRC p15, #0, r0, c15, c0	/* if vm on, we could need a refill */
     AND r0, r0, #0xFFFFFF
-    CMP r0, #12	    /* if cause is 12 or 13 (maybe even 14 and 15?) we should perform a refill */
+    CMP r0, #12	    /* if cause is 12 or 13 we should perform a refill */
     Blt TLB_CONT
     CMP r0, #13
     Ble TLB_REFILL

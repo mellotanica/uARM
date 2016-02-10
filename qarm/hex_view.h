@@ -25,10 +25,6 @@
 
 #include <QPlainTextEdit>
 
-//#include "umps/arch.h"
-//#include "umps/stoppoint.h"
-//#include "qmps/memory_view_delegate.h"
-
 #include "qarm/guiConst.h"
 #include "armProc/machine.h"
 

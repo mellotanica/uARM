@@ -22,7 +22,7 @@
 #ifndef UARMTYPES_H
 #define UARMTYPES_H
 
-#include "uARMconst.h"
+#include <uARMconst.h>
 
 /************************** Device register types ***************************/
 
@@ -77,44 +77,14 @@ typedef struct{
     unsigned int TOD_Low;
 }state_t;
 
-/********************** process-supplied trap vectors ***********************/
+/********************* disk devices informations *****************************/
 
-typedef struct {
-  state_t *old_area;
-    state_t *new_area;
-} sys_vect_t;
 
 typedef struct {
   unsigned int max_cyl;
   unsigned int max_head;
   unsigned int max_sect;
 } disk_data_t;
-
-/******************* VM data structures *************************************/
-
-typedef struct {
-  unsigned int entry_hi;
-  unsigned int entry_lo;
-} pte_entry_t;
-
-/* PTE for kUseg2 and kUseg3 */
-typedef struct {
-  unsigned int header;
-  pte_entry_t pte[KUSEG_PAGES]; /* kUseg2 and kUseg3 PTEs have same length */
-} uPTE_t;
-
-/* PTE for ksegOS (has more entries) */
-typedef struct {
-  unsigned int header;
-  pte_entry_t pte[KSEGOS_PAGES];
-} osPTE_t;
-
-/* segment table type */
-typedef struct {
-  osPTE_t *ksegOS_pte;
-  uPTE_t *kUseg2_pte;
-  uPTE_t *kUseg3_pte;
-} segtable_t;
 
 /********************************* ELF files ***********************************/
 

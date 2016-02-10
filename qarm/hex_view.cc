@@ -33,15 +33,7 @@
 
 #include "qarm/procdisplay.h"
 
-//#include "umps/types.h"
-//#include "umps/arch.h"
-//#include "umps/machine.h"
-
-//#include "qmps/application.h"
-//#include "qmps/debug_session.h"
-//#include "qarm/qarmmessagebox.h"
 #include "qarm/hex_view_priv.h"
-//#include "qmps/ui_utils.h"
 
 extern "C"{
 #include "services/disass.h"

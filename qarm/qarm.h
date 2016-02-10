@@ -45,7 +45,7 @@
 class qarm : public QMainWindow{
     Q_OBJECT
 public:
-    qarm(QApplication *app);
+    qarm(QApplication *app, QFile *confFile);
     machine *getMachine() {return mac;}
     MachineConfig *getMachineConfig() {return MC_Holder::getInstance()->getConfig();}
     virtual void show();
