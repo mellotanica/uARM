@@ -141,11 +141,11 @@
 /* Utility definitions for the entryHI register */
 #define ENTRYHI_SEGNO_GET(entryHI) (((entryHI) & 0xc0000000) >> 30)
 #define ENTRYHI_VPN_GET(entryHI) (((entryHI) & 0x3ffff000) >> 12)
-#define ENTRYHI_ASID_GET(entryHI) (((entryHI) & 0x00000fc0) >> 6)
+#define ENTRYHI_ASID_GET(entryHI) (((entryHI) & 0x00000fe0) >> 5)
 
 #define ENTRYHI_SEGNO_SET(entryHI, seg_no) (((entryHI) & 0x3fffffff) | ((seg_no) << 30) )
 #define ENTRYHI_VPN_SET(entryHI, vpn) (((entryHI) & 0xc0000fff) | ((vpn) << 12))
-#define ENTRYHI_ASID_SET(entryHI, asid) (((entryHI) & 0xfffff03f) | ((asid) << 6))
+#define ENTRYHI_ASID_SET(entryHI, asid) (((entryHI) & 0xfffff01f) | ((asid) << 5))
 
 /* Utility definitions for the entryLO register */
 #define ENTRYLO_PFN_GET(entryLO) (((entryLO) & 0xfffff000) >> 12)
