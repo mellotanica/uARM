@@ -54,6 +54,7 @@ private:
     QVBoxLayout *mainLayout;
     QLineEdit *startEd, *endEd, *ramLabel = NULL;
     QPushButton *visualizeB;
+    QString labelText;
 };
 
 #endif // QARM_RAMVIEW_H

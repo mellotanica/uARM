@@ -544,7 +544,7 @@ TLB_REFILL:
 TLB_LOOP:
     LDMIA r1!, {r5, r6}
     CMP r1, r2
-    Bge TLB_LOOP_EXIT
+    Bgt TLB_LOOP_EXIT
     
     AND r7, r5, r8
     CMP r7, r3

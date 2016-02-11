@@ -41,6 +41,8 @@ ramView::ramView(machine *mac, QWidget *parent) :
     QRegExp rx("[0-9,a-f]{1,8}", Qt::CaseInsensitive);
     QRegExpValidator *hexValidator = new QRegExpValidator(rx, this);
 
+    labelText = QString("");
+
     startEd = new QLineEdit(this);
     startEd->setAccessibleName("Start Address");
     startEd->setToolTip(startEd->accessibleName());
@@ -75,6 +77,7 @@ void ramView::newRamLabel(QWidget *parent){
     ramLabel->setAccessibleName("Ram Portion Label");
     ramLabel->setToolTip(ramLabel->accessibleName());
     ramLabel->setAccessibleDescription("Editable label usefull to note down ram portion meaning");
+    ramLabel->setText(labelText);
 }
 
 void ramView::update(){
@@ -100,6 +103,7 @@ void ramView::visualize(){
         if(start > end || (end - start) > MAX_VIEWABLE_RAM){
             // manually setting fields to NULL is required since delete alone seems to be not enough and can lead to double free
             if(ramLabel != NULL){
+                labelText = ramLabel->text();
                 mainLayout->removeWidget(ramLabel);
                 delete ramLabel;
                 ramLabel = NULL;
@@ -135,6 +139,7 @@ void ramView::visualize(){
                 delete ramViewer;
             }
             if(ramLabel != NULL){
+                labelText = ramLabel->text();
                 mainLayout->removeWidget(ramLabel);
                 delete ramLabel;
             }
