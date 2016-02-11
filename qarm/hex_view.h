@@ -101,7 +101,7 @@ private:
     Word end;
     Word length;
 
-    bool m_reversedByteOrder;
+    bool m_reversedByteOrder = true;
 
     const QString invalidByteRepr;
 

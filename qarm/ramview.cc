@@ -98,10 +98,17 @@ void ramView::visualize(){
         conv &= res;
 
         if(start > end || (end - start) > MAX_VIEWABLE_RAM){
-            mainLayout->removeWidget(ramLabel);
-            mainLayout->removeWidget(ramViewer);
-            delete ramLabel;
-            delete ramViewer;
+            // manually setting fields to NULL is required since delete alone seems to be not enough and can lead to double free
+            if(ramLabel != NULL){
+                mainLayout->removeWidget(ramLabel);
+                delete ramLabel;
+                ramLabel = NULL;
+            }
+            if(ramViewer != NULL){
+                mainLayout->removeWidget(ramViewer);
+                delete ramViewer;
+                ramViewer = NULL;
+            }
             char *message;
             if(start > end){
                 message = "Start address cannot be higher than End address...";
