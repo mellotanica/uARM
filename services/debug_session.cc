@@ -451,6 +451,8 @@ void DebugSession::skip()
 }
 
 */
+
+//TODO: relocation of breakpoint is not working properly
 void DebugSession::relocateStoppoints(const SymbolTable* newTable, StoppointSet* set)
 {
     StoppointSet rset;

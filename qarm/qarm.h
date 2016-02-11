@@ -30,6 +30,7 @@
 #include "qarm/ramview.h"
 #include "qarm/QLine.h"
 #include "qarm/breakpoint_window.h"
+#include "qarm/structures_window.h"
 #include "qarm/tlb_window.h"
 #include "terminal_window.h"
 #include <QMainWindow>
@@ -88,6 +89,8 @@ private:
     QString coreF, biosF;
 
     breakpoint_window *bpWindow;
+    structures_window *structWindow;
+
     tlb_window *tlbWindow;
 
     QShortcut *closeSc;

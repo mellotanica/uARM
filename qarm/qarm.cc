@@ -99,6 +99,7 @@ qarm::qarm(QApplication *app, QFile *confFile):
     clock = new QTimer(this);
 
     bpWindow = new breakpoint_window(mac, this);
+    structWindow = new structures_window(mac, this);
     tlbWindow = new tlb_window(mac, this);
 
     connect(toolbar, SIGNAL(play(int)), this, SLOT(start(int)));
@@ -123,6 +124,11 @@ qarm::qarm(QApplication *app, QFile *confFile):
     connect(toolbar, SIGNAL(hideTLB()), tlbWindow, SLOT(hide()));
     connect(tlbWindow, SIGNAL(hiding()), toolbar, SLOT(uncheckTLB()));
 
+    connect(toolbar, SIGNAL(showSTW()), structWindow, SLOT(show()));
+    connect(toolbar, SIGNAL(hideSTW()), structWindow, SLOT(hide()));
+    connect(structWindow, SIGNAL(hiding()), toolbar, SLOT(uncheckSTA()));
+    connect(this, SIGNAL(resetMachine()), structWindow, SLOT(updateContent()));
+
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
 
     connect(this, SIGNAL(resetMachine()), mac, SLOT(reset()));
@@ -144,6 +150,7 @@ qarm::qarm(QApplication *app, QFile *confFile):
 
     connect(this, SIGNAL(resetMachine()), debugger, SLOT(resetSymbolTable()));
     connect(debugger, SIGNAL(stabUpdated()), bpWindow, SLOT(updateContent()));
+    connect(debugger, SIGNAL(stabUpdated()), structWindow, SLOT(updateContent()));
     connect(this, SIGNAL(resumeExec()), debugger, SIGNAL(MachineRan()));
 
     setCentralWidget(mainWidget);

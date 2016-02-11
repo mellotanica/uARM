@@ -85,7 +85,7 @@ private:
 // is loaded from file, and is associated to a particular ASID, which comes
 // from the configuration.
 // For performance reasons, symbol table is split into two parts: one for
-// functions and one for memory objects, since functions table wiil be
+// functions and one for memory objects, since functions table will be
 // accessed more often. Both SymbolTable object tables are lexicographically
 // ordered for fast probing, function table is accessed for any instruction
 // reference; both are inspected for mapping breakpoint/suspect/trace ranges

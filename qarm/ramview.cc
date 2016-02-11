@@ -90,10 +90,10 @@ void ramView::visualize(){
     conv &= res;
 
     if(start > end || (end - start) > MAX_VIEWABLE_RAM){
-	mainLayout->removeWidget(ramLabel);
+        mainLayout->removeWidget(ramLabel);
         mainLayout->removeWidget(ramViewer);
         delete ramLabel;
-	delete ramViewer;
+        delete ramViewer;
         char *message;
         if(start > end){
             message = "Start address cannot be higher than End address...";
@@ -118,11 +118,11 @@ void ramView::visualize(){
         if(ramViewer != NULL){
             mainLayout->removeWidget(ramViewer);
             delete ramViewer;
-	    ramLabel->clear();
+            ramLabel->clear();
         } else {
-	    newRamLabel(this);
-	    mainLayout->addWidget(ramLabel);
-	}
+            newRamLabel(this);
+            mainLayout->addWidget(ramLabel);
+        }
         ramViewer = new HexView(start, end, mac, this);
         mainLayout->addWidget(ramViewer);
     }

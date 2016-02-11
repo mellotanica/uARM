@@ -1,0 +1,9 @@
+*.o
+config.h
+config.log
+config.status
+Makefile
+elf2uarm
+uarm
+uarm-mkdev
+*.user
