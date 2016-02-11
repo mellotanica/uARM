@@ -130,6 +130,17 @@ void HexView::Refresh()
     verticalScrollBar()->setValue(vScrollValue);
 }
 
+void HexView::MoveInterval(Word start, Word end){
+    this->start = start;
+    this->end = end;
+    length = ((end - start) >> 2) + 1;
+
+    moveCursor(QTextCursor::Start);
+    highlightWord();
+
+    Refresh();
+}
+
 void HexView::resizeEvent(QResizeEvent* event)
 {
     QPlainTextEdit::resizeEvent(event);

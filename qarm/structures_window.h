@@ -46,9 +46,11 @@ signals:
 
 private slots:
     void updateContent();
-    void onSelectedObject(Word start, Word end);
+    void update();
 
 private:
+    void initRamViewer();
+
     machine *mac;
 
     QWidget *mainWidget;

@@ -83,48 +83,59 @@ void ramView::update(){
 }
 
 void ramView::visualize(){
-    bool conv = true, res;
-    Word start = startEd->text().toUInt(&res,16);
-    conv &= res;
-    Word end = endEd->text().toUInt(&res,16);
-    conv &= res;
-
-    if(start > end || (end - start) > MAX_VIEWABLE_RAM){
-        mainLayout->removeWidget(ramLabel);
-        mainLayout->removeWidget(ramViewer);
-        delete ramLabel;
-        delete ramViewer;
-        char *message;
-        if(start > end){
-            message = "Start address cannot be higher than End address...";
-        } else {
-            message = "Memory segment too large,\n max displayble size: 10 KB";
-        }
-        QarmMessageBox *warning = new QarmMessageBox(QarmMessageBox::WARNING, "Warning", message, this);
+    if(startEd->text().isEmpty()){
+        QarmMessageBox *warning = new QarmMessageBox(QarmMessageBox::WARNING, "Warning", "You must enter a valid adress in Start field", this);
         warning->show();
-    } else if(conv && (start != startAddr || end != endAddr)){
+    } else {
+        bool conv = true, res;
+        Word start = startEd->text().toUInt(&res,16);
+        conv &= res;
+        Word end;
+        if(endEd->text().isEmpty())
+            end = start;
+        else
+            end = endEd->text().toUInt(&res,16);
+        conv &= res;
 
-        if(start & 3){
-            start &= 0xFFFFFFFC;
-            startEd->setText(QString::number(start, 16));
-        }
-        if(end & 3){
-            end &= 0xFFFFFFFC;
-            endEd->setText(QString::number(end, 16));
-        }
-        startAddr = start;
-        endAddr = end;
-
-        if(ramViewer != NULL){
+        if(start > end || (end - start) > MAX_VIEWABLE_RAM){
+            mainLayout->removeWidget(ramLabel);
             mainLayout->removeWidget(ramViewer);
+            delete ramLabel;
             delete ramViewer;
-            ramLabel->clear();
-        } else {
+            char *message;
+            if(start > end){
+                message = "Start address cannot be higher than End address...";
+            } else {
+                message = "Memory segment too large,\n max displayble size: 10 KB";
+            }
+            QarmMessageBox *warning = new QarmMessageBox(QarmMessageBox::WARNING, "Warning", message, this);
+            warning->show();
+        } else if(conv && (start != startAddr || end != endAddr)){
+
+            if(start & 3){
+                start &= 0xFFFFFFFC;
+                startEd->setText(QString::number(start, 16));
+            }
+            if(end & 3){
+                end &= 0xFFFFFFFC;
+                endEd->setText(QString::number(end, 16));
+            }
+            startAddr = start;
+            endAddr = end;
+
+            if(ramViewer != NULL){
+                mainLayout->removeWidget(ramViewer);
+                delete ramViewer;
+            }
+            if(ramLabel != NULL){
+                mainLayout->removeWidget(ramLabel);
+                delete ramLabel;
+            }
             newRamLabel(this);
             mainLayout->addWidget(ramLabel);
+            ramViewer = new HexView(start, end, mac, this);
+            mainLayout->addWidget(ramViewer);
         }
-        ramViewer = new HexView(start, end, mac, this);
-        mainLayout->addWidget(ramViewer);
     }
 }
 

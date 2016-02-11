@@ -34,9 +34,11 @@ structures_window::structures_window(machine *mac, QWidget * parent, Qt::WindowF
     mainLayout = new QVBoxLayout(mainWidget);
 
     selectWidget = new SelectStructuresDialog(mainWidget);
-    connect(selectWidget, SIGNAL(selectedObject(Word, Word)), this, SLOT(onSelectedObject(Word, Word)));
 
-    ramViewer = new HexView(0, 0x1c, mac, mainWidget);
+    ramViewer = new HexView(0, 0, mac, mainWidget);
+    initRamViewer();
+
+        connect(selectWidget, SIGNAL(selectedObject(Word, Word)), ramViewer, SLOT(MoveInterval(Word,Word)));
 
     mainLayout->addWidget(selectWidget);
     mainLayout->addWidget(ramViewer);
@@ -45,8 +47,8 @@ structures_window::structures_window(machine *mac, QWidget * parent, Qt::WindowF
 
     hide();
 
-    connect(DebuggerHolder::getInstance()->getDebugSession(), SIGNAL(stabUpdated()), this, SLOT(symtabReady()));
-    connect(DebuggerHolder::getInstance()->getDebugSession(), SIGNAL(stabUnavavilable()), this, SLOT(symtabMissing()));
+    connect(DebuggerHolder::getInstance()->getDebugSession(), SIGNAL(stabUpdated()), this, SLOT(updateContent()));
+    connect(DebuggerHolder::getInstance()->getDebugSession(), SIGNAL(stabUnavavilable()), this, SLOT(updateContent()));
 
     setCentralWidget(mainWidget);
     setWindowTitle("Structures");
@@ -54,6 +56,10 @@ structures_window::structures_window(machine *mac, QWidget * parent, Qt::WindowF
 
 structures_window::~structures_window(){
 
+}
+
+void structures_window::initRamViewer(){
+    ramViewer->MoveInterval(0, 0x1c);
 }
 
 void structures_window::closeEvent(QCloseEvent *event){
@@ -64,22 +70,12 @@ void structures_window::closeEvent(QCloseEvent *event){
 
 void structures_window::updateContent(){
     selectWidget->updateContent();
-    if(!selectWidget->isStabLoaded()){
-        if(ramViewer != NULL){
-            mainLayout->removeWidget(ramViewer);
-            delete ramViewer;
-        }
-        ramViewer = new HexView(0, 0x1c, mac, mainWidget);
-        mainLayout->addWidget(ramViewer);
-    }
-    ramViewer->Refresh();
+    update();
 }
 
-void structures_window::onSelectedObject(Word start, Word end){
-    if(ramViewer != NULL){
-        mainLayout->removeWidget(ramViewer);
-        delete ramViewer;
+void structures_window::update(){
+    if(!selectWidget->isStabLoaded()){
+        initRamViewer();
     }
-    ramViewer = new HexView(start, end, mac, mainWidget);
-    mainLayout->addWidget(ramViewer);
+    ramViewer->Refresh();
 }

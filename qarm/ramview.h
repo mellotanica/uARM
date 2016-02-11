@@ -52,7 +52,7 @@ private:
 
     HexView *ramViewer = NULL;
     QVBoxLayout *mainLayout;
-    QLineEdit *startEd, *endEd, *ramLabel;
+    QLineEdit *startEd, *endEd, *ramLabel = NULL;
     QPushButton *visualizeB;
 };
 

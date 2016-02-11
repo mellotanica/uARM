@@ -128,6 +128,7 @@ qarm::qarm(QApplication *app, QFile *confFile):
     connect(toolbar, SIGNAL(hideSTW()), structWindow, SLOT(hide()));
     connect(structWindow, SIGNAL(hiding()), toolbar, SLOT(uncheckSTA()));
     connect(this, SIGNAL(resetMachine()), structWindow, SLOT(updateContent()));
+    connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), structWindow, SLOT(update()));
 
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
 

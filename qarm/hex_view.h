@@ -48,6 +48,7 @@ public:
 
 public slots:
     void Refresh();
+    void MoveInterval(Word start, Word end);
 
 protected:
     void resizeEvent(QResizeEvent* event);
@@ -96,9 +97,9 @@ private:
 
     machine *mac;
 
-    const Word start;
-    const Word end;
-    const Word length;
+    Word start;
+    Word end;
+    Word length;
 
     bool m_reversedByteOrder;
 
