@@ -46,7 +46,11 @@ public:
     bool HasReversedByteOrder() const { return m_reversedByteOrder; }
     void setReversedByteOrder(bool setting);
 
+    Word getStart() { return start; }
+    Word getEnd() { return end; }
+
 public slots:
+    void Refresh(QString symbol);
     void Refresh();
     void MoveInterval(Word start, Word end);
 

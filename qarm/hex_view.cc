@@ -32,7 +32,7 @@
 #include <QScrollBar>
 
 #include "qarm/procdisplay.h"
-
+#include "services/debug_session.h"
 #include "qarm/hex_view_priv.h"
 
 extern "C"{
@@ -77,6 +77,16 @@ void HexView::setReversedByteOrder(bool setting)
         m_reversedByteOrder = setting;
         Refresh();
     }
+}
+
+void HexView::Refresh(QString symbol){
+    if(symbol != NULL && !symbol.isEmpty() &&
+            DebuggerHolder::getInstance()->getDebugSession()->getSymbolTable() != NULL){
+        const Symbol *s = DebuggerHolder::getInstance()->getDebugSession()->getSymbolTable()->Lookup(symbol.toStdString().c_str(), Symbol::TYPE_OBJECT).front();
+        start = s->getStart();
+        end = s->getEnd();
+    }
+    Refresh();
 }
 
 void HexView::Refresh()

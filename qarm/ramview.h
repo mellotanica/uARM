@@ -51,6 +51,7 @@ private:
 
     void newRamLabel(QWidget *parent = 0);
     void initRamView(machine *mac);
+    void refreshBounds(Word start, Word end);
 
     HexView *ramViewer = NULL;
     QVBoxLayout *mainLayout;

@@ -39,10 +39,7 @@ ramView::ramView(machine *mac, Word start, Word end, QString label, QWidget *par
 {
     initRamView(mac);
 
-    startEd->setText(QString::number(start, 16));
-    if(end != start){
-        endEd->setText(QString::number(end, 16));
-    }
+    refreshBounds(start, end);
     labelText = label;
 
     visualize();
@@ -99,9 +96,26 @@ void ramView::newRamLabel(QWidget *parent){
     ramLabel->setText(labelText);
 }
 
+void ramView::refreshBounds(Word start, Word end){
+    startEd->setText(QString::number(start, 16));
+    if(end != start){
+        endEd->setText(QString::number(end, 16));
+    }
+}
+
 void ramView::update(){
-    if(ramViewer != NULL)
-        ramViewer->Refresh();
+    QString symbol = QString("");
+    if(ramViewer != NULL){
+        if(ramLabel != NULL){
+            symbol = ramLabel->text();
+        }
+        if(symbol.isEmpty()){
+            ramViewer->Refresh();
+        } else {
+            ramViewer->Refresh(symbol);
+            refreshBounds(ramViewer->getStart(), ramViewer->getEnd());
+        }
+    }
 }
 
 void ramView::visualize(){
