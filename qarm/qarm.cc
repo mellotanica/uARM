@@ -129,6 +129,7 @@ qarm::qarm(QApplication *app, QFile *confFile):
     connect(structWindow, SIGNAL(hiding()), toolbar, SLOT(uncheckSTA()));
     connect(this, SIGNAL(resetMachine()), structWindow, SLOT(updateContent()));
     connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), structWindow, SLOT(update()));
+    connect(structWindow, SIGNAL(openRamViewer(Word,Word,QString)), this, SLOT(showRamSel(Word,Word,QString)));
 
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
 
@@ -247,6 +248,19 @@ void qarm::speedChanged(int speed){
 void qarm::showRam(){
     if(initialized){
         ramView *ramWindow = new ramView(mac, this);
+        connect(this, SIGNAL(resetMachine()), ramWindow, SLOT(update()));
+        connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), ramWindow, SLOT(update()));
+        ramWindow->show();
+    } else {
+        QarmMessageBox *warning = new QarmMessageBox(QarmMessageBox::WARNING, "Warning",
+                                                     "Machine not initialized,\ncannot display memory contents.", this);
+        warning->show();
+    }
+}
+
+void qarm::showRamSel(Word start, Word end, QString label){
+    if(initialized){
+        ramView *ramWindow = new ramView(mac, start, end, label, this);
         connect(this, SIGNAL(resetMachine()), ramWindow, SLOT(update()));
         connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), ramWindow, SLOT(update()));
         ramWindow->show();

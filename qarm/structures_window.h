@@ -25,6 +25,7 @@
 #include <QMainWindow>
 #include <QVBoxLayout>
 #include <QDialogButtonBox>
+#include <QToolButton>
 #include "armProc/const.h"
 #include "armProc/types.h"
 #include "armProc/machine.h"
@@ -43,6 +44,7 @@ protected:
 
 signals:
     void hiding();
+    void openRamViewer(Word start, Word end, QString label);
 
 private slots:
     void updateContent();
@@ -55,6 +57,8 @@ private:
 
     QWidget *mainWidget;
     QVBoxLayout *mainLayout;
+
+    QToolButton *showRam;
 
     SelectStructuresDialog *selectWidget;
     HexView *ramViewer = NULL;

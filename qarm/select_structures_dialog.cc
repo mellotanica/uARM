@@ -67,10 +67,14 @@ void SelectStructuresDialog::updateContent(){
                 SIGNAL(selectionChanged(const QItemSelection&, const QItemSelection&)),
                 this,
                 SLOT(onSelectionChanged(const QItemSelection&)));
+
+        onSelectionChanged(symbolTableView->selectionModel()->selection());
     } else {
         symbolTableView->setModel(new EmptySymbolTableModel);
         disconnect(this, SLOT(onSelectionChanged(QItemSelection)));
         stab = NULL;
+        start = end = 0;
+        label = QString();
     }
 }
 
@@ -80,6 +84,15 @@ void SelectStructuresDialog::onSelectionChanged(const QItemSelection& selected)
     if (!indexes.isEmpty()) {
         int row = proxyModel->mapToSource(indexes[0]).row();
         const Symbol* symbol = stab->Get(row);
-	emit selectedObject(symbol->getStart(), symbol->getEnd());
+        start = symbol->getStart();
+        end = symbol->getEnd();
+        label = QString(symbol->getName());
+        emit selectedObject(start, end);
+    }
+}
+
+void SelectStructuresDialog::triggerOpenRam(){
+    if(!label.isEmpty()){
+        emit openRam(start, end, label);
     }
 }

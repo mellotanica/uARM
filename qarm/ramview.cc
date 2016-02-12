@@ -29,9 +29,28 @@
 #include "armProc/machine_config.h"
 
 ramView::ramView(machine *mac, QWidget *parent) :
-    mac(mac),
     QWidget(parent)
 {
+    initRamView(mac);
+}
+
+ramView::ramView(machine *mac, Word start, Word end, QString label, QWidget *parent):
+    QWidget(parent)
+{
+    initRamView(mac);
+
+    startEd->setText(QString::number(start, 16));
+    if(end != start){
+        endEd->setText(QString::number(end, 16));
+    }
+    labelText = label;
+
+    visualize();
+}
+
+void ramView::initRamView(machine *mac){
+    this->mac = mac;
+
     setWindowFlags(Qt::Window);
     setWindowTitle("Ram Inspector");
     mainLayout = new QVBoxLayout();

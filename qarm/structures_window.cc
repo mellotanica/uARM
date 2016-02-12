@@ -38,9 +38,17 @@ structures_window::structures_window(machine *mac, QWidget * parent, Qt::WindowF
     ramViewer = new HexView(0, 0, mac, mainWidget);
     initRamViewer();
 
-        connect(selectWidget, SIGNAL(selectedObject(Word, Word)), ramViewer, SLOT(MoveInterval(Word,Word)));
+    connect(selectWidget, SIGNAL(selectedObject(Word, Word)), ramViewer, SLOT(MoveInterval(Word,Word)));
+    connect(selectWidget, SIGNAL(openRam(Word,Word,QString)), this, SIGNAL(openRamViewer(Word,Word,QString)));
+
+    showRam = new QToolButton(mainWidget);
+    showRam->setText("Show in Ram Viewer");
+    showRam->setAccessibleName(showRam->text());
+    showRam->setAccessibleDescription("Show selected data structures in separate a Ram Viewer window");
+    connect(showRam, SIGNAL(clicked()), selectWidget, SLOT(triggerOpenRam()));
 
     mainLayout->addWidget(selectWidget);
+    mainLayout->addWidget(showRam);
     mainLayout->addWidget(ramViewer);
 
     mainWidget->setLayout(mainLayout);

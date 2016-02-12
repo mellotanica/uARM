@@ -41,15 +41,20 @@ public:
     bool isStabLoaded() {return (stab != NULL);}
 signals:
     void selectedObject(Word start, Word end);
+    void openRam(Word start, Word end, QString label);
 
 public slots:
     void updateContent();
+    void triggerOpenRam();
 
 private:
     static const int kInitialWidth = 380;
     static const int kInitialHeight = 340;
 
     QTreeView *symbolTableView;
+
+    Word start, end;
+    QString label;
 
     const SymbolTable* stab;
     SortFilterSymbolTableModel* proxyModel;

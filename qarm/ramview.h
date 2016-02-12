@@ -36,7 +36,8 @@ class ramView : public QWidget
     Q_OBJECT
 public:
     explicit ramView(machine *mac, QWidget *parent = 0);
-    
+    ramView(machine *mac, Word start, Word end, QString label, QWidget *parent = 0);
+
 signals:
     
 
@@ -49,6 +50,7 @@ private:
     Word startAddr = 0, endAddr = 0;
 
     void newRamLabel(QWidget *parent = 0);
+    void initRamView(machine *mac);
 
     HexView *ramViewer = NULL;
     QVBoxLayout *mainLayout;
