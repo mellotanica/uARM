@@ -249,8 +249,8 @@ TLB_H:
     LDR r0, [sp, #0x8]  /* if it is a tlb exception, wrong address can be in cp15.r6 */
     MRC p15, #0, sp, c6, c0, #0 /* fix return address onto stack */
     CMP r0, #0xD
-    SUBne lr, sp, #4    /* if it was a prefetch abort, lr shoud be fault instruction + 4 */
-    SUBeq lr, lr, #8    /* if it was a data abort, lr contains return address + 8 */
+    SUBne lr, sp, #8    /* if it was a prefetch abort, lr shoud be fault instruction - 8 */
+    SUBeq lr, lr, #8    /* if it was a data abort, lr contains return address - 8 */
     MOV sp, #ROMSTACK_TOP
     ADD sp, sp, #ROMSTACK_OFF
     ADD sp, sp, #4
