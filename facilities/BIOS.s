@@ -228,7 +228,7 @@ DATAABT_H:
     LDR r0, [sp]
     B DP_CONT
 PREFABT_H:
-    MOV sp, #ROMSTACK_TOP	/* save 0 onto stack to identify dataAbt */
+    MOV sp, #ROMSTACK_TOP	/* save 0 onto stack to identify prefetchAbt */
     ADD sp, sp, #ROMSTACK_OFF
     STR r0, [sp]
     MOV r0, #0
@@ -247,9 +247,8 @@ TLB_H:
     STR r0, [sp], #4
 
     LDR r0, [sp, #0x8]  /* if it is a tlb exception, wrong address can be in cp15.r6 */
-    MRC p15, #0, sp, c6, c0, #0 /* fix return address onto stack */
-    CMP r0, #0xD
-    SUBne lr, sp, #8    /* if it was a prefetch abort, lr shoud be fault instruction - 8 */
+    CMP r0, #0xD /* fix return address onto stack */
+    SUBne lr, lr, #4    /* if it was a prefetch abort, lr shoud be fault instruction - 4 */
     SUBeq lr, lr, #8    /* if it was a data abort, lr contains return address - 8 */
     MOV sp, #ROMSTACK_TOP
     ADD sp, sp, #ROMSTACK_OFF
