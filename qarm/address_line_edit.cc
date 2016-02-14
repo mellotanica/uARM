@@ -121,8 +121,14 @@ Word AsidLineEdit::getAsid() const
 
 void AsidLineEdit::setAsid(Word asid)
 {
-    if (asid <= MachineConfig::MAX_ASID)
-        setText(QString::number(asid, 16));
+    if (asid <= MachineConfig::MAX_ASID){
+        QString sAsid = QString::number(asid, 16);
+        if(sAsid.length() == 1){
+            sAsid = "0"+sAsid;
+        }
+        sAsid = "0x"+sAsid;
+        setText(sAsid);
+    }
 }
 
 #endif //QARM_ADDRESS_LINE_EDIT_CC
