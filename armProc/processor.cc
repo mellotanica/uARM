@@ -353,6 +353,7 @@ void processor::nextCycle() {
         prefetchFault[PIPELINE_DECODE] = prefetchFault[PIPELINE_FETCH];
         if(mapVirtual(*getPC(), &ppc, EXEC)){
             prefetchFault[PIPELINE_FETCH] = true;
+            bus->fetch(*getPC(), !(cpu_registers[REG_CPSR] & T_MASK));
         } else
             prefetchFault[PIPELINE_FETCH] = !bus->fetch(ppc, !(cpu_registers[REG_CPSR] & T_MASK));
     }
