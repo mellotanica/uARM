@@ -4,7 +4,7 @@
 
 \subsection{Bootstrap Function}
 
-The bootstrap program bundled with uarm installation has the function to initialize hardware facilities and start execution.
+The bootstrap program bundled with uarm installation has initializes hardware facilities and starts execution.
 
 The operation it performs are:
 
@@ -17,6 +17,33 @@ The operation it performs are:
 \item clear all used scratch registers
 \item jump to entry point
 \end{enumerate}
+
+\subsection{Low Level Hanlders}
+
+In addition to bootsrapping the machine, BIOS code provides low level exception handlers:
+
+\subsubsection{Undefined Instruction Exception Handler}
+
+When an Undefined Instruction Exception is risen, the processor stores its internal state at the moment of the exception into the \emph{Old Area} of the exception states vector relative to Undefined Exceptions and loads the content of the \emph{New Area}.
+
+\subsubsection{Interrupts Exception Handlers}
+
+For both Fast and regular Interrupt Exceptions the processor behaves in a way similar to Undefined Exceptions, it stores its state at the time of the interrupt and loads the \emph{New Area} from Interrupts Exception States Vector's slot.
+
+\subsubsection{Software Interrupt Handler}
+
+In addition to the regular operations (the same as the Undef and Interrupts handlers), in case of an SWI instruction the BIOS responds for known Low Level Services and sets the Cause register to the right value for the requested interruption (Syscall or Breakpoint).
+
+\subsubsection{Data and Prefetch Exception Handlers}
+
+These two handlers share most of their code and perform special operations in case Virtual Memory is turned on:
+\begin{itemize}
+	\item if VM is disabled, Abort Exceptions are treated as Undefined Exceptions,
+	\item else low level TLB management is required.
+\end{itemize}
+
+In the latter case, the handler corrects the return address, setting it to the address of the faulting instruction and stores the processor state in the \emph{TLB Old Area} of the Exception States Vector.
+It then checks if the Abort was labled as a TLB-Miss and, if it was the case, it performs the TLB Refill procedure described in Virtual Memory section.
 
 \subsection{Low Level Services}
 

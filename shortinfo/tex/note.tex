@@ -61,11 +61,12 @@ the last 6 header fields are unused.
 
 When writing Exception Handlers code, it is well advised to pay attetion to the Program Counter value stored in the Old Area. As described in Exception Handling section, each exception leave a different value in Link Return register and this value is automatically moved to Old Area pc from low level exception handlers, so, for example, when handling an interrupt, the Old Area PC has to be decreased by 4 to point to the right return instruction.
 
+You may also want look closely to the Low Level Handlers section to better understand what actions are performed by the BIOS code.
+
 \section{Known bugs}
 
 \begin{itemize}
 \item Thumb ISA is misbehaving with some Branch instructions
-\item Virtual Memory is not completely implemented
 \item Terminals shortcuts are still not working
 \item If Symbol Table file is changed during execution the machine can misbehave
 
