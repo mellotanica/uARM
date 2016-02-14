@@ -134,23 +134,23 @@ When handling Software Interrupt Exceptions, the processor switches to Superviso
 \subsubsection{Data Abort Exception}
 If a the processor tries to access memory address that is not valid or available, this exception is raised.
 
-When handling Data Aborts, the processor switches to Abort mode with normal interrupts disabled and Link Return register is set to the address of the instruction after the one that caused the Abort plus 8.
+When handling Data Aborts, the processor switches to Abort mode with normal interrupts disabled and Link Return register is set to the address of the instruction that caused the Abort plus 8.
 
 
 \subsubsection{Prefetch Abort Exception}
 If the processor tries to execute an instruction that generated a data abort while being fetched, this exception is raised.
 
-When handling Prefetch Aborts, the processor enters Abort mode with normal interrupts disabled and Link Return register points to the address of the instruction after the one that caused the exception plus 4.
+When handling Prefetch Aborts, the processor enters Abort mode with normal interrupts disabled and Link Return register points to the address of the instruction after the one that caused the exception.
 
 \subsubsection{Interrupt Request Exception}
 When a connected Device requires the processor's attention, it fires an Interrupt Request.
 
-When handling Interrupt Requests, the processor enters Interrupt mode with normal interrupts disabled and Link Return register is set to the address of the next instruction to be executed plus 4.
+When handling Interrupt Requests, the processor enters Interrupt mode with normal interrupts disabled and Link Return register is set to the address of the instruction that was not executed plus 4.
 
 \subsubsection{Fast Interrupt Request Exception}
 Fast Interrupts have higher priority than norma Interrupts, also, system Interval Timer is connected to this line of interrupts. When the Timer changes its value from \texttt{0x00000000} to \texttt{0xFFFFFFFF}, a Fast Interrupt is requested.
 
-When handling Fast Interrupt Requests, the processor enters Fast Interrupt mode with all interrupts disabled and Link Return register points to the address of the next instruction to be executed plus 4.
+When handling Fast Interrupt Requests, the processor enters Fast Interrupt mode with all interrupts disabled and Link Return register points to the address of the instruction that was not executed plus 4.
 
 \section{System Coprocessor}
 

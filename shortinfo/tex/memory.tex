@@ -31,7 +31,7 @@ By setting M flag in System Coprocessor's register 1 (CP15.R1.M, that is least s
 
 When virtual memory is active, each address above \texttt{0x0000.8000} is treated as a logical address and translated to the corresponding physical address from the memory subsystem, addresses below \texttt{0x0000.8000} are always treated as physical addresses, as they refer to a memory region reserved for bus access.
 
-In Privileged mode all logical memory is accessible, when executin in User mode, only User Segments are accessible instead: the first one (Useg2) starts from address \texttt{0x2000.0000} and extends over the next GB, the second one (Useg3) starts from address \texttt{0x3000.0000} and terminates at the top of the logical memory, address \texttt{0x3FFF.FFFF}.
+In Privileged mode all logical memory is accessible, when executin in User mode, only User Segments are accessible instead: the first one (Useg2) starts from address \texttt{0x8000.0000} and extends over the next GB, the second one (Useg3) starts from address \texttt{0xC000.0000} and terminates at the top of the logical memory, address \texttt{0xFFFF.FFFF}.
 
 \vspace{10px}
 
