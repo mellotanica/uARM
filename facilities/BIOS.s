@@ -171,11 +171,14 @@ SWI_H:
     B BIOS_SRV_EXEC
 
 BREAK_Cont:
+    MOV r0, #42
+    CMP r0, #0
+SWI_H_Cont:
     MRC p15, #0, r0, c15, c0
     BIC r0, r0, #0xFFFFFF
-    ORR r0, r0, #12
+    ORRne r0, r0, #BPEXCEPTION_CODE
+    ORReq r0, r0, #SYSEXCEPTION_CODE
     MCR p15, #0, r0, c15, c0
-SWI_H_Cont:
     MOV r0, #EXCV_BASE	/* store registers */
     ADD r0, r0, #EXCV_SWI_OLD
 
