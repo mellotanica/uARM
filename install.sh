@@ -7,6 +7,8 @@ fi
 
 OS=`uname -s`
 
+DESTDIR=""
+
 if test $OS == "Linux"; then
 	PREF="/usr"
 else
@@ -24,6 +26,11 @@ while [ -n "$1" ]; do
 		"-i")
 			ICONSONLY="true"
 			;;
+		"-b")
+			DESTDIR="$2"
+			PREF="$DESTDIR""$PREF"
+			shift
+			;;
 		"*")
 			echo "unknown option $1, skipping"
 			;;
@@ -40,7 +47,7 @@ if [ "$ICONSONLY" == "false" ]; then
 	INCLUDED=$PREF"/include/uarm"
 	TESTD=$PREF"/share/doc/uarm/examples"
 	LDSCRIPTSD=$INCLUDED"/ldscripts"
-	DEFAULTD="/etc/default"
+	DEFAULTD="$DESTDIR/etc/default"
 	BIND=$PREF"/bin"
 
 	mkdir -p "$INCLUDED"
