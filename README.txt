@@ -31,7 +31,7 @@ any ARM cross-compiling toolchain supporting ARMv4 is ok.
 
 ###### RUNNING #######
 
-Ihe executable is named uarm and is located inside the main
+The executable is named uarm and is located inside the main
 directory after running ./compile and in /usr/bin after
 installation; it takes the standard qt parameters as input.
 
@@ -61,6 +61,17 @@ emulated processor speed (NOT the same as emulation speed),
 with higher values the devices will react slower because
 the processor is faster but device execution speed does not
 change.
+
+###### CMDLINE OPTIONS #######
+
+uARM accepts two argument from command line:
+
+	--dump-execution [fname] : writes the assembly trace
+			of execution in [fname] file
+	-c [conf] : use [conf] file as machine configurations
+
+You can use -c option to create a default config file or use a 
+different file from default one ($CONFIG_PATH/uarm/machine.uarm.cfg)
 
 ###### TESTING #######
 
