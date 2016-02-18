@@ -53,6 +53,8 @@ if [ "$ICONSONLY" == "false" ]; then
 	mkdir -p "$INCLUDED"
 	mkdir -p "$TESTD"
 	mkdir -p "$LDSCRIPTSD"
+	mkdir -p "$DEFAULTD"
+	mkdir -p "$BIND"
 
 	cp ldscript/* "$LDSCRIPTSD"
 	cp test/* "$TESTD"
@@ -64,7 +66,7 @@ if [ "$ICONSONLY" == "false" ]; then
 		cp -r uarm.app /applications
 	fi
 	cp elf2uarm uarm-mkdev "$BIND"
-	ln -s "$HERE"/facilities/readuarm.py "$BIND"/uarm-readuarm
+	cp "$HERE"/facilities/readuarm.py "$BIND"/uarm-readuarm
 	
 	cp default/* "$DEFAULTD"
 fi
