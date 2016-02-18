@@ -34,6 +34,7 @@ done
 ICONSD=$PREF"/lib/uarm/icons"
 mkdir -p "$ICONSD"
 cp icons/* "$ICONSD"
+HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ "$ICONSONLY" == "false" ]; then
 	INCLUDED=$PREF"/include/uarm"
@@ -51,12 +52,13 @@ if [ "$ICONSONLY" == "false" ]; then
 	cp facilities/* "$INCLUDED"
 
 	if test $OS == "Linux"; then
-		cp uarm elf2uarm uarm-mkdev "$BIND"
+		cp uarm "$BIND"
 	else
 		cp -r uarm.app /applications
-		cp elf2uarm "$BIND"
 	fi
-
+	cp elf2uarm uarm-mkdev "$BIND"
+	ln -s "$HERE"/facilities/readuarm.py "$BIND"/uarm-readuarm
+	
 	cp default/* "$DEFAULTD"
 fi
 
