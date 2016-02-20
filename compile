@@ -15,5 +15,3 @@ make clean
 $QMCOMP qarm.pro
 make
 make clean
-
-./install.sh
