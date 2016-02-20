@@ -32,7 +32,6 @@
 #include "armProc/stoppoint.h"
 //STATIC: only breakpoints are available right now..
 /*#include "armProc/machine.h"
-#include "qmps/cpu_status_map.h"
 #include "qarm/stoppoint_list_model.h"
 
 enum MachineStatus {

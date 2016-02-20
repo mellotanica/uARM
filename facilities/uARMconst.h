@@ -130,14 +130,22 @@
 /* empty status */
 #define STATUS_NULL 		0x00000000
 
+/* CP15 control */
+#define CP15_VM_ON	0x00000001
+
+#define CP15_ENABLE_VM(control)	((control) | (CP15_VM_ON))
+#define CP15_DISABLE_VM(control) ((control) & ~(CP15_VM_ON))
+
+#define CP15_CONTROL_NULL 0x00000000
+
 /* Utility definitions for the entryHI register */
 #define ENTRYHI_SEGNO_GET(entryHI) (((entryHI) & 0xc0000000) >> 30)
 #define ENTRYHI_VPN_GET(entryHI) (((entryHI) & 0x3ffff000) >> 12)
-#define ENTRYHI_ASID_GET(entryHI) (((entryHI) & 0x00000fc0) >> 6)
+#define ENTRYHI_ASID_GET(entryHI) (((entryHI) & 0x00000fe0) >> 5)
 
 #define ENTRYHI_SEGNO_SET(entryHI, seg_no) (((entryHI) & 0x3fffffff) | ((seg_no) << 30) )
 #define ENTRYHI_VPN_SET(entryHI, vpn) (((entryHI) & 0xc0000fff) | ((vpn) << 12))
-#define ENTRYHI_ASID_SET(entryHI, asid) (((entryHI) & 0xfffff03f) | ((asid) << 6))
+#define ENTRYHI_ASID_SET(entryHI, asid) (((entryHI) & 0xfffff01f) | ((asid) << 5))
 
 /* Utility definitions for the entryLO register */
 #define ENTRYLO_PFN_GET(entryLO) (((entryLO) & 0xfffff000) >> 12)
@@ -178,38 +186,6 @@
 #define READ 0
 #define WRITE 1
 #endif
-
-#define MAXPAGES 32
-#define KUSEG_PAGES MAXPAGES  /* pages for segments 2 and 3 */
-
-#define PAGE_SIZE 0x1000   /* 4 KB */
-
-#define OS_PAGES 32   /* ARBITRARY!!!!! (but should be enough) */
-
-/* The following definitions are useful to compute the overall space taken
-   by the OS (see below) */
-
-/* Tape DMA buffers */
-#define OS_T_DMA_START  KSEGOS_BASE_MAP + (OS_PAGES * PAGE_SIZE)
-#define OS_T_DMA_PAGES  DEV_PER_INT
-
-/* Disk DMA buffers */
-#define OS_D_DMA_START  OS_T_DMA_START + (OS_T_DMA_PAGES * PAGE_SIZE)
-#define OS_D_DMA_PAGES  DEV_PER_INT
-
-/* sys/bk stacks for the u-procs */
-#define OS_USYSSTACK_START  OS_D_DMA_START + (OS_D_DMA_PAGES * PAGE_SIZE)
-#define OS_USYSSTACK_PAGES  UPROCMAX
-
-/* tlb stacks for the u-procs */
-#define OS_UTLBSTACK_START  OS_USYSSTACK_START + (OS_USYSSTACK_PAGES * PAGE_SIZE)
-#define OS_UTLBSTACK_PAGES  UPROCMAX
-
-/* delay daemon stack */
-#define OS_DSTACK_START  OS_UTLBSTACK_START + (OS_UTLBSTACK_PAGES * PAGE_SIZE)
-
-/* Thus: */
-#define KSEGOS_PAGES   OS_PAGES + OS_T_DMA_PAGES + OS_D_DMA_PAGES + OS_USYSSTACK_PAGES + OS_UTLBSTACK_PAGES + 1
 
 #define SEGTABLE_START 0x0007600
 

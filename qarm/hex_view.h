@@ -25,10 +25,6 @@
 
 #include <QPlainTextEdit>
 
-//#include "umps/arch.h"
-//#include "umps/stoppoint.h"
-//#include "qmps/memory_view_delegate.h"
-
 #include "qarm/guiConst.h"
 #include "armProc/machine.h"
 
@@ -50,8 +46,13 @@ public:
     bool HasReversedByteOrder() const { return m_reversedByteOrder; }
     void setReversedByteOrder(bool setting);
 
+    Word getStart() { return start; }
+    Word getEnd() { return end; }
+
 public slots:
+    void Refresh(QString symbol);
     void Refresh();
+    void MoveInterval(Word start, Word end);
 
 protected:
     void resizeEvent(QResizeEvent* event);
@@ -100,11 +101,11 @@ private:
 
     machine *mac;
 
-    const Word start;
-    const Word end;
-    const Word length;
+    Word start;
+    Word end;
+    Word length;
 
-    bool m_reversedByteOrder;
+    bool m_reversedByteOrder = false;
 
     const QString invalidByteRepr;
 

@@ -30,6 +30,7 @@
 #include "qarm/ramview.h"
 #include "qarm/QLine.h"
 #include "qarm/breakpoint_window.h"
+#include "qarm/structures_window.h"
 #include "qarm/tlb_window.h"
 #include "terminal_window.h"
 #include <QMainWindow>
@@ -45,7 +46,7 @@
 class qarm : public QMainWindow{
     Q_OBJECT
 public:
-    qarm(QApplication *app);
+    qarm(QApplication *app, QFile *confFile);
     machine *getMachine() {return mac;}
     MachineConfig *getMachineConfig() {return MC_Holder::getInstance()->getConfig();}
     virtual void show();
@@ -75,6 +76,7 @@ private slots:
     void selectCore();
     void selectBios();
     void showRam();
+    void showRamSel(Word start, Word end, QString label);
     void showConfigDialog();
     void showTerminal(unsigned int devNo);
     void onMachineHalted();
@@ -88,6 +90,8 @@ private:
     QString coreF, biosF;
 
     breakpoint_window *bpWindow;
+    structures_window *structWindow;
+
     tlb_window *tlbWindow;
 
     QShortcut *closeSc;

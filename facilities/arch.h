@@ -38,7 +38,7 @@
 #define MMIO_BASE 0x00000040
 #define RAM_BASE  0x00008000
 
-#define RAM_TOP ((*((U32 *)BUS_REG_RAM_BASE)) + (*((U32 *)BUS_REG_RAM_SIZE)))
+#define RAM_TOP ((*((unsigned int *)BUS_REG_RAM_BASE)) + (*((unsigned int *)BUS_REG_RAM_SIZE)))
 
 /* Coprocessor instructions opcodes */
 #define OP_TLBWR    0xEE280F00  // opcode 2
@@ -52,9 +52,12 @@
 #define KSEGOS_BIOS_BASE   0x00000300
 #define KUSEG2_BASE        0x00008000
 
+#define KSEG0	0
+#define USEG2	2
+#define USEG3	3
+
 // segments base addresses
-#define KSEG0BASE	0x00000000UL
-#define KSEG0TOP	0x20000000UL
+#define KSEG0BASE	0x00008000UL
 #define USEG2BASE	0x80000000UL
 #define USEG3BASE	0xC0000000UL
 
@@ -88,6 +91,8 @@
 #define IL_TERMINAL         7
 
 #define EXT_IL_INDEX(il)    ((il) - DEV_IL_START)
+
+#define INT_DEV_VECTOR(il)	(0x6FE0 + (EXT_IL_INDEX(il) * 4))
 
 /*
  * Bus and device register definitions
@@ -130,8 +135,6 @@
 
 /* End of memory mapped external device registers area */
 #define DEV_REG_END             (DEV_REG_START + N_EXT_IL * N_DEV_PER_IL * DEV_REG_SIZE)
-
-//MISSING: last part has been removed (Interrupt Routing Table and Multiprocessor support)
 
 #define CPUCTL_TPR_PRIORITY_MASK    0x0000000f
 #define IRT_POLICY_FIXED   0

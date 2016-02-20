@@ -32,16 +32,8 @@
 #include <QScrollBar>
 
 #include "qarm/procdisplay.h"
-
-//#include "umps/types.h"
-//#include "umps/arch.h"
-//#include "umps/machine.h"
-
-//#include "qmps/application.h"
-//#include "qmps/debug_session.h"
-//#include "qarm/qarmmessagebox.h"
+#include "services/debug_session.h"
 #include "qarm/hex_view_priv.h"
-//#include "qmps/ui_utils.h"
 
 extern "C"{
 #include "services/disass.h"
@@ -85,6 +77,18 @@ void HexView::setReversedByteOrder(bool setting)
         m_reversedByteOrder = setting;
         Refresh();
     }
+}
+
+void HexView::Refresh(QString symbol){
+    if(symbol != NULL && !symbol.isEmpty() &&
+            DebuggerHolder::getInstance()->getDebugSession()->getSymbolTable() != NULL){
+        const Symbol *s = DebuggerHolder::getInstance()->getDebugSession()->getSymbolTable()->Lookup(symbol.toStdString().c_str(), Symbol::TYPE_OBJECT).front();
+        if(s != NULL){
+            start = s->getStart();
+            end = s->getEnd();
+        }
+    }
+    Refresh();
 }
 
 void HexView::Refresh()
@@ -136,6 +140,17 @@ void HexView::Refresh()
     setTextCursor(cursor);
     horizontalScrollBar()->setValue(hScrollValue);
     verticalScrollBar()->setValue(vScrollValue);
+}
+
+void HexView::MoveInterval(Word start, Word end){
+    this->start = start;
+    this->end = end;
+    length = ((end - start) >> 2) + 1;
+
+    moveCursor(QTextCursor::Start);
+    highlightWord();
+
+    Refresh();
 }
 
 void HexView::resizeEvent(QResizeEvent* event)

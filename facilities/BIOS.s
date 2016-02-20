@@ -171,11 +171,14 @@ SWI_H:
     B BIOS_SRV_EXEC
 
 BREAK_Cont:
+    MOV r0, #42
+    CMP r0, #0
+SWI_H_Cont:
     MRC p15, #0, r0, c15, c0
     BIC r0, r0, #0xFFFFFF
-    ORR r0, r0, #12
+    ORRne r0, r0, #BPEXCEPTION_CODE
+    ORReq r0, r0, #SYSEXCEPTION_CODE
     MCR p15, #0, r0, c15, c0
-SWI_H_Cont:
     MOV r0, #EXCV_BASE	/* store registers */
     ADD r0, r0, #EXCV_SWI_OLD
 
@@ -228,7 +231,7 @@ DATAABT_H:
     LDR r0, [sp]
     B DP_CONT
 PREFABT_H:
-    MOV sp, #ROMSTACK_TOP	/* save 0 onto stack to identify dataAbt */
+    MOV sp, #ROMSTACK_TOP	/* save 0 onto stack to identify prefetchAbt */
     ADD sp, sp, #ROMSTACK_OFF
     STR r0, [sp]
     MOV r0, #0
@@ -247,10 +250,9 @@ TLB_H:
     STR r0, [sp], #4
 
     LDR r0, [sp, #0x8]  /* if it is a tlb exception, wrong address can be in cp15.r6 */
-    MRC p15, #0, sp, c6, c0, #0 /* fix return address onto stack */
-    CMP r0, #0xD
-    SUBne lr, sp, #4    /* if it was a prefetch abort, lr shoud be fault instruction + 4 */
-    SUBeq lr, lr, #8    /* if it was a data abort, lr contains return address + 8 */
+    CMP r0, #0xD /* fix return address onto stack */
+    SUBne lr, lr, #4    /* if it was a prefetch abort, lr shoud be fault instruction - 4 */
+    SUBeq lr, lr, #8    /* if it was a data abort, lr contains return address - 8 */
     MOV sp, #ROMSTACK_TOP
     ADD sp, sp, #ROMSTACK_OFF
     ADD sp, sp, #4
@@ -266,7 +268,7 @@ TLB_H:
 
     MRC p15, #0, r0, c15, c0	/* if vm on, we could need a refill */
     AND r0, r0, #0xFFFFFF
-    CMP r0, #12	    /* if cause is 12 or 13 (maybe even 14 and 15?) we should perform a refill */
+    CMP r0, #12	    /* if cause is 12 or 13 we should perform a refill */
     Blt TLB_CONT
     CMP r0, #13
     Ble TLB_REFILL
@@ -544,7 +546,7 @@ TLB_REFILL:
 TLB_LOOP:
     LDMIA r1!, {r5, r6}
     CMP r1, r2
-    Bge TLB_LOOP_EXIT
+    Bgt TLB_LOOP_EXIT
     
     AND r7, r5, r8
     CMP r7, r3

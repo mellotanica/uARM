@@ -119,9 +119,20 @@ mainBar::mainBar(QWidget *parent) :
     utilsLowerL = new QHBoxLayout();
 
     ramB = new styledButton(utilsW);
-    ramB->setToolButtonStyle(Qt::ToolButtonTextOnly);
     ramB->setText("RAM");
-    ramB->setAccessibleName("RAM contents viewer");
+    ramB->setAccessibleName("RAM contents viewers Menu");
+    ramMenu = new QMenu(ramB);
+
+    ramAction = new QAction(QString("Ram Viewer"), ramMenu);
+    ramAction->setEnabled(true);
+    connect(ramAction, SIGNAL(triggered()), this, SIGNAL(showRam()));
+    ramMenu->addAction(ramAction);
+
+    structsAction = new QAction(QString("Structures Viewer"), ramMenu);
+    structsAction->setEnabled(true);
+    structsAction->setCheckable(true);
+    connect(structsAction, SIGNAL(toggled(bool)), this, SLOT(toggleStructsViewer(bool)));
+    ramMenu->addAction(structsAction);
 
     windowB = new styledButton(utilsW);
     windowB->setText("Terminals");
@@ -169,11 +180,11 @@ mainBar::mainBar(QWidget *parent) :
     connect(resetB, SIGNAL(clicked()), this, SIGNAL(powerOn()));
     connect(stepB, SIGNAL(clicked()), this, SIGNAL(step()));
     connect(stepB, SIGNAL(clicked()), this, SLOT(stop()));
-    connect(ramB, SIGNAL(clicked()), this, SIGNAL(showRam()));
     connect(plusB, SIGNAL(clicked()), this, SLOT(plus()));
     connect(minusB, SIGNAL(clicked()), this, SLOT(minus()));
     connect(configB, SIGNAL(clicked()), this, SIGNAL(showConfig()));
     connect(windowB, SIGNAL(clicked()), this, SLOT(showDropDownMenu()));
+    connect(ramB, SIGNAL(clicked()), this, SLOT(showRamMenu()));
     connect(breakpB, SIGNAL(toggled(bool)), this, SLOT(toggleBPButton(bool)));
     connect(tlbB, SIGNAL(toggled(bool)), this, SLOT(toggleTlbViewer(bool)));
 
@@ -284,6 +295,10 @@ void mainBar::showDropDownMenu(){
     windowMenu->popup(windowB->mapToGlobal(QPoint(0,windowB->height())));
 }
 
+void mainBar::showRamMenu(){
+    ramMenu->popup(ramB->mapToGlobal(QPoint(0,ramB->height())));
+}
+
 void mainBar::showTerminalClicked(){
     QAction* action = static_cast<QAction*>(sender());
     unsigned int devNo = action->data().toUInt();
@@ -310,6 +325,17 @@ void mainBar::toggleTlbViewer(bool status){
 
 void mainBar::uncheckTLB(){
     tlbB->setChecked(false);
+}
+
+void mainBar::toggleStructsViewer(bool status){
+    if(status)
+        emit showSTW();
+    else
+        emit hideSTW();
+}
+
+void mainBar::uncheckSTA(){
+    structsAction->setChecked(false);
 }
 
 #endif //QARM_MAINBAR_CC

@@ -2,7 +2,7 @@
 /*
  * uARM
  *
- * Copyright (C) 2013 Marco Melletti
+ * Copyright (C) 2014 Marco Melletti
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -19,45 +19,51 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
 
-#ifndef QARM_RAMVIEW_H
-#define QARM_RAMVIEW_H
+#ifndef STRUCTURES_WINDOW_H
+#define STRUCTURES_WINDOW_H
 
-#include <QWidget>
-#include <QPushButton>
+#include <QMainWindow>
 #include <QVBoxLayout>
-#include <QLineEdit>
-#include <QValidator>
+#include <QDialogButtonBox>
+#include <QToolButton>
+#include "armProc/const.h"
+#include "armProc/types.h"
 #include "armProc/machine.h"
+#include "qarm/select_structures_dialog.h"
 #include "qarm/hex_view.h"
-#include "qarm/QLine.h"
 
-class ramView : public QWidget
+class structures_window : public QMainWindow
 {
     Q_OBJECT
 public:
-    explicit ramView(machine *mac, QWidget *parent = 0);
-    ramView(machine *mac, Word start, Word end, QString label, QWidget *parent = 0);
+    structures_window(machine *mac, QWidget * parent = 0, Qt::WindowFlags flags = 0);
+    ~structures_window();
+
+protected:
+    virtual void closeEvent(QCloseEvent* event);
 
 signals:
-    
+    void hiding();
+    void openRamViewer(Word start, Word end, QString label);
 
-public slots:
-    void visualize();
+private slots:
+    void updateContent();
     void update();
 
 private:
+    void initRamViewer();
+
     machine *mac;
-    Word startAddr = 0, endAddr = 0;
 
-    void newRamLabel(QWidget *parent = 0);
-    void initRamView(machine *mac);
-    void refreshBounds(Word start, Word end);
-
-    HexView *ramViewer = NULL;
+    QWidget *mainWidget;
     QVBoxLayout *mainLayout;
-    QLineEdit *startEd, *endEd, *ramLabel = NULL;
-    QPushButton *visualizeB;
-    QString labelText;
+
+    QToolButton *showRam;
+
+    SelectStructuresDialog *selectWidget;
+    HexView *ramViewer = NULL;
+
+    SymbolTable *activeStab;
 };
 
-#endif // QARM_RAMVIEW_H
+#endif // STRUCTURES_WINDOW_H

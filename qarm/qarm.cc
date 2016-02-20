@@ -37,25 +37,31 @@
 #include <QIcon>
 #include <QWindow>
 
-qarm::qarm(QApplication *app):
+qarm::qarm(QApplication *app, QFile *confFile):
     application(app)
 {
     // INFO: machine config init
     std::string error;
+    std::string configFilePath;
 
-    QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
-    if(configDir.isEmpty()){
-        configDir = QDir::homePath()+"/."+DEFAULT_CONFIG_PATH;
+    if(confFile == NULL){
+    	QString configDir = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation);
+    	if(configDir.isEmpty()){
+        	configDir = QDir::homePath()+"/."+DEFAULT_CONFIG_PATH;
+    	} else {
+        	configDir.append(QString("/").append(DEFAULT_CONFIG_PATH));
+    	}
+    	QDir *defaultPath = new QDir(configDir);
+   	if(!defaultPath->exists())
+        	if(!defaultPath->mkdir(defaultPath->absolutePath())){   //config folder not accessible..
+        	    QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Fatal", "Cannot create uarm folder in config directory!", this);
+        	    error->show();
+        	    app->exit();
+        	}
+	configFilePath = defaultPath->absolutePath().toStdString()+"/"+DEFAULT_CONFIG_FILE;
     } else {
-        configDir.append(QString("/").append(DEFAULT_CONFIG_PATH));
+	configFilePath = confFile->fileName().toStdString();
     }
-    QDir *defaultPath = new QDir(configDir);
-    if(!defaultPath->exists())
-        if(!defaultPath->mkdir(defaultPath->absolutePath())){   //config folder not accessible..
-            QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Fatal", "Cannot create .uarm folder in home directory.\nCheck HOME environment variable.", this);
-            error->show();
-            app->exit();
-        }
 
     DebugSession *debugger;
     if((debugger = DebuggerHolder::getInstance()->getDebugSession()) == NULL){
@@ -63,10 +69,9 @@ qarm::qarm(QApplication *app):
         DebuggerHolder::getInstance()->setDebugSession(debugger);
     }
 
-    std::string defaultFName = defaultPath->absolutePath().toStdString()+"/"+DEFAULT_CONFIG_FILE;
-    MC_Holder::getInstance()->setConfig(MachineConfig::LoadFromFile(defaultFName, error, app, this));
+    MC_Holder::getInstance()->setConfig(MachineConfig::LoadFromFile(configFilePath, error, app, this));
     if(MC_Holder::getInstance()->getConfig() == NULL)
-        MC_Holder::getInstance()->setConfig(MachineConfig::Create(defaultFName, QDir::homePath().toStdString(), app, this));
+        MC_Holder::getInstance()->setConfig(MachineConfig::Create(configFilePath, QDir::homePath().toStdString(), app, this));
 
     closeSc = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this, NULL, NULL, Qt::ApplicationShortcut);
     connect(closeSc, SIGNAL(activated()), this, SLOT(closeFWindow()));
@@ -94,6 +99,7 @@ qarm::qarm(QApplication *app):
     clock = new QTimer(this);
 
     bpWindow = new breakpoint_window(mac, this);
+    structWindow = new structures_window(mac, this);
     tlbWindow = new tlb_window(mac, this);
 
     connect(toolbar, SIGNAL(play(int)), this, SLOT(start(int)));
@@ -118,6 +124,13 @@ qarm::qarm(QApplication *app):
     connect(toolbar, SIGNAL(hideTLB()), tlbWindow, SLOT(hide()));
     connect(tlbWindow, SIGNAL(hiding()), toolbar, SLOT(uncheckTLB()));
 
+    connect(toolbar, SIGNAL(showSTW()), structWindow, SLOT(show()));
+    connect(toolbar, SIGNAL(hideSTW()), structWindow, SLOT(hide()));
+    connect(structWindow, SIGNAL(hiding()), toolbar, SLOT(uncheckSTA()));
+    connect(this, SIGNAL(resetMachine()), structWindow, SLOT(updateContent()));
+    connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), structWindow, SLOT(update()));
+    connect(structWindow, SIGNAL(openRamViewer(Word,Word,QString)), this, SLOT(showRamSel(Word,Word,QString)));
+
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
 
     connect(this, SIGNAL(resetMachine()), mac, SLOT(reset()));
@@ -139,6 +152,7 @@ qarm::qarm(QApplication *app):
 
     connect(this, SIGNAL(resetMachine()), debugger, SLOT(resetSymbolTable()));
     connect(debugger, SIGNAL(stabUpdated()), bpWindow, SLOT(updateContent()));
+    connect(debugger, SIGNAL(stabUpdated()), structWindow, SLOT(updateContent()));
     connect(this, SIGNAL(resumeExec()), debugger, SIGNAL(MachineRan()));
 
     setCentralWidget(mainWidget);
@@ -234,6 +248,19 @@ void qarm::speedChanged(int speed){
 void qarm::showRam(){
     if(initialized){
         ramView *ramWindow = new ramView(mac, this);
+        connect(this, SIGNAL(resetMachine()), ramWindow, SLOT(update()));
+        connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), ramWindow, SLOT(update()));
+        ramWindow->show();
+    } else {
+        QarmMessageBox *warning = new QarmMessageBox(QarmMessageBox::WARNING, "Warning",
+                                                     "Machine not initialized,\ncannot display memory contents.", this);
+        warning->show();
+    }
+}
+
+void qarm::showRamSel(Word start, Word end, QString label){
+    if(initialized){
+        ramView *ramWindow = new ramView(mac, start, end, label, this);
         connect(this, SIGNAL(resetMachine()), ramWindow, SLOT(update()));
         connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), ramWindow, SLOT(update()));
         ramWindow->show();

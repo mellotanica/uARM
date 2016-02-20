@@ -41,7 +41,6 @@
 #include "services/util.h"
 
 
-// STATIC: PACKAGE_DATA_DIR deve essere ereditata dal compilatore! (guardare Makefile in umps/src/umps/)
 #define PACKAGE_DATA_DIR "facilities";
 
 template<typename T>
@@ -154,7 +153,7 @@ MachineConfig* MachineConfig::Create(const std::string& fileName, const std::str
     // The constructor initializes all the basic fields to sane
     // initial values; in addition, we enable a terminal device for
     // newly created configs.
-    config->setDeviceFile(EXT_IL_INDEX(IL_TERMINAL), 0, homedir+"/term0.umps");
+    config->setDeviceFile(EXT_IL_INDEX(IL_TERMINAL), 0, homedir+"/term0.uarm");
     config->setDeviceEnabled(EXT_IL_INDEX(IL_TERMINAL), 0, true);
 
     config->Save();
@@ -366,7 +365,7 @@ void MachineConfig::resetToFactorySettings()
     setLoadCoreEnabled(true);
     setROM(ROM_TYPE_CORE, "kernel.core.uarm");
     setROM(ROM_TYPE_STAB, "kernel.stab.uarm");
-    setSymbolTableASID(MAX_ASID);
+    setSymbolTableASID(0);
 
     for (unsigned int i = 0; i < N_EXT_IL; ++i)
         for (unsigned int j = 0; j < N_DEV_PER_IL; ++j)

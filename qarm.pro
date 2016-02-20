@@ -70,7 +70,9 @@ HEADERS += \
     qarm/tlb_model.h \
     qarm/tlb_window.h \
     qarm/register_item_delegate.h \
-    qarm/qarmmessagebox.h
+    qarm/qarmmessagebox.h \
+    qarm/structures_window.h \
+    qarm/select_structures_dialog.h
 
 SOURCES += \
     armProc/Thumbisa.cc \
@@ -115,7 +117,9 @@ SOURCES += \
     qarm/tlb_model.cc \
     qarm/tlb_window.cc \
     qarm/register_item_delegate.cc \
-    qarm/qarmmessagebox.cpp
+    qarm/qarmmessagebox.cpp \
+    qarm/select_structures_dialog.cc \
+    qarm/structures_window.cc
 
 OTHER_FILES += \
     compile \

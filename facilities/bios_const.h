@@ -30,6 +30,9 @@
 .equ BIOS_SRV_LDST, 3
 .equ BIOS_SRV_WAIT, 4
 
+.equ BPEXCEPTION_CODE, 7 /* see uARMconst.h */
+.equ SYSEXCEPTION_CODE, 4
+
 .equ PSR_OFFSET, 64
 .equ TIMER_INFO, 0x2E4      /* see arch.h */
 .equ RAMSIZE_INFO, 0x2D4
