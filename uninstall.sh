@@ -25,9 +25,7 @@ BIND=$PREF"/bin"
 rm -rf "$ICONSD"
 rm -rf "$INCLUDED"
 rm -rf "$TESTD"
-rm -f "$BIND"/elf2uarm
-rm -f "$BIND"/uarm-mkdev
-rm -f "$BIND"/uarm-readuarm
+rm -f "$BIND"/elf2uarm "$BIND"/uarm-mkdev "$BIND"/uarm-readuarm
 
 cd default
 for i in *
