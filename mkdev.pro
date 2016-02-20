@@ -12,3 +12,10 @@ HEADERS += \
 
 SOURCES += \
     services/mkdev.cc
+
+macx {
+    INCLUDEPATH += /usr/local/include
+    LIBS += -L/usr/local/lib
+    CONFIG -= app_bundle
+    DEFINES += MACOS_BUILD
+}

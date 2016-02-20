@@ -8,3 +8,5 @@ uarm
 uarm-mkdev
 *.user
 moc_*.cpp
+*.app/
+.*
