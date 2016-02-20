@@ -30,7 +30,6 @@
 #include "armProc/types.h"
 #include "armProc/processor.h"
 #include "qarm/procdisplay.h"
-//#include "qmps/application.h"
 #include "services/debug_session.h"
 #include "qarm/ui_utils.h"
 

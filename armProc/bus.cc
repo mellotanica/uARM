@@ -251,7 +251,6 @@ void systemBus::Skip(uint32_t cycles)
 }
 
 bool systemBus::prefetch(Word addr, bool exec){ //fetches one instruction per execution from exact given address
-    //STATIC: should check if accessing VM not bus
     if(exec){ //only check for breakpoints if loading exec stage
         HandleBusAccess(addr, EXEC, NULL);
     }
@@ -262,24 +261,36 @@ bool systemBus::prefetch(Word addr, bool exec){ //fetches one instruction per ex
     return true;
 }
 
-bool systemBus::fetch(Word pc, bool armMode){
-    //STATIC: should check if accessing VM not bus
-    Word addr = pc - (armMode ? 8 : 4);
-    HandleBusAccess(addr, EXEC, NULL);
-    if(readW(&addr, &pipeline[PIPELINE_EXECUTE]) != ABT_NOABT)
-        return false;
-    addr += 4;
-    if(!armMode){
+bool systemBus::fetch(Word pc, bool armMode, bool isVirtual){
+    if(isVirtual){
+        pipeline[PIPELINE_EXECUTE] = pipeline[PIPELINE_DECODE];
+        if(armMode){
+            pipeline[PIPELINE_DECODE] = pipeline[PIPELINE_FETCH];
+            if(readW(&pc, &pipeline[PIPELINE_FETCH]) != ABT_NOABT)
+                return false;
+        } else {
+            if(readW(&pc, &pipeline[PIPELINE_DECODE]) != ABT_NOABT)
+                return false;
+            pipeline[PIPELINE_FETCH] = 0;
+        }
+    } else {
+        Word addr = pc - (armMode ? 8 : 4);
+        HandleBusAccess(addr, EXEC, NULL);
+        if(readW(&addr, &pipeline[PIPELINE_EXECUTE]) != ABT_NOABT)
+            return false;
+        addr += 4;
+        if(!armMode){
+            if(readW(&addr, &pipeline[PIPELINE_DECODE]) != ABT_NOABT)
+                return false;
+            pipeline[PIPELINE_FETCH] = 0;
+            return true;
+        }
         if(readW(&addr, &pipeline[PIPELINE_DECODE]) != ABT_NOABT)
             return false;
-        pipeline[PIPELINE_FETCH] = 0;
-        return true;
+        addr += 4;
+        if(readW(&addr, &pipeline[PIPELINE_FETCH]) != ABT_NOABT)
+            return false;
     }
-    if(readW(&addr, &pipeline[PIPELINE_DECODE]) != ABT_NOABT)
-        return false;
-    addr += 4;
-    if(readW(&addr, &pipeline[PIPELINE_FETCH]) != ABT_NOABT)
-        return false;
     return true;
 }
 

@@ -30,7 +30,6 @@
 #include <QIcon>
 #include <QSlider>
 #include <QMenu>
-#include <QMenuBar>
 
 #include "facilities/arch.h"
 
@@ -61,12 +60,15 @@ signals:
     void hideBPW();
     void showTLB();
     void hideTLB();
+    void showSTW();
+    void hideSTW();
     void powerOn();
 
 private slots:
     void doPowerOn();
     void doPowerOff();
     void showDropDownMenu();
+    void showRamMenu();
     void setSpeedLab(int speedVal);
     void playToggled(bool checked);
     void resetPressed();
@@ -80,6 +82,8 @@ private slots:
     void toggleBPButton(bool checked);
     void uncheckTLB();
     void toggleTlbViewer(bool status);
+    void uncheckSTA();
+    void toggleStructsViewer(bool status);
 
 private:
     styledButton *playB, *resetB, *stepB, *ramB, *plusB, *minusB, *configB, *windowB, *breakpB, *tlbB;   //interactions
@@ -89,9 +93,8 @@ private:
     const QIcon *playIco, *pauseIco;
     QSlider *speedSl;
     QLabel *speedLab, *statusLab;
-    QMenu *windowMenu;
-    QMenuBar *windowDropDown;
-    QAction* showTerminalActions[N_DEV_PER_IL];
+    QMenu *windowMenu, *ramMenu;
+    QAction* showTerminalActions[N_DEV_PER_IL], *ramAction, *structsAction;
     bool onState;
 };
 

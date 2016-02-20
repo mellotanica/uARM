@@ -29,9 +29,25 @@
 #include "armProc/machine_config.h"
 
 ramView::ramView(machine *mac, QWidget *parent) :
-    mac(mac),
     QWidget(parent)
 {
+    initRamView(mac);
+}
+
+ramView::ramView(machine *mac, Word start, Word end, QString label, QWidget *parent):
+    QWidget(parent)
+{
+    initRamView(mac);
+
+    refreshBounds(start, end);
+    labelText = label;
+
+    visualize();
+}
+
+void ramView::initRamView(machine *mac){
+    this->mac = mac;
+
     setWindowFlags(Qt::Window);
     setWindowTitle("Ram Inspector");
     mainLayout = new QVBoxLayout();
@@ -40,6 +56,8 @@ ramView::ramView(machine *mac, QWidget *parent) :
 
     QRegExp rx("[0-9,a-f]{1,8}", Qt::CaseInsensitive);
     QRegExpValidator *hexValidator = new QRegExpValidator(rx, this);
+
+    labelText = QString("");
 
     startEd = new QLineEdit(this);
     startEd->setAccessibleName("Start Address");
@@ -70,48 +88,99 @@ ramView::ramView(machine *mac, QWidget *parent) :
     connect(visualizeB, SIGNAL(clicked()), this, SLOT(visualize()));
 }
 
+void ramView::newRamLabel(QWidget *parent){
+    ramLabel = new QLineEdit(parent);
+    ramLabel->setAccessibleName("Ram Portion Label");
+    ramLabel->setToolTip(ramLabel->accessibleName());
+    ramLabel->setAccessibleDescription("Editable label usefull to note down ram portion meaning");
+    ramLabel->setText(labelText);
+}
+
+void ramView::refreshBounds(Word start, Word end){
+    startEd->setText(QString::number(start, 16));
+    if(end != start){
+        endEd->setText(QString::number(end, 16));
+    }
+}
+
 void ramView::update(){
-    if(ramViewer != NULL)
-        ramViewer->Refresh();
+    QString symbol = QString("");
+    if(ramViewer != NULL){
+        if(ramLabel != NULL){
+            symbol = ramLabel->text();
+        }
+        if(symbol.isEmpty()){
+            ramViewer->Refresh();
+        } else {
+            ramViewer->Refresh(symbol);
+            refreshBounds(ramViewer->getStart(), ramViewer->getEnd());
+        }
+    }
 }
 
 void ramView::visualize(){
-    bool conv = true, res;
-    Word start = startEd->text().toUInt(&res,16);
-    conv &= res;
-    Word end = endEd->text().toUInt(&res,16);
-    conv &= res;
-
-    if(start > end || (end - start) > MAX_VIEWABLE_RAM){
-        mainLayout->removeWidget(ramViewer);
-        delete ramViewer;
-        char *message;
-        if(start > end){
-            message = "Start address cannot be higher than End address...";
-        } else {
-            message = "Memory segment too large,\n max displayble size: 10 KB";
-        }
-        QarmMessageBox *warning = new QarmMessageBox(QarmMessageBox::WARNING, "Warning", message, this);
+    if(startEd->text().isEmpty()){
+        QarmMessageBox *warning = new QarmMessageBox(QarmMessageBox::WARNING, "Warning", "You must enter a valid adress in Start field", this);
         warning->show();
-    } else if(conv && (start != startAddr || end != endAddr)){
+    } else {
+        bool conv = true, res;
+        Word start = startEd->text().toUInt(&res,16);
+        conv &= res;
+        Word end;
+        if(endEd->text().isEmpty())
+            end = start;
+        else
+            end = endEd->text().toUInt(&res,16);
+        conv &= res;
 
-        if(start & 3){
-            start &= 0xFFFFFFFC;
-            startEd->setText(QString::number(start, 16));
-        }
-        if(end & 3){
-            end &= 0xFFFFFFFC;
-            endEd->setText(QString::number(end, 16));
-        }
-        startAddr = start;
-        endAddr = end;
+        if(start > end || (end - start) > MAX_VIEWABLE_RAM){
+            // manually setting fields to NULL is required since delete alone seems to be not enough and can lead to double free
+            if(ramLabel != NULL){
+                labelText = ramLabel->text();
+                mainLayout->removeWidget(ramLabel);
+                delete ramLabel;
+                ramLabel = NULL;
+            }
+            if(ramViewer != NULL){
+                mainLayout->removeWidget(ramViewer);
+                delete ramViewer;
+                ramViewer = NULL;
+            }
+            char *message;
+            if(start > end){
+                message = "Start address cannot be higher than End address...";
+            } else {
+                message = "Memory segment too large,\n max displayble size: 10 KB";
+            }
+            QarmMessageBox *warning = new QarmMessageBox(QarmMessageBox::WARNING, "Warning", message, this);
+            warning->show();
+        } else if(conv && (start != startAddr || end != endAddr)){
 
-        if(ramViewer != NULL){
-            mainLayout->removeWidget(ramViewer);
-            delete ramViewer;
+            if(start & 3){
+                start &= 0xFFFFFFFC;
+                startEd->setText(QString::number(start, 16));
+            }
+            if(end & 3){
+                end &= 0xFFFFFFFC;
+                endEd->setText(QString::number(end, 16));
+            }
+            startAddr = start;
+            endAddr = end;
+
+            if(ramViewer != NULL){
+                mainLayout->removeWidget(ramViewer);
+                delete ramViewer;
+            }
+            if(ramLabel != NULL){
+                labelText = ramLabel->text();
+                mainLayout->removeWidget(ramLabel);
+                delete ramLabel;
+            }
+            newRamLabel(this);
+            mainLayout->addWidget(ramLabel);
+            ramViewer = new HexView(start, end, mac, this);
+            mainLayout->addWidget(ramViewer);
         }
-        ramViewer = new HexView(start, end, mac, this);
-        mainLayout->addWidget(ramViewer);
     }
 }
 

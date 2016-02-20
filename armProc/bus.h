@@ -65,7 +65,7 @@ public:
     bool loadRAM(char *buffer, Word size, bool kernel);
 
     bool prefetch(Word addr, bool exec);
-    bool fetch(Word pc, bool armMode);
+    bool fetch(Word pc, bool armMode, bool isVirtual);
 	
     ramMemory *getRam() {return ram;}
 	

@@ -265,12 +265,16 @@ setTIMER:
 .global TLBWR
 TLBWR:
     CDP p15, #OP_TLBWR, c0, c8, c0, #0
+    NOP
+    NOP
     Bx lr
 
 /* void TLBWI(); */
 .global TLBWI
 TLBWI:
     CDP p15, #OP_TLBWI, c0, c10, c0, #0
+    NOP
+    NOP
     Bx lr
 
 /* void TLBR(); */
@@ -289,4 +293,6 @@ TLBP:
 .global TLBCLR
 TLBCLR:
     CDP p15, #OP_TLBCLR, c0, c0, c0, #0
+    NOP
+    NOP
     Bx lr

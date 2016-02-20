@@ -335,31 +335,33 @@ QWidget* MachineConfigDialog::createDeviceTab(QWidget *parent)
 
     connect(devClassView, SIGNAL(currentIndexChanged(int)), devFileChooserStack, SLOT(setCurrentIndex(int)));
 
+    registerDeviceClass("Tapes (Interrupt Line 4)",
+                        LIB_PATH "icons/tape-32.png",
+                        EXT_IL_INDEX(IL_TAPE),
+                        "Tapes", "Tape", tab);
+
     registerDeviceClass("Disks (Interrupt Line 3)",
                         LIB_PATH "icons/disk-32.png",
                         EXT_IL_INDEX(IL_DISK),
                         "Disks", "Disk",
                         tab);
 
-    registerDeviceClass("Tapes (Interrupt Line 4)",
-                        LIB_PATH "icons/tape-32.png",
-                        EXT_IL_INDEX(IL_TAPE),
-                        "Tapes", "Tape", tab);
-
-    registerDeviceClass("Network (Interrupt Line 5)",
-                        LIB_PATH "icons/network-32.png",
-                        EXT_IL_INDEX(IL_ETHERNET),
-                        "Network Interfaces", "Net", tab);
+    registerDeviceClass("Terminals (Interrupt Line 7)",
+                        LIB_PATH "icons/terminal-32.png",
+                        EXT_IL_INDEX(IL_TERMINAL),
+                        "Terminals", "Terminal", tab);
 
     registerDeviceClass("Printers (Interrupt Line 6)",
                         LIB_PATH "icons/printer-32.png",
                         EXT_IL_INDEX(IL_PRINTER),
                         "Printers", "Printer", tab);
 
-    registerDeviceClass("Terminals (Interrupt Line 7)",
-                        LIB_PATH "icons/terminal-32.png",
-                        EXT_IL_INDEX(IL_TERMINAL),
-                        "Terminals", "Terminal", tab);
+    registerDeviceClass("Network (Interrupt Line 5)",
+                        LIB_PATH "icons/network-32.png",
+                        EXT_IL_INDEX(IL_ETHERNET),
+                        "Network Interfaces", "Net", tab);
+
+
     return tab;
 }
 

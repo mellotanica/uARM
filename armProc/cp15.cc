@@ -203,8 +203,8 @@ bool cp15::EntryHi(Word *cpureg, Byte opcode, bool toCoproc){
                 break;
             case 1: //EntryHi.VPN
                 value &= 0xFFFFF000;
-                if(value ^ (cp15_registers[CP15_REG2_EntryHi] & 0xFFFFF00)){
-                    cp15_registers[CP15_REG2_EntryHi] &= INVERT_W(0xFFFFF00);
+                if(value ^ (cp15_registers[CP15_REG2_EntryHi] & 0xFFFFF000)){
+                    cp15_registers[CP15_REG2_EntryHi] &= INVERT_W(0xFFFFF000);
                     changed = true;
                 }
                 break;
