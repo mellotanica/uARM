@@ -5,7 +5,7 @@ ICONSD=$PREF"/lib/uarm/icons"
 INCLUDED=$PREF"/include/uarm"
 TESTD=$PREF"/share/doc/uarm/examples"
 LDSCRIPTSD=$INCLUDED"/ldscripts"
-DEFAULTD="/etc/default"
+DEFAULTD="/etc/defaults"
 BIND=$PREF"/bin"
 
 mkdir -p "$ICONSD"
