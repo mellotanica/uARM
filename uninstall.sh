@@ -1,6 +1,7 @@
 #!/bin/bash
 
 PREF="/usr/local"
+ICONSD=$PREF"/lib/uarm/icons"
 INCLUDED=$PREF"/include/uarm"
 TESTD=$PREF"/share/doc/uarm/examples"
 LDSCRIPTSD=$INCLUDED"/ldscripts"
