@@ -63,6 +63,8 @@ public:
 
     void updateTLB(unsigned int index);
 
+    void signalExecutionEnded();
+
     void HandleBusAccess(Word pAddr, Word access, processor* cpu);
     void HandleVMAccess(Word asid, Word vaddr, Word access, processor* cpu);
 
@@ -70,6 +72,7 @@ signals:
     void dataReady(Word *cpu, Word *cp15, Word *pipeline, Word todH, Word todL, Word timer, QString mnemonic);
     void updateStatus(QString state);
     void tlbChanged(unsigned int index);
+    void executionTerminated();
 
 public slots:
     void step();

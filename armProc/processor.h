@@ -73,7 +73,7 @@ public:
     bool branchHappened();
 
     void suspend() { status = PS_IDLE; }
-    void halt() { status = PS_HALTED; }
+    void halt();
 
     //STATIC: only one processor at this time..
     Word getId() const { return 0; }

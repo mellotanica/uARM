@@ -209,4 +209,8 @@ void machine::updateTLB(unsigned int index){
     }
 }
 
+void machine::signalExecutionEnded(){
+    emit executionTerminated();
+}
+
 #endif //UARM_MACHINE_CC

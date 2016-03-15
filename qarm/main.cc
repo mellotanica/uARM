@@ -54,7 +54,7 @@ void readConfigs(){
 int main(int argn, char **argv){
     int i;
     QFile *configFile = NULL;
-    bool autorun = false;
+    bool autorun = false, runandexit = false;
     QApplication app(argn, argv);
     readConfigs();
     //FIXME: ugly debug dump
@@ -76,10 +76,13 @@ int main(int argn, char **argv){
             if(!strcmp(argv[i], "-e")){
                 autorun = true;
             }
+            if(!strcmp(argv[i], "-x")){
+                runandexit = true;
+            }
         }
     }
     app.setFont(monoLabel::getMonospaceFont(), "procDisplay");
-    qarm *wid = new qarm(&app, configFile, autorun);
+    qarm *wid = new qarm(&app, configFile, autorun, runandexit);
     wid->show();
     return app.exec();
 }

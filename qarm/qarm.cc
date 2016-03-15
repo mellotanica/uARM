@@ -39,7 +39,7 @@
 
 #include <stdio.h>
 
-qarm::qarm(QApplication *app, QFile *confFile, bool autorun):
+qarm::qarm(QApplication *app, QFile *confFile, bool autorun, bool runandexit):
     application(app)
 {
     // INFO: machine config init
@@ -160,6 +160,9 @@ qarm::qarm(QApplication *app, QFile *confFile, bool autorun):
     setCentralWidget(mainWidget);
 
     if(autorun){
+        if(runandexit){
+            connect(mac, SIGNAL(executionTerminated()), this, SLOT(kill()));
+        }
         toolbar->poweron();
         toolbar->run();
         toolbar->showT0();
@@ -467,7 +470,8 @@ void qarm::closeFWindow(){
 }
 
 void qarm::kill(){
-    this->destroy();
+    application->closeAllWindows();
+    application->exit();
 }
 
 #endif //QARM_QARM_CC

@@ -46,11 +46,10 @@
 class qarm : public QMainWindow{
     Q_OBJECT
 public:
-    qarm(QApplication *app, QFile *confFile, bool autorun);
+    qarm(QApplication *app, QFile *confFile, bool autorun, bool runandexit);
     machine *getMachine() {return mac;}
     MachineConfig *getMachineConfig() {return MC_Holder::getInstance()->getConfig();}
     virtual void show();
-    void kill();
 
 protected:
     virtual void closeEvent(QCloseEvent* event);
@@ -66,6 +65,7 @@ signals:
 
 public slots:
     void stop();
+    void kill();
 
 private slots:
     void start(int speed);
