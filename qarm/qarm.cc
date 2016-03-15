@@ -37,7 +37,9 @@
 #include <QIcon>
 #include <QWindow>
 
-qarm::qarm(QApplication *app, QFile *confFile):
+#include <stdio.h>
+
+qarm::qarm(QApplication *app, QFile *confFile, bool autorun):
     application(app)
 {
     // INFO: machine config init
@@ -156,6 +158,12 @@ qarm::qarm(QApplication *app, QFile *confFile):
     connect(this, SIGNAL(resumeExec()), debugger, SIGNAL(MachineRan()));
 
     setCentralWidget(mainWidget);
+
+    if(autorun){
+        toolbar->poweron();
+        toolbar->run();
+        toolbar->showT0();
+    }
 }
 
 void qarm::powerOn(){
