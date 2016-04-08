@@ -92,7 +92,7 @@ The last memory frame (\texttt{0x7000} $\rightarrow$ \texttt{0x7FFC}) is reserve
 \end{itemize}
 
 \subsubsection{Stored Processor States}
-Processor states are defined by library data structure \emph{state\_t}, this structure is composed of 20 unsigned 32-bit integers representing processor registers' values and coprocessor's system control registers' values. 
+Processor states are defined by library data structure \emph{state\_t}, this structure is composed of 20 unsigned 32-bit integers representing processor registers' values, coprocessor's system control registers' values and one unsigned 64-bit integer representing time of day register value.
 
 Its structure is shown below:
 \nopagebreak
@@ -157,12 +157,18 @@ Its structure is shown below:
 \texttt{unsigned int CP15\_EntryHi;}
 
 \nopagebreak
-\texttt{unsigned int CP15\_Cause;}\\
+\texttt{unsigned int CP15\_Cause;}
+
 \nopagebreak
-\texttt{\}state\_t; }
+\texttt{unsigned int TOD\_Hi;}
+
+\nopagebreak
+\texttt{unsigned int TOD\_Low;}\\
+\nopagebreak
+\texttt{\} state\_t; }
 \\
 
-These structures take 80 bytes each. Given this value, the BIOS code will look for the Old/New enties at the following addresses:
+These structures take 88 bytes each. Given this value, the BIOS code will look for the Old/New enties at the following addresses:
 \\
 
 \begin{tabular}{r|l}
