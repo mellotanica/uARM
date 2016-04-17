@@ -29,6 +29,8 @@
 #include "services/error.h"
 #include "services/debug.h"
 
+#define SWAP_ENDIANESS(wp) ((Byte) (*wp) | ((Byte) *(wp+1)) << 8 | ((Byte) *(wp+2)) << 16 | ((Byte) *(wp+3)) << 24)
+
 // DeviceAreaAddress is a convenience class used to find a specific
 // device in bus device area
 class DeviceAreaAddress {
@@ -320,24 +322,14 @@ bool systemBus::loadBIOS(char *buffer, Word size){
 
 bool systemBus::loadRAM(char *buffer, Word size, bool kernel){
     if(kernel){
-        Word address = ((Byte) buffer[(AOUT_HE_TEXT_VADDR*WS)])| ((Byte) buffer[(AOUT_HE_TEXT_VADDR*WS)+1]) << 8 | ((Byte) buffer[(AOUT_HE_TEXT_VADDR*WS)+2]) << 16 | ((Byte) buffer[(AOUT_HE_TEXT_VADDR*WS)+3]) << 24;
-        Word dataVAddr = 0, textSize = 0;
-        bool textSet = false;
+        Word address = SWAP_ENDIANESS((&buffer[(AOUT_HE_TEXT_VADDR*WS)]));
+        Word dataVAddr = SWAP_ENDIANESS((&buffer[(AOUT_HE_DATA_VADDR*WS)]));
+        Word dataOffset = SWAP_ENDIANESS((&buffer[(AOUT_HE_DATA_OFFSET*WS)]));
         //copy provided data only for legit ram addresses
         for(Word i = 0; i < size; i++, address++){
             if(address >= RAMBASEADDR){
-                if(textSet && i >= textSize){
+                if(i >= dataOffset && address < dataVAddr){
                     address = dataVAddr;
-                    textSet = false;
-                }
-                if(i/4 == (AOUT_HE_DATA_VADDR+1) && i%4 == 0){
-                    Word taddr = address-4;
-                    readW(&taddr, &dataVAddr);
-                }
-                if(!textSet && (i/4 == (AOUT_HE_TEXT_FILESZ+1) && i%4 == 0)){
-                    Word taddr = address-4;
-                    readW(&taddr, &textSize);
-                    textSet = true;
                 }
                 writeB(&address, (Byte) buffer[i]);
             }
