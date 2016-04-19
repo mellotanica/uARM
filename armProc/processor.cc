@@ -612,6 +612,12 @@ void processor::setTLBLo(unsigned int index, Word value)
     bus->SignalTLBChanged(index);
 }
 
+void processor::halt()
+{
+    status = PS_HALTED;
+    bus->signalExecutionEnded();
+}
+
 /* *************************** *
  * 							   *
  * Exceptions & traps handling *

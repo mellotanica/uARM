@@ -41,6 +41,9 @@ class mainBar : public QToolBar
 public:
     explicit mainBar(QWidget *parent = 0);
     bool getPowerState() { return onState; }
+    void poweron();
+    void run();
+    void showT0();
 
 public slots:
     void setSpeed(int speedVal);

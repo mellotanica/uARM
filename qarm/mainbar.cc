@@ -200,6 +200,20 @@ mainBar::mainBar(QWidget *parent) :
     this->addWidget(utilsW);
 }
 
+void mainBar::poweron(){
+    resetB->click();
+}
+
+void mainBar::run(){
+    while(!playB->isEnabled())
+        ;
+    playB->click();
+}
+
+void mainBar::showT0(){
+    showTerminal(0);
+}
+
 void mainBar::doPowerOn(){
     QIcon *resetIco = new QIcon(LIB_PATH "icons/reset.png");
     disconnect(resetB, SIGNAL(clicked()), this, SIGNAL(powerOn()));

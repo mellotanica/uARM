@@ -54,6 +54,7 @@ void readConfigs(){
 int main(int argn, char **argv){
     int i;
     QFile *configFile = NULL;
+    bool autorun = false, runandexit = false;
     QApplication app(argn, argv);
     readConfigs();
     //FIXME: ugly debug dump
@@ -66,15 +67,22 @@ int main(int argn, char **argv){
                 FILE*f = fopen(argv[i+1], "w");
                 fprintf(f, "EXEC start:\n\n");
                 fclose(f);
-		i++;
+                i++;
             }
-	    if(!strcmp(argv[i], "-c") && i < (argn - 1)){
-		configFile = new QFile(argv[i+1]);
-	    }
+            if(!strcmp(argv[i], "-c") && i < (argn - 1)){
+                configFile = new QFile(argv[i+1]);
+                i++;
+            }
+            if(!strcmp(argv[i], "-e")){
+                autorun = true;
+            }
+            if(!strcmp(argv[i], "-x")){
+                runandexit = true;
+            }
         }
     }
     app.setFont(monoLabel::getMonospaceFont(), "procDisplay");
-    qarm *wid = new qarm(&app, configFile);
+    qarm *wid = new qarm(&app, configFile, autorun, runandexit);
     wid->show();
     return app.exec();
 }
