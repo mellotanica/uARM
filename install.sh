@@ -64,6 +64,7 @@ if [ "$ICONSONLY" == "false" ]; then
 		cp uarm "$BIND"
 	else
 		cp -r uarm.app /applications
+		cp uarm.app/Contents/MacOS/uarm "$BIND"
 	fi
 	cp elf2uarm uarm-mkdev "$BIND"
 	cp -f "$HERE"/facilities/readuarm.py "$BIND"/uarm-readuarm
