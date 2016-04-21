@@ -5,7 +5,7 @@ if [ `id -u` != "0" ]; then
     exit 1
 fi
 
-if test $OS == "Linux"; then
+if [ `uname` == "Linux" ]; then
     PREF="/usr"
 else
     PREF="/usr/local"
@@ -26,6 +26,10 @@ rm -rf "$ICONSD"
 rm -rf "$INCLUDED"
 rm -rf "$TESTD"
 rm -f "$BIND"/uarm "$BIND"/elf2uarm "$BIND"/uarm-mkdev "$BIND"/uarm-readuarm
+
+if [ `uname` == "Darwin" ]; then
+	rm -rf /applications/uarm.app
+fi
 
 cd default
 for i in *
