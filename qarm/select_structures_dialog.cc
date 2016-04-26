@@ -93,6 +93,11 @@ void SelectStructuresDialog::onSelectionChanged(const QItemSelection& selected)
 
 void SelectStructuresDialog::triggerOpenRam(){
     if(!label.isEmpty()){
-        emit openRam(start, end, label);
+        Word offset = end - start;
+        emit openRam(start, offset, label, true);
     }
+}
+
+void SelectStructuresDialog::triggerOpenRam(Word addr){
+    emit openRam(addr, 0, "", true);
 }

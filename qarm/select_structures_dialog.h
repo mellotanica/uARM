@@ -41,11 +41,12 @@ public:
     bool isStabLoaded() {return (stab != NULL);}
 signals:
     void selectedObject(Word start, Word end);
-    void openRam(Word start, Word end, QString label);
+    void openRam(Word start, Word end, QString label, bool offset);
 
 public slots:
     void updateContent();
     void triggerOpenRam();
+    void triggerOpenRam(Word addr);
 
 private:
     static const int kInitialWidth = 380;
