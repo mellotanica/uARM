@@ -20,12 +20,12 @@
  */
 
 /* Use this include file when you need to write an application that can
- * benefit from vde when available. 
+ * benefit from vde when available.
  * Linking libvdeplug to your programs you force your application users
  * to have the library installed (otherway the dynamic linker complies
  * and the program does not start).
  *
- * 
+ *
  * usage:
  * define a struct vdepluglib variable;
  * eg:
@@ -73,7 +73,7 @@ struct vde_open_args {
 	char *group;
 	mode_t mode;
 };
-	
+
 /* vde_open args:
  *   vde_switch: switch id (path)
  *   descr: description (it will appear in the port description on the switch)

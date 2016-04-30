@@ -60,7 +60,7 @@ if(b > 0) {
 		cout << "0x" << hex << uppercase << setw(2) << setfill('0') << val << nouppercase << dec;
 	} else
 		cout << "UNDEF";
-	
+
 }
 
 void debugRegister(Word *w){
@@ -136,7 +136,7 @@ void printCP15Reg(cp15 *cp){
 	cout << "\n###########################################################\n";
 	cout << "#                   CP15    Status                        #\n";
 	cout << "###########################################################";
-	
+
 	cout << "\n\nRegisters:";
 
 	unsigned int cols = 4;
@@ -162,37 +162,37 @@ void printCPUReg(processor *cpu){
 	cout << "\n###########################################################\n";
 	cout << "#                   CPU     Status                        #\n";
 	cout << "###########################################################";
-	
+
 	printPipeline(cpu);
-	
+
 	cout << "\n\nRegisters:\tUsr/Sys\t\tSvc\t\tAbt\t\tUndef\t\tIrq\t\tFiq\n";
 
 	printRegister("r0\t\t",cpu->getRegister(0));cout << "\t\t\t\t\t\t\t\t\t\t\tr0";
 
 	printRegister("\nr1\t\t",cpu->getRegister(1));cout << "\t\t\t\t\t\t\t\t\t\t\tr1";
-	
+
 	printRegister("\nr2\t\t",cpu->getRegister(2));cout << "\t\t\t\t\t\t\t\t\t\t\tr2";
-	
+
 	printRegister("\nr3\t\t",cpu->getRegister(3));cout << "\t\t\t\t\t\t\t\t\t\t\tr3";
-	
+
 	printRegister("\nr4\t\t",cpu->getRegister(4));cout << "\t\t\t\t\t\t\t\t\t\t\tr4";
-	
+
 	printRegister("\nr5\t\t",cpu->getRegister(5));cout << "\t\t\t\t\t\t\t\t\t\t\tr5";
-	
+
 	printRegister("\nr6\t\t",cpu->getRegister(6));cout << "\t\t\t\t\t\t\t\t\t\t\tr6";
-	
+
 	printRegister("\nr7\t\t",cpu->getRegister(7));cout << "\t\t\t\t\t\t\t\t\t\t\tr7";
-	
+
 	printRegister("\nr8\t\t",cpu->getRegister(8));printRegister("\t\t\t\t\t\t\t\t\t",cpu->getRegister(17));cout << "\tr8";
-	
+
 	printRegister("\nr9\t\t",cpu->getRegister(9));printRegister("\t\t\t\t\t\t\t\t\t",cpu->getRegister(18));cout << "\tr9";
-	
+
 	printRegister("\nr10\t\t",cpu->getRegister(10));printRegister("\t\t\t\t\t\t\t\t\t",cpu->getRegister(19));cout << "\tr10";
-	
+
 	printRegister("\nr11\t\t",cpu->getRegister(11));printRegister("\t\t\t\t\t\t\t\t\t",cpu->getRegister(20));cout << "\tr11";
-	
+
 	printRegister("\nr12\t\t",cpu->getRegister(12));printRegister("\t\t\t\t\t\t\t\t\t",cpu->getRegister(21));cout << "\tr12";
-	
+
 	printRegister("\nr13(SP)\t\t",cpu->getRegister(13));
 	printRegister("\t",cpu->getRegister(25));
 	printRegister("\t",cpu->getRegister(28));
@@ -200,7 +200,7 @@ void printCPUReg(processor *cpu){
 	printRegister("\t",cpu->getRegister(31));
 	printRegister("\t",cpu->getRegister(22));
 	cout << "\tr13";
-	
+
 	printRegister("\nr14(LR)\t\t",cpu->getRegister(14));
 	printRegister("\t",cpu->getRegister(26));
 	printRegister("\t",cpu->getRegister(29));
@@ -208,11 +208,11 @@ void printCPUReg(processor *cpu){
 	printRegister("\t",cpu->getRegister(32));
 	printRegister("\t",cpu->getRegister(23));
 	cout << "\tr14";
-	
+
 	printRegister("\nr15(PC)\t\t",cpu->getRegister(15));cout << "\t\t\t\t\t\t\t\t\t\t\tr15";
-	
+
 	printRegister("\nCPSR\t\t",cpu->getRegister(16));cout << "\t\t\t\t\t\t\t\t\t\t\tCPSR";
-	
+
 	printRegister("\nSPSR\t\t\t\t",cpu->getRegister(27));
 	printRegister("\t",cpu->getRegister(30));
 	printRegister("\t",cpu->getRegister(36));
@@ -229,7 +229,7 @@ void printBus(systemBus *bus){
 	cout << "\n###########################################################\n";
 	cout << "#                   BUS    Status                        #\n";
 	cout << "###########################################################";
-	
+
 	printRegister("\n\nCurrent Fetch:\t", &bus->pipeline[PIPELINE_FETCH]);
 	#endif
 }

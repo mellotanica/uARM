@@ -11,7 +11,7 @@ debugSignaler *debugSignaler::getInstance() {
     return instance;
 }
 
-const void debugSignaler::pauseExec() {
+void debugSignaler::pauseExec() {
     emit pause();
 }
 

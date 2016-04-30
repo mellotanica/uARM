@@ -20,7 +20,7 @@
  */
 
 /*
- * This header file contains constant & macro definitions for .aout/.core 
+ * This header file contains constant & macro definitions for .aout/.core
  * file types.
  */
 

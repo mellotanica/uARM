@@ -165,5 +165,6 @@ macx {
     LIBS += -L/usr/local/lib
     HEADERS += services/fmemopen.h
     SOURCES += services/fmemopen.c
-	ICON = uarm.icns
+    ICON = uarm.icns
+    DEFINES += MACOS_BUILD
 }

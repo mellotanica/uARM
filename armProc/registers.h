@@ -26,11 +26,11 @@
 #ifndef UARM_REGISTERS_H
 #define UARM_REGISTERS_H
 
-/* 
- * CPU registers: 
- * 
- * 
- * 0-15 -> r0-r15 
+/*
+ * CPU registers:
+ *
+ *
+ * 0-15 -> r0-r15
  * 16 -> cpsr
  * 17-23, 24 -> r8_fiq-r14_fiq, spsr_fiq
  * 25-26, 27 -> r13_svc-r14_svc, spsr_svc
@@ -112,7 +112,7 @@
 /*
  * CP15 registers
  */
- 
+
 #define CP15_REGISTERS_NUM 9
 
 #define CP15_REG0_IDC    0   // ID codes (processor, cache, tightly coupled memory and TLB)

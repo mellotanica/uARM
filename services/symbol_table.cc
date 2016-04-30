@@ -145,7 +145,7 @@ SymbolTable::SymbolTable(Word asid, const char* fName)
     if (otSize > 0)  {
         oTable = new Symbol* [otSize];
         for (i = 0; i < otSize; i++)
-            oTable[i] = NULL; 
+            oTable[i] = NULL;
     }
 
     // scans symbol table file and builds objects
@@ -205,7 +205,7 @@ SymbolTable::SymbolTable(Word asid, const char* fName)
 SymbolTable::~SymbolTable()
 {
     unsigned int i;
-	
+
     if (fTable != NULL) {
         for (i = 0; i < ftSize; i++)
             delete fTable[i];
@@ -317,7 +317,7 @@ int SymbolTable::search(Symbol** table, unsigned int size, Word pos) const
 
     return found ? b : NOTFOUND;
 }
-		
+
 void SymbolTable::sortTable(Symbol** table, size_t size)
 {
     struct Compare {

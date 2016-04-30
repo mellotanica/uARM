@@ -18,29 +18,29 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
-/* 
+/*
  * This header file provides Thumb instruction set decode and execution facilities
  */
- 
+
 #ifndef UARM_ARMISA_H
 #define UARM_ARMISA_H
- 
+
 #include "armProc/processor.h"
 
 class ARMisa{
 public:
     ARMisa(processor *father){p = father;}
     ~ARMisa(){}
-	
+
 	void execute(Byte hi, Byte low);
-	
+
 private:
 	processor *p;
-	
+
     typedef void(ARMisa::*InstrPointer)();
-	
+
 	//ARM ISA
-	
+
     void ADC();	//add with carry
     void ADD();	//add
     void AND();	//AND
@@ -82,7 +82,7 @@ private:
     void TEQ();	//test bitwiser equality
     void TST();	//test bits
     void UND();	//undefined instruction
-	
+
     const InstrPointer ARM_table[257][16] = {
         {&ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::MUL, &ARMisa::AND, &ARMisa::STRH, &ARMisa::AND, &ARMisa::UND, &ARMisa::AND, &ARMisa::UND},
 		{&ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::AND, &ARMisa::MUL, &ARMisa::AND, &ARMisa::LDRH, &ARMisa::AND, &ARMisa::LDRSB, &ARMisa::AND, &ARMisa::LDRSH},

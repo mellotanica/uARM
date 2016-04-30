@@ -1,19 +1,19 @@
-/*   
+/*
  *
  *	disassembly for ARM
- *   
+ *
  *   Copyright 2014 Renzo Davoli University of Bologna - Italy
- *   
+ *
  *   This program is free software; you can redistribute it and/or modify
  *   it under the terms of the GNU General Public License, as
- *   published by the Free Software Foundation; either version 2 of the 
+ *   published by the Free Software Foundation; either version 2 of the
  *	 License, or (at your option) any later version.
- *  
+ *
  *   This program is distributed in the hope that it will be useful,
  *   but WITHOUT ANY WARRANTY; without even the implied warranty of
  *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  *   GNU General Public License for more details.
- *  
+ *
  *   You should have received a copy of the GNU General Public License along
  *   with this program; if not, write to the Free Software Foundation, Inc.,
  *   51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA.
@@ -21,6 +21,10 @@
  */
 
 #include "disass.h"
+
+#ifdef MACOS_BUILD
+#include "fmemopen.h"
+#endif
 
 #ifdef UARM_DUMMY_DISASSEMBLER
 void arm_disass(uint32_t addr, uint32_t instr, char *out)
@@ -41,13 +45,13 @@ static char *dcond[16]={
 #define DCOND(instr) (dcond[instr >> 28])
 
 static char *dreg[16]={
-	"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7", 
-	"r8", "r9", 
-	"sl", //"r10", 
-	"fp", //"r11", 
-	"ip", //"r12", 
-	"sp", //"r13", 
-	"lr", //"r14", 
+	"r0", "r1", "r2", "r3", "r4", "r5", "r6", "r7",
+	"r8", "r9",
+	"sl", //"r10",
+	"fp", //"r11",
+	"ip", //"r12",
+	"sp", //"r13",
+	"lr", //"r14",
 	"pc", //"r15"
 };
 
@@ -58,6 +62,7 @@ static char *dreg[16]={
 #define DREGM(instr) (DREG(instr))
 
 static void arm_disass00(uint32_t addr, uint32_t instr, char *out) {
+	(void)addr;
 	if ((instr & 0x0ffffff0) == 0x012fff10)
 		snprintf(out,DBUFSIZE,"bx%s %s",DCOND(instr),DREGM(instr));
 	else if ((instr & 0x0e0000f0) == 0x00000090) {
@@ -77,7 +82,7 @@ static void arm_disass00(uint32_t addr, uint32_t instr, char *out) {
 						(instr & 0x00100000)?"s":"",
 						DREGD(instr), DREGN(instr),DREGM(instr),DREGS(instr));
 			} else {
-				// Multiply 
+				// Multiply
 				if (instr & 0x00200000)
 					snprintf(out,DBUFSIZE,"mla%s%s %s, %s, %s, %s", DCOND(instr),
 							(instr & 0x00100000)?"s":"",DREGN(instr),
@@ -140,7 +145,7 @@ static void arm_disass00(uint32_t addr, uint32_t instr, char *out) {
 			static char *rotate[] = {"asl","lsl","asr","ror"};
 			uint32_t rotn = (instr >> 5) & 0x3;
 			if (instr & 0x10) {
-				 snprintf(op2, DBUFSIZE, "%s, %s %s", 
+				 snprintf(op2, DBUFSIZE, "%s, %s %s",
 						 DREGM(instr), rotate[rotn], DREGS(instr));
 			} else {
 				uint32_t amount = (instr >> 7) & 0x1f;
@@ -154,18 +159,18 @@ static void arm_disass00(uint32_t addr, uint32_t instr, char *out) {
 		switch (optype[opn]) {
 			case 1:
 				snprintf(out, DBUFSIZE, "%s%s%s %s, %s",
-						opcode[opn], DCOND(instr), 
+						opcode[opn], DCOND(instr),
 						(instr & 0x00100000)?"s":"",
 						DREGD(instr), op2);
 				break;
 			case 2:
 				snprintf(out, DBUFSIZE, "%s%s %s, %s",
-						opcode[opn], DCOND(instr), 
+						opcode[opn], DCOND(instr),
 						DREGN(instr), op2);
 				break;
 			case 3:
 				snprintf(out, DBUFSIZE, "%s%s%s %s, %s, %s",
-						opcode[opn], DCOND(instr), 
+						opcode[opn], DCOND(instr),
 						(instr & 0x00100000)?"s":"",
 						DREGD(instr), DREGN(instr), op2);
 				break;
@@ -174,7 +179,8 @@ static void arm_disass00(uint32_t addr, uint32_t instr, char *out) {
 }
 
 static void arm_disass01(uint32_t addr, uint32_t instr, char *out) {
-	//Single Data Transfer 
+	(void)addr;
+	//Single Data Transfer
 	char *opcode=(instr & 0x00100000)?"ldr":"str";
 	char arg[DBUFSIZE];
 	uint32_t regoff=instr &   0x02000000;
@@ -237,7 +243,7 @@ static void create_reglist(int regset, char *reglist)
 				case NUM: status=SEQ; break;
 				case SEQ: break;
 				case NONUM: fprintf(f,", " REGFMT,REGARG(i)); status=NUM; break;
-			} 
+			}
 		} else {
 			switch (status) {
 				case BEGIN: break;
@@ -266,7 +272,7 @@ static void arm_disass10(uint32_t addr, uint32_t instr, char *out) {
 		uint32_t isstack=(((instr >> 16) & 0xf) == 0xd);
 		char *opcode=isload?"ldm":"stm";
 		static char *mod[]={
-			"da", "ia", "db", "ib", "da", "ia", "db", "ib", 
+			"da", "ia", "db", "ib", "da", "ia", "db", "ib",
 			"ed", "ea", "fd", "fa", "fa", "fd", "ea", "ed" };
 		uint32_t modix=(isstack?0x8:0) | (isload?0x4:0) | ((instr >> 23) & 0x3);
 		char reglist[DBUFSIZE];
@@ -279,7 +285,7 @@ static void arm_disass10(uint32_t addr, uint32_t instr, char *out) {
 		} else {
 			snprintf(out,DBUFSIZE,"%s%s%s %s%s, {%s}%s",
 					opcode,DCOND(instr),mod[modix],
-					DREGN(instr), 
+					DREGN(instr),
 					(instr & 0x00200000)?"!":"",
 					reglist,
 					(instr & 0x00400000)?"^":""
@@ -289,9 +295,10 @@ static void arm_disass10(uint32_t addr, uint32_t instr, char *out) {
 }
 
 static void arm_disass11(uint32_t addr, uint32_t instr, char *out) {
+	(void)addr;
 	if (instr & 0x02000000) {
 		if (instr & 0x01000000) {
-			// Software interrupt 
+			// Software interrupt
 			snprintf(out,DBUFSIZE,"swi%s 0x%06x", DCOND(instr),instr & 0xffffff);
 		} else {
 			uint32_t coproc=(instr >> 8) & 0xf;
@@ -310,17 +317,17 @@ static void arm_disass11(uint32_t addr, uint32_t instr, char *out) {
 				snprintf(out,DBUFSIZE,"%s%s  p%d, %d, %s, c%d, c%d%s",
 						opcode, DCOND(instr), coproc, copcode,
 						DREGD(instr), crn, crm, scp);
-				// Coprocessor register transfer 
+				// Coprocessor register transfer
 			} else {
 				uint32_t crd = (instr >> 12) & 0xf;
-				// Coprocessor data operation 
+				// Coprocessor data operation
 				snprintf(out,DBUFSIZE,"cdp%s p%d, %d, c%d, c%d, c%d%s",
 						DCOND(instr), coproc, copcode,
 						crd, crn, crm, scp);
 			}
 		}
 	} else {
-		// Coprocessor data transfer 
+		// Coprocessor data transfer
 	}
 }
 

@@ -83,6 +83,7 @@ void cp15::reset(){
 }
 
 bool cp15::executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info){
+    (void)opcode, (void)rm, (void)rn, (void)rd, (void)info;
     return false;
 }
 

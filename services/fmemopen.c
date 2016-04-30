@@ -3,10 +3,7 @@
  * 20081017 AF
  */
 
-#define _GNU_SOURCE
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+#include "fmemopen.h"
 
 #ifndef linux
 struct fmem {
@@ -22,7 +19,7 @@ static int readfn(void *handler, char *buf, int size)
     fmem_t *mem = handler;
     size_t available = mem->size - mem->pos;
 
-    if(size > available) size = available;
+    if(((size_t)size) > available) size = available;
     for(count=0; count < size; mem->pos++, count++)
         buf[count] = mem->buffer[mem->pos];
 
@@ -35,7 +32,7 @@ static int writefn(void *handler, const char *buf, int size)
     fmem_t *mem = handler;
     size_t available = mem->size - mem->pos;
 
-    if(size > available) size = available;
+    if(((size_t)size) > available) size = available;
     for(count=0; count < size; mem->pos++, count++)
         mem->buffer[mem->pos] = buf[count];
 
@@ -54,7 +51,7 @@ static fpos_t seekfn(void *handler, fpos_t offset, int whence)
         default: return -1;
     }
 
-    if(pos < 0 || pos > mem->size) return -1;
+    if(pos > mem->size) return -1;
 
     mem->pos = pos;
     return (fpos_t) pos;
@@ -69,6 +66,7 @@ static int closefn(void *handler)
 /* simple, but portable version of fmemopen for OS X / BSD */
 FILE *fmemopen(void *buf, size_t size, const char *mode)
 {
+    (void)mode;
     fmem_t *mem = (fmem_t *) malloc(sizeof(fmem_t));
 
     memset(mem, 0, sizeof(fmem_t));

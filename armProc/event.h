@@ -29,9 +29,9 @@
 // Event class is used to keep track of the external events of the
 // system: device operations and interrupt generation.
 // Every object contains a device number saying what device will complete
-// its operation and generate a interrupt, a TimeStamp saying when it 
+// its operation and generate a interrupt, a TimeStamp saying when it
 // will happen, and a pointer to the next event in a structure, if needed
-// (set to NULL otherwise) 
+// (set to NULL otherwise)
 
 class Event {
 public:
@@ -87,7 +87,7 @@ public:
     uint64_t InsertQ(uint64_t tod, Word delay, Event::Callback callback);
 
     // This method removes the head of a (not empty) queue and sets it to the
-    // following Event          
+    // following Event
     void RemoveHead();
 
 private:

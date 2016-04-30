@@ -39,6 +39,7 @@ using boost::enable_shared_from_this;
 // standard version.
 #include <boost/foreach.hpp>
 
+#undef foreach
 #define foreach BOOST_FOREACH
 
 // Make the nature of "reference"-type classes excplicit to readers

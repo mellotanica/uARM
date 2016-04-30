@@ -57,7 +57,7 @@ if not descriptor in magic_numbers.keys():
 
 if descriptor in noheader_mn:
     noHeader(magic_numbers[descriptor])
-    
+
 if not descriptor in header_mn:
     print "regular "+magic_numbers[descriptor]+" file"
     descriptor = readWord(uarm)

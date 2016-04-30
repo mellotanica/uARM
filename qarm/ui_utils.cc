@@ -28,7 +28,7 @@
 #include "services/symbol_table.h"
 
 static const char* const kBiosSpaceName = "ExecROM";
-static const char* const kBootSpaceName = "BootROM";
+//static const char* const kBootSpaceName = "BootROM";
 
 const char* GetSymbolicAddress(const SymbolTable* symbolTable,
                                Word               asid,

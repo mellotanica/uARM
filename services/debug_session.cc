@@ -51,8 +51,8 @@ const unsigned int DebugSession::kIterInterval[kNumSpeedLevels] = {
 };
 */
 DebugSession::DebugSession(QApplication *application, QMainWindow *mainWindow) :
-    app(application),
-    mainW(mainWindow)
+    mainW(mainWindow),
+    app(application)
 //      status(MS_HALTED),
 //      idleSteps(0)
 {

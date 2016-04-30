@@ -55,7 +55,7 @@ class systemBus{
 public:
     systemBus(machine *mac);
     ~systemBus();
-	
+
     void reset();
     void updateRAMTOP();
 
@@ -66,9 +66,9 @@ public:
 
     bool prefetch(Word addr, bool exec);
     bool fetch(Word pc, bool armMode, bool isVirtual);
-	
+
     ramMemory *getRam() {return ram;}
-	
+
     AbortType readB(Word *address, Byte *dest);
     AbortType writeB(Word *address, Byte data);
     AbortType readH(Word *address, HalfWord *dest);

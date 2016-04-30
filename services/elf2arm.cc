@@ -252,6 +252,7 @@ SymbolTableIterator::SymbolTableIterator(Elf* elf)
     : stSec(getSectionByType(SHT_SYMTAB)),
       stSecHeader(elf32_getshdr(stSec))
 {
+    (void)elf;
     current = NULL;
 
     data = NULL;

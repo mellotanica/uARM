@@ -159,7 +159,7 @@ protected:
 // PrinterDevice class allows to emulate parallel character printer
 // currently in use (see performance figures shown before). It uses the same
 // interface as Device, redefining only a few methods' implementation: refer
-// to it for individual methods descriptions. 
+// to it for individual methods descriptions.
 // It adds to Device data structure:
 // a pointer to SetupInfo object containing printer log file name;
 // a static buffer for device operation & status description;
@@ -225,7 +225,7 @@ private:
     // receiver buffer and pointer to first character to receive from it
     char * recvBuf;
     unsigned int recvBp;
-		
+
     // static buffer for receiver
     char recvStatStr[TERMBUFSIZE];
 
@@ -251,7 +251,7 @@ private:
 
 // DiskDevice class allows to emulate a disk drive: each 512 byte sector it
 // contains is identified by (cyl, head, sect) set of disk coordinates;
-// (geometry and performance figures are loaded from disk image file). 
+// (geometry and performance figures are loaded from disk image file).
 // Operations on sectors (R/W) require previous seek on the desired cylinder.
 // It also contains a sector buffer of one sector to speed up operations.
 //
@@ -279,20 +279,20 @@ private:
 
     // to handle it
     FILE * diskFile;
-		
+
     // static buffer
     char statStr[DISKBUFSIZE];
-		
+
     // sector buffer and coordinates on disk (cyl, head, sect)
     Block * diskBuf;
     unsigned int cylBuf, headBuf, sectBuf;
-		
+
     // start of disk image inside file (after header)
     SWord diskOfs;
-		
+
     // disk performance parameters
     DriveParams * diskP;
-		
+
     // sector underhead time in ticks
     Word sectTicks;
 
@@ -304,8 +304,8 @@ private:
 /**************************************************************************/
 
 
-// TapeDevice class allows to emulate removable cartridge tape drives. 
-// Individual tapes may be loaded and unloaded, rewound and read 
+// TapeDevice class allows to emulate removable cartridge tape drives.
+// Individual tapes may be loaded and unloaded, rewound and read
 // (see performance figures shown before). TapeDevice uses the same
 // interface as Device, redefining only a few methods' implementation: refer
 // to it for individual methods descriptions.
@@ -351,7 +351,7 @@ private:
 // EthDevice class allows to emulate an ethernet interface
 
 class EthDevice : public Device
-{ 
+{
 public:
     EthDevice(systemBus* bus, const MachineConfig* config, unsigned int line, unsigned int devNo);
     virtual ~EthDevice();

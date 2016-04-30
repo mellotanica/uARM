@@ -132,13 +132,13 @@ HIDDEN char strbuf[STRBUFSIZE];
 // this means a throughput of about 12.5 KB/s
 
 
-// DiskDevice specific commands / status codes 
+// DiskDevice specific commands / status codes
 
 // static buffer size
 #define DISKBUFSIZE     128
 
 // controller reset time (microsecs)
-#define DISKRESETTIME   400     
+#define DISKRESETTIME   400
 
 // other performance figures are loaded from file
 
@@ -180,7 +180,7 @@ HIDDEN char strbuf[STRBUFSIZE];
 // around 4032 KB/s with 99 Mhz DMA transfer
 // It would read a full 1GB cartridge in around 9 minutes (1 Mhz DMA)
 // It would rewind from end an 1 GB cartridge in around 2 minutes, and
-// fast forward it from start to end (or back) in 3 min 50 secs 
+// fast forward it from start to end (or back) in 3 min 50 secs
 
 // alternative for it would be 100, 200, 360, 200 that would mean (1GB cart.)
 // transfer rate of 1024 -> 1440 KB/s in 17 min -> 13 min, full rewind
@@ -268,6 +268,7 @@ unsigned int Device::CompleteDevOp()
 // proper codes
 void Device::WriteDevReg(unsigned int dummynum, Word dummydata)
 {
+    (void)dummynum, (void)dummydata;
 }
 
 // This method returns the static buffer contained in each device describing
@@ -286,7 +287,7 @@ Word Device::ReadDevReg(unsigned int regnum)
         return(reg[regnum]);
     } else {
         Panic("Unknown register index in Device::ReadDevReg()");
-        // never returns        
+        // never returns
         return MAXWORDVAL;
     }
 }
@@ -337,6 +338,7 @@ void Device::setCondition(bool working)
 // and produces a panic message
 void Device::Input(const char * inputstr)
 {
+    (void)inputstr;
     Panic("Input directed to a non-Terminal device in Device::Input()");
 }
 
@@ -348,6 +350,7 @@ void Device::Input(const char * inputstr)
 // message
 bool Device::TapeLoad(const char * tFName)
 {
+    (void)tFName;
     Panic("Tape load request to a non-Tape device in Device::TapeLoad()");
     // no real return
     return(false);
@@ -368,7 +371,7 @@ uint64_t Device::scheduleIOEvent(uint64_t delay)
 // PrinterDevice class allows to emulate parallel character printer
 // currently in use (see performance figures shown before). It uses the same
 // interface as Device, redefining only a few methods' implementation: refer
-// to it for individual methods descriptions. 
+// to it for individual methods descriptions.
 // It adds to Device data structure:
 // a pointer to SetupInfo object containing printer log file name;
 // a static buffer for device operation & status description;
@@ -405,7 +408,7 @@ PrinterDevice::~PrinterDevice()
 
 void PrinterDevice::WriteDevReg(unsigned int regnum, Word data)
 {
-    // Only COMMAND and DATA0 registers are writable, and only when 
+    // Only COMMAND and DATA0 registers are writable, and only when
     // device is not busy.
     if (reg[STATUS] == BUSY)
         return;
@@ -433,7 +436,7 @@ void PrinterDevice::WriteDevReg(unsigned int regnum, Word data)
 
         case PRNTCHR:
             bus->IntAck(intL, devNum);
-            sprintf(statStr, "Printing char 0x%.2X (last op: %s)", 
+            sprintf(statStr, "Printing char 0x%.2X (last op: %s)",
                     (unsigned char) reg[DATA0], isSuccess(dType, reg[STATUS]));
             complTime = scheduleIOEvent(PRNTCHRTIME * config->getClockRate());
             reg[STATUS] = BUSY;
@@ -547,7 +550,7 @@ TerminalDevice::TerminalDevice(systemBus* bus, const MachineConfig* cfg,
         sprintf(strbuf, "Cannot open terminal %u file : %s", devNum, strerror(errno));
         Panic(strbuf);
     }
-    // else file has been open with success: set it to no buffering for quick 
+    // else file has been open with success: set it to no buffering for quick
     // terminal screen update
     setvbuf(termFile, (char *) NULL, _IONBF, 0);
 }
@@ -676,7 +679,7 @@ void TerminalDevice::WriteDevReg(unsigned int regnum, Word data)
 
 const char* TerminalDevice::getDevSStr()
 {
-    sprintf(strbuf, "%s\n%s", recvStatStr, tranStatStr); 
+    sprintf(strbuf, "%s\n%s", recvStatStr, tranStatStr);
     return strbuf;
 }
 
@@ -813,7 +816,7 @@ unsigned int TerminalDevice::CompleteDevOp()
             Panic("Unknown operation in TerminalDevice::CompleteDevOp()");
             break;
         }
-        // interrupt generation 
+        // interrupt generation
         bus->IntReq(intL, devNum);
         tranIntPend = true;
         devMod = TRANSTATUS;
@@ -849,7 +852,7 @@ void TerminalDevice::Input(const char* inputstr)
     }
     recvBp = 0;
 
-    // writes input to log file 
+    // writes input to log file
     if (fprintf(termFile, "%s\n", inputstr) < 0) {
         sprintf(strbuf, "Error writing terminal %u file : %s", devNum, strerror(errno));
         Panic(strbuf);
@@ -859,7 +862,7 @@ void TerminalDevice::Input(const char* inputstr)
 
 // DiskDevice class allows to emulate a disk drive: each 512 byte sector it
 // contains is identified by (cyl, head, sect) set of disk coordinates;
-// (geometry and performance figures are loaded from disk image file). 
+// (geometry and performance figures are loaded from disk image file).
 // Operations on sectors (R/W) require previous seek on the desired cylinder.
 // It also contains a sector buffer of one sector to speed up operations.
 //
@@ -886,7 +889,7 @@ DiskDevice::DiskDevice(systemBus* bus, const MachineConfig* cfg,
     sprintf(statStr, "Idle");
     diskBuf = new Block();
 
-    // tries to access disk image file 
+    // tries to access disk image file
     if ((diskFile = fopen(config->getDeviceFile(intL, devNum).c_str(), "r+")) == NULL) {
         sprintf(strbuf, "Cannot open disk %u file : %s", devNum, strerror(errno));
         Panic(strbuf);
@@ -960,7 +963,7 @@ void DiskDevice::WriteDevReg(unsigned int regnum, Word data)
             if (cyl < diskP->getCylNum()) {
                 bus->IntAck(intL, devNum);
                 sprintf(statStr, "Seeking Cyl 0x%.4X (last op: %s)", cyl, isSuccess(dType, reg[STATUS]));
-                // compute movement offset 
+                // compute movement offset
                 if (cyl < currCyl)
                     cyl = currCyl - cyl;
                 else
@@ -1002,21 +1005,21 @@ void DiskDevice::WriteDevReg(unsigned int regnum, Word data)
                     if (sect > currSect)
                         sect = (sect - currSect) - 1;
                     else
-                        sect = (diskP->getSectNum() - 1) - (currSect - sect); 
+                        sect = (diskP->getSectNum() - 1) - (currSect - sect);
 
-                    // completion time is = current sect rem. time + 
+                    // completion time is = current sect rem. time +
                     //   sectors-in-between time + sector data read +
                     // DMA transfer time
-                    timeOfs += (sectTicks * sect) + ((sectTicks * diskP->getDataSect()) / 100) + DMATICKS; 
+                    timeOfs += (sectTicks * sect) + ((sectTicks * diskP->getDataSect()) / 100) + DMATICKS;
                 }
                 complTime = scheduleIOEvent(timeOfs);
                 reg[STATUS] = BUSY;
             } else {
-                // head/sector out of range 
+                // head/sector out of range
                 sprintf(statStr, "Head/sect 0x%.2X/0x%.2X out of range : waiting for ACK", head, sect);
                 reg[STATUS] = READERR;
                 bus->IntReq(intL, devNum);
-            }   
+            }
             break;
 
         case WRITEBLK:
@@ -1036,31 +1039,31 @@ void DiskDevice::WriteDevReg(unsigned int regnum, Word data)
                     // disk sector in buffer from memory
                     cylBuf = currCyl;
                     headBuf = head;
-                    sectBuf = sect;     
-                                                                        
+                    sectBuf = sect;
+
                     // compute op completion time
-                                                                        
+
                     // use only TodLO for easier computation
                     // disk spins during DMA transfer
                     currSect = ((bus->getToDLO() + DMATICKS) / sectTicks) % diskP->getSectNum();
-                                                                
+
                     // remaining time for DMA + current sector
                     timeOfs = DMATICKS + ((bus->getToDLO() + DMATICKS) % sectTicks);
-                                                                
+
                     // compute sector offset
                     if (sect > currSect)
                         sect = (sect - currSect) - 1;
                     else
-                        sect = (diskP->getSectNum() - 1) - (currSect - sect); 
-                                                        
-                    // completion time is = DMA time + current sect rem. time + 
+                        sect = (diskP->getSectNum() - 1) - (currSect - sect);
+
+                    // completion time is = DMA time + current sect rem. time +
                     //   sectors-in-between time + sector data write
                     timeOfs += (sectTicks * sect) + ((sectTicks * diskP->getDataSect()) / 100);
                 }
                 complTime = scheduleIOEvent(timeOfs);
                 reg[STATUS] = BUSY;
             } else {
-                // head/sector out of range 
+                // head/sector out of range
                 sprintf(statStr, "Head/sect 0x%.2X/0x%.2X out of range : waiting for ACK", head, sect);
                 reg[STATUS] = WRITERR;
                 bus->IntReq(intL, devNum);
@@ -1116,7 +1119,7 @@ unsigned int DiskDevice::CompleteDevOp()
             sprintf(statStr, "Cyl 0x%.4X reached : waiting for ACK", currCyl);
             reg[STATUS] = READY;
         } else {
-            // error simulation: currCyl is between seek start & end  
+            // error simulation: currCyl is between seek start & end
             currCyl = (((reg[COMMAND] >> BYTELEN) & IMMMASK) + currCyl) / 2;
             sprintf(statStr, "Cyl 0x%.4X seek error : waiting for ACK", currCyl);
             reg[STATUS] = SEEKERR;
@@ -1180,7 +1183,7 @@ unsigned int DiskDevice::CompleteDevOp()
                     currCyl, head, sect);
             reg[STATUS] = READY;
         } else {
-            // error simulation & buffer invalidation 
+            // error simulation & buffer invalidation
             cylBuf = headBuf = sectBuf = MAXWORDVAL;
             sprintf(statStr, "Error writing C/H/S 0x%.4X/0x%.2X/0x%.2X : waiting for ACK",
                     currCyl, head, sect);
@@ -1199,8 +1202,8 @@ unsigned int DiskDevice::CompleteDevOp()
 }
 
 
-// TapeDevice class allows to emulate removable cartridge tape drives. 
-// Individual tapes may be loaded and unloaded, rewound and read 
+// TapeDevice class allows to emulate removable cartridge tape drives.
+// Individual tapes may be loaded and unloaded, rewound and read
 // (see performance figures shown before). TapeDevice uses the same
 // interface as Device, redefining only a few methods' implementation: refer
 // to it for individual methods descriptions.
@@ -1237,7 +1240,7 @@ TapeDevice::~TapeDevice()
 
     if (tapeLoaded) {
         delete tapeFName;
-        
+
         if (fclose(tapeFile) == EOF) {
             sprintf(strbuf, "Cannot close tape file %u : %s", devNum, strerror(errno));
             Panic(strbuf);
@@ -1245,9 +1248,9 @@ TapeDevice::~TapeDevice()
     }
 }
 
-// If tFName == NULL or EMPTYSTR, method returns TRUE if 
+// If tFName == NULL or EMPTYSTR, method returns TRUE if
 // a new tape may be loaded,  FALSE otherwise; else, if tFName != NULL
-// it tries to load the specified tape file, returning completion status 
+// it tries to load the specified tape file, returning completion status
 bool TapeDevice::TapeLoad(const char* tFName)
 {
     Word tapeid = 0;
@@ -1257,7 +1260,7 @@ bool TapeDevice::TapeLoad(const char* tFName)
         return !tapeLoaded || (reg[STATUS] == READY && reg[DATA1] == TAPESTART);
     } else {
         if (tapeLoaded && (reg[STATUS] != READY || reg[DATA1] != TAPESTART)) {
-            // a new tape cannot be loaded until the current tape is not 
+            // a new tape cannot be loaded until the current tape is not
             // rewound: a safeguard to avoid tape ejection during I/O operations
             return false;
         } else {
@@ -1291,7 +1294,7 @@ bool TapeDevice::TapeLoad(const char* tFName)
 
 void TapeDevice::WriteDevReg(unsigned int regnum, Word data)
 {
-    // Only COMMAND and DATA0 registers are writable, and only when 
+    // Only COMMAND and DATA0 registers are writable, and only when
     // device is not busy and a tape is loaded.
     if (!tapeLoaded || reg[STATUS] == BUSY)
         return;
@@ -1367,7 +1370,7 @@ void TapeDevice::WriteDevReg(unsigned int regnum, Word data)
         }
 
         emit SignalStatusChanged(getDevSStr());
-        break;                                       
+        break;
 
     case DATA0:
         // sets physical address for buffer in memory
@@ -1406,7 +1409,7 @@ unsigned int TapeDevice::CompleteDevOp()
             sprintf(strbuf, "Error reading tape %u file : %s", devNum, strerror(errno));
             Panic(strbuf);
         }
-        // else operation is successful: 
+        // else operation is successful:
         reg[STATUS] = READY;
         sprintf(statStr, "Block %u skipped : waiting for ACK", tapeBp);
         tapeBp++;
@@ -1444,7 +1447,7 @@ unsigned int TapeDevice::CompleteDevOp()
         if (tapeBp == 0)
             reg[DATA1] = TAPESTART;
         else
-            // read previous block for terminator value 
+            // read previous block for terminator value
             if (tapeBlk->ReadBlock(tapeFile, ((tapeBp - 1) * BLOCKSIZE * WORDLEN) + (tapeBp * WORDLEN)) ||
                 fread((void *) &(reg[DATA1]), WORDLEN, 1, tapeFile) != 1 || reg[DATA1] > TAPEEOB)
             {
@@ -1478,7 +1481,7 @@ unsigned int TapeDevice::CompleteDevOp()
 HIDDEN const char * isSuccess(unsigned int devType, Word regVal)
 {
     const char * result = NULL;
-        
+
     switch (devType) {
     case PRNTDEV:
     case DISKDEV:
@@ -1489,20 +1492,20 @@ HIDDEN const char * isSuccess(unsigned int devType, Word regVal)
         else
             result = opResult[false];
         break;
-                
+
     case TERMDEV:
         if (regVal == READY || regVal == RECVD || regVal == TRANSMD)
             result = opResult[true];
         else
             result = opResult[false];
         break;
-                
+
     default:
         Panic("Unknown device in device module::isSuccess()");
         break;
     }
     return(result);
-}       
+}
 
 
 // EthDevice class allows to emulate an ethernet interface
@@ -1667,11 +1670,11 @@ unsigned int EthDevice::CompleteDevOp()
             sprintf(statStr, "Interface Configuration Read : waiting for ACK");
             netint->getaddr(macaddr);
             reg[DATA0]=(((Word) netint->getmode()) <<16) | (((Word) macaddr[0])<<8) | ((Word) macaddr[1]);
-            reg[DATA1]=((Word) macaddr[2])<<24 | ((Word) macaddr[3])<<16 | ((Word) macaddr[4]) <<8 | ((Word)macaddr[5]); 
+            reg[DATA1]=((Word) macaddr[2])<<24 | ((Word) macaddr[3])<<16 | ((Word) macaddr[4]) <<8 | ((Word)macaddr[5]);
         }
         reg[STATUS] = READY;
         break;
-        case CONFIGURE: 
+        case CONFIGURE:
             // configure always works even if isWorking == FALSE
         {
             char macaddr[6];
@@ -1687,17 +1690,14 @@ unsigned int EthDevice::CompleteDevOp()
             }
             newmode &= ~SETMAC;
             sprintf(statStr, "Interface Reconfigured: waiting for ACK");
-            netint->setmode(newmode); 
+            netint->setmode(newmode);
         }
         reg[STATUS] = READY;
         break;
         case READNET:
             if (isWorking)
             {
-                if ((reg[DATA1]=netint->readdata((char *) readbuf, PACKETSIZE)) < 0) {
-                    sprintf(statStr, "Net reading error: waiting for ACK");
-                    reg[STATUS] = READERR;
-                } else if (reg[DATA1] == 0) {
+                if ((reg[DATA1]=netint->readdata((char *) readbuf, PACKETSIZE)) == 0) {
                     sprintf(statStr, "No pending packet for read: waiting for ACK");
                     reg[STATUS] = READY;
                 } else {
@@ -1716,17 +1716,17 @@ unsigned int EthDevice::CompleteDevOp()
                 // no operation & error simulation
                 sprintf(statStr, "Net reading error : waiting for ACK");
                 reg[STATUS] = READERR;
-            }				
+            }
             break;
         case WRITENET:
             if (isWorking)
             {
-                if (reg[DATA1] == netint->writedata((char *)writebuf, reg[DATA1])) 
+                if (reg[DATA1] == netint->writedata((char *)writebuf, reg[DATA1]))
                 {
                     sprintf(statStr, "Packet Sent: waiting for ACK");
                     reg[STATUS] = READY;
-                } 
-                else 
+                }
+                else
                 {
                     sprintf(statStr, "Net writing error: waiting for ACK");
                     reg[STATUS] = WRITERR;

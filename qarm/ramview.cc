@@ -148,9 +148,9 @@ void ramView::visualize(){
             }
             char *message;
             if(start > end){
-                message = "Start address cannot be higher than End address...";
+                message = (char *)"Start address cannot be higher than End address...";
             } else {
-                message = "Memory segment too large,\n max displayble size: 10 KB";
+                message = (char *)"Memory segment too large,\n max displayble size: 10 KB";
             }
             QarmMessageBox *warning = new QarmMessageBox(QarmMessageBox::WARNING, "Warning", message, this);
             warning->show();

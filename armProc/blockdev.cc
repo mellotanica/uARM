@@ -109,29 +109,29 @@ void Block::setWord(unsigned int ofs, Word value)
 // allows to modify the parameters' size without changing the caller.
 // If fileOfs returned is 0, something has gone wrong; file is rewound after
 // use
-DriveParams::DriveParams(FILE * diskFile, SWord * fileOfs) 
+DriveParams::DriveParams(FILE * diskFile, SWord * fileOfs)
 {
 	SWord ret;
 	unsigned int i;
 	Block * blk = new Block();
-	
+
 	rewind(diskFile);
     if (blk->ReadBlock(diskFile, 0) || blk->getWord(0) != DISKFILEID)
 		// errors in file reading or disk file magic number missing
 		ret = 0;
 	else
 	{
-		// if DISKFILEID is present all parameters should be correct; 
+		// if DISKFILEID is present all parameters should be correct;
 		// fills the object
 		for (i = 0; i < DRIVEPNUM; i++)
 			parms[i] = (unsigned int) blk->getWord(i + 1);
-	
+
 		rewind(diskFile);
-		// sets the disk contents start position 
+		// sets the disk contents start position
 		ret = DRIVEPNUM + 1;
-	}	
+	}
 	delete blk;
-	
+
 	*fileOfs = ret;
 }
 

@@ -22,7 +22,7 @@ private:
 public:
     ~debugSignaler() {}
     static debugSignaler *getInstance();
-    const void pauseExec();
+    void pauseExec();
 };
 
 #endif // BASE_DEBUG_H

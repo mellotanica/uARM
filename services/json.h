@@ -35,7 +35,7 @@ enum JsonType {
     JSON_OBJECT,
     JSON_ARRAY,
     JSON_STRING,
-    JSON_NUMBER, 
+    JSON_NUMBER,
     JSON_BOOL,
     JSON_NULL
 };

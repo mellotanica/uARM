@@ -40,7 +40,7 @@ class netinterface
 {
 	public:
 		netinterface(const char *name, const char *addr, int intnum);
-	
+
 		~netinterface(void);
 
 		unsigned int readdata(char *buf, int len);

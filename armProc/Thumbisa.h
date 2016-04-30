@@ -18,11 +18,11 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
- 
-/* 
+
+/*
  * This header file provides Thumb instruction set decode and execution facilities
  */
- 
+
 #ifndef UARM_THUMBISA_H
 #define UARM_THUMBISA_H
 
@@ -32,18 +32,18 @@ class Thumbisa{
 public:
     Thumbisa(processor *father){p = father;}
     ~Thumbisa(){}
-	
+
     void execute(Byte hi, Byte low, HalfWord instr);
-	
+
 private:
-	
+
 	processor *p;
-	
+
     Word shift(Word src, Word amount, Byte type);
 
     typedef void(Thumbisa::*InstrPointer)(HalfWord instr);
     typedef void(Thumbisa::*AluPointer)(Word *rd, Word *rs);
-	
+
     void ADD(HalfWord instr);
     void ADDH(HalfWord instr);
     void ADDPC(HalfWord instr);
@@ -78,7 +78,7 @@ private:
     void SUB(HalfWord instr);
     void SWI(HalfWord instr);
     void UND(HalfWord instr);
-	
+
     void ADC_ALU(Word *rd, Word *rs);
     void AND_ALU(Word *rd, Word *rs);
     void ASR_ALU(Word *rd, Word *rs);
@@ -95,7 +95,7 @@ private:
     void ROR_ALU(Word *rd, Word *rs);
     void SBC_ALU(Word *rd, Word *rs);
     void TST_ALU(Word *rd, Word *rs);
-	
+
 	const InstrPointer main_table[16][16] = {
 		{&Thumbisa::LSL, &Thumbisa::LSL, &Thumbisa::LSL, &Thumbisa::LSL, &Thumbisa::LSL, &Thumbisa::LSL, &Thumbisa::LSL, &Thumbisa::LSL, &Thumbisa::LSR, &Thumbisa::LSR, &Thumbisa::LSR, &Thumbisa::LSR, &Thumbisa::LSR, &Thumbisa::LSR, &Thumbisa::LSR, &Thumbisa::LSR},
 		{&Thumbisa::ASR, &Thumbisa::ASR, &Thumbisa::ASR, &Thumbisa::ASR, &Thumbisa::ASR, &Thumbisa::ASR, &Thumbisa::ASR, &Thumbisa::ASR, &Thumbisa::ADD, &Thumbisa::ADD, &Thumbisa::SUB, &Thumbisa::SUB, &Thumbisa::ADD, &Thumbisa::ADD, &Thumbisa::SUB, &Thumbisa::SUB},
@@ -114,7 +114,7 @@ private:
 		{&Thumbisa::B, &Thumbisa::B, &Thumbisa::B, &Thumbisa::B, &Thumbisa::B, &Thumbisa::B, &Thumbisa::B, &Thumbisa::B, &Thumbisa::UND, &Thumbisa::UND, &Thumbisa::UND, &Thumbisa::UND, &Thumbisa::UND, &Thumbisa::UND, &Thumbisa::UND, &Thumbisa::UND},
 		{&Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL, &Thumbisa::BL}
 	};
-	
+
     const AluPointer ALU_table[4][4] = {
 		{&Thumbisa::AND_ALU, &Thumbisa::EOR_ALU, &Thumbisa::LSL_ALU, &Thumbisa::LSR_ALU},
         {&Thumbisa::ASR_ALU, &Thumbisa::ADC_ALU, &Thumbisa::SBC_ALU, &Thumbisa::ROR_ALU},

@@ -18,8 +18,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
- 
-/* 
+
+/*
  * This interface defines the common coprocessor - processor communication methods
  */
 
@@ -42,7 +42,7 @@ public:
         memVector = NULL;
         ready = false;
     }
-	
+
     void lockMem() { LOCK_sig = true; }
     void unlockMem() { LOCK_sig = false; }
     bool getMemLock() { return LOCK_sig; }
@@ -62,16 +62,16 @@ public:
     Word getRamSize(){
         return ramSize;
     }
-	
+
     bool read(Word *address, Byte *dest) {return read(address, dest, ENDIANESS_BIGENDIAN);}
     bool write(Word *address, Byte data) {return write(address, data, ENDIANESS_BIGENDIAN);}
-	
+
     bool readH(Word *address, HalfWord *dest) {return readH(address, dest, ENDIANESS_BIGENDIAN);}
     bool writeH(Word *address, HalfWord data) {return writeH(address, data, ENDIANESS_BIGENDIAN);}
-	
+
     bool readW(Word *address, Word *dest) {return readW(address, dest, ENDIANESS_BIGENDIAN);}
     bool writeW(Word *address, Word data) {return writeW(address, data, ENDIANESS_BIGENDIAN);}
-	
+
     bool read(Word *address, Byte *dest, bool bigEndian) {
         if(!LOCK_sig && ready){
 			if(!bigEndian)
@@ -92,7 +92,7 @@ public:
 		}
         return false;
     }
-	
+
     bool readH(Word *address, HalfWord *dest, bool bigEndian) {
         if(!LOCK_sig && ready){
 			HalfWord ret;
@@ -122,7 +122,7 @@ public:
 		}
         return false;
     }
-	
+
     bool readW(Word *address, Word *dest, bool bigEndian) {
         if(!LOCK_sig && ready){
 			Word addr = *address - (*address % 4);
@@ -168,12 +168,12 @@ public:
 		}
         return false;
     }
-	
+
 private:
 	//scoped_array<Byte> memVector;
     Byte *memVector = NULL;
     Word ramSize = 0;
-	
+
 	bool LOCK_sig = false;
     bool ready = false;
 };

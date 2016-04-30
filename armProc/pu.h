@@ -18,8 +18,8 @@
  * along with this program; if not, write to the Free Software
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
  */
- 
-/* 
+
+/*
  * Interface common to pocessing units (main processor and coprocessors)
  * Provides the common execution structure
  */
@@ -35,7 +35,7 @@ class pu{
 public:
     pu(systemBus *bus) : bus(bus) {}
     virtual ~pu() {}
-	
+
     virtual Word *getRegList() = 0;
 
 protected:
@@ -46,13 +46,13 @@ class coprocessor : public pu{
 public:
     coprocessor(systemBus *bus) : pu(bus) {}
     ~coprocessor(){}
-	
+
     virtual void reset() = 0;
 
     virtual Word *getRegList() = 0;
 
 	virtual Word *getRegister(Word regNum) = 0;
-	
+
     virtual bool executeOperation(Byte opcode, Byte rm, Byte rn, Byte rd, Byte info) = 0;
     virtual bool registerTransfer(Word *cpuReg, Byte opcode, Byte operand, Byte srcDest, Byte info, bool toCoproc) = 0;
 };
