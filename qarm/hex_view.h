@@ -49,6 +49,9 @@ public:
     Word getStart() { return start; }
     Word getEnd() { return end; }
 
+signals:
+    void doubleClicked(Word addr);
+
 public slots:
     void Refresh(QString symbol);
     void Refresh();
@@ -61,7 +64,7 @@ protected:
     void insertFromMimeData(const QMimeData* source);
 
     void keyPressEvent(QKeyEvent* event);
-    void mousePressEvent(QMouseEvent* event);
+    void mouseDoubleClickEvent(QMouseEvent* event);
 
 private slots:
     void updateMargin(const QRect& rect, int dy);
@@ -86,13 +89,10 @@ private:
     unsigned int currentByte(const QTextCursor& cursor = QTextCursor()) const;
     unsigned int currentNibble(const QTextCursor& cursor = QTextCursor()) const;
 
-    unsigned char byteValue(unsigned int word, unsigned int byte) const;
+    unsigned char byteValue(unsigned int byte) const;
     Word dataAtCursor() const;
 
     void moveCursor(QTextCursor::MoveOperation operation, int n = 1);
-    void setPoint(unsigned int word,
-                  unsigned int byte = 0,
-                  unsigned int nibble = 0);
 
     void paintMargin(QPaintEvent* event);
     void highlightWord();

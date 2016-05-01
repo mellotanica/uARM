@@ -131,7 +131,7 @@ qarm::qarm(QApplication *app, QFile *confFile, bool autorun, bool runandexit):
     connect(structWindow, SIGNAL(hiding()), toolbar, SLOT(uncheckSTA()));
     connect(this, SIGNAL(resetMachine()), structWindow, SLOT(updateContent()));
     connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), structWindow, SLOT(update()));
-    connect(structWindow, SIGNAL(openRamViewer(Word,Word,QString)), this, SLOT(showRamSel(Word,Word,QString)));
+    connect(structWindow, SIGNAL(openRamViewer(Word,Word,QString,bool)), this, SLOT(showRamSel(Word,Word,QString,bool)));
 
     connect(clock, SIGNAL(timeout()), this, SLOT(step()));
 
@@ -269,9 +269,9 @@ void qarm::showRam(){
     }
 }
 
-void qarm::showRamSel(Word start, Word end, QString label){
+void qarm::showRamSel(Word start, Word end, QString label, bool offset){
     if(initialized){
-        ramView *ramWindow = new ramView(mac, start, end, label, this);
+        ramView *ramWindow = new ramView(mac, start, end, label, offset, this);
         connect(this, SIGNAL(resetMachine()), ramWindow, SLOT(update()));
         connect(mac, SIGNAL(dataReady(Word*,Word*,Word*,Word,Word,Word,QString)), ramWindow, SLOT(update()));
         ramWindow->show();
