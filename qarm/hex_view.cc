@@ -219,14 +219,8 @@ void HexView::keyPressEvent(QKeyEvent* event)
     }
 }
 
-void HexView::mousePressEvent(QMouseEvent* event)
-{
-    if (event->button() != Qt::LeftButton)
-        return;
-
-    QTextCursor cursor = cursorForPosition(event->pos());
-    setPoint(currentWord(cursor), currentByte(cursor),
-             std::min(currentNibble(cursor), (unsigned int) COL_LO_NIBBLE));
+void HexView::mouseDoubleClickEvent(QMouseEvent *event){
+    emit doubleClicked(dataAtCursor());
 }
 
 void HexView::updateMargin(const QRect& rect, int dy)
@@ -245,30 +239,32 @@ void HexView::onCursorPositionChanged()
 unsigned int HexView::currentWord(const QTextCursor& cursor) const
 {
     if (cursor.isNull())
-        return textCursor().position() / kCharsPerWord;
+        return textCursor().blockNumber();
     else
-        return cursor.position() / kCharsPerWord;
+        return cursor.blockNumber();
 }
 
 unsigned int HexView::currentByte(const QTextCursor& cursor) const
 {
     if (cursor.isNull())
-        return (textCursor().position() / N_COLS_PER_BYTE) % WS;
+        return (textCursor().columnNumber() / N_COLS_PER_BYTE) % WS;
     else
-        return (cursor.position() / N_COLS_PER_BYTE) % WS;
+        return (cursor.columnNumber() / N_COLS_PER_BYTE) % WS;
 }
 
 unsigned int HexView::currentNibble(const QTextCursor& cursor) const
 {
     if (cursor.isNull())
-        return textCursor().position() % N_COLS_PER_BYTE;
+        return textCursor().columnNumber() % N_COLS_PER_BYTE;
     else
-        return cursor.position() % N_COLS_PER_BYTE;
+        return cursor.columnNumber() % N_COLS_PER_BYTE;
 }
 
-unsigned char HexView::byteValue(unsigned int word, unsigned int byte) const
+unsigned char HexView::byteValue(unsigned int byte) const
 {
-    return toPlainText().mid(word * kCharsPerWord + N_COLS_PER_BYTE * byte, 2).toUInt(0, 16);
+    QTextCursor cursor = textCursor();
+    cursor.movePosition(QTextCursor::StartOfLine);
+    return toPlainText().mid(cursor.position() + N_COLS_PER_BYTE * byte, 2).toUInt(0, 16);
 }
 
 Word HexView::dataAtCursor() const
@@ -277,9 +273,9 @@ Word HexView::dataAtCursor() const
 
     for (unsigned int i = 0; i < WS; i++) {
         if (m_reversedByteOrder)
-            ((unsigned char *) &data)[i] = byteValue(currentWord(), WS - i - 1);
+            ((unsigned char *) &data)[i] = byteValue(WS - i - 1);
         else
-            ((unsigned char *) &data)[i] = byteValue(currentWord(), i);
+            ((unsigned char *) &data)[i] = byteValue(i);
     }
 
     return data;
@@ -290,22 +286,6 @@ void HexView::moveCursor(QTextCursor::MoveOperation operation, int n)
     QTextCursor cursor = textCursor();
     if (cursor.movePosition(operation, QTextCursor::MoveAnchor, n))
         setTextCursor(cursor);
-}
-
-void HexView::setPoint(unsigned int word, unsigned int byte, unsigned int nibble)
-{
-    //assert(byte < WS);
-    //assert(nibble <= 1);
-
-    if (word >= length)
-        return;
-
-    if (nibble > COL_LO_NIBBLE)
-        nibble = COL_LO_NIBBLE;
-
-    QTextCursor c = textCursor();
-    c.setPosition(word * kCharsPerWord + byte * N_COLS_PER_BYTE + nibble);
-    setTextCursor(c);
 }
 
 void HexView::paintMargin(QPaintEvent* event)

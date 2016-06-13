@@ -44,7 +44,7 @@ protected:
 
 signals:
     void hiding();
-    void openRamViewer(Word start, Word end, QString label);
+    void openRamViewer(Word start, Word end, QString label, bool offset);
 
 private slots:
     void updateContent();

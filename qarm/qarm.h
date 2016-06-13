@@ -76,7 +76,7 @@ private slots:
     void selectCore();
     void selectBios();
     void showRam();
-    void showRamSel(Word start, Word end, QString label);
+    void showRamSel(Word start, Word end, QString label, bool offset);
     void showConfigDialog();
     void showTerminal(unsigned int devNo);
     void onMachineHalted();

@@ -39,7 +39,8 @@ structures_window::structures_window(machine *mac, QWidget * parent, Qt::WindowF
     initRamViewer();
 
     connect(selectWidget, SIGNAL(selectedObject(Word, Word)), ramViewer, SLOT(MoveInterval(Word,Word)));
-    connect(selectWidget, SIGNAL(openRam(Word,Word,QString)), this, SIGNAL(openRamViewer(Word,Word,QString)));
+    connect(selectWidget, SIGNAL(openRam(Word,Word,QString,bool)), this, SIGNAL(openRamViewer(Word,Word,QString,bool)));
+    connect(ramViewer, SIGNAL(doubleClicked(Word)), selectWidget, SLOT(triggerOpenRam(Word)));
 
     showRam = new QToolButton(mainWidget);
     showRam->setText("Show in Ram Viewer");

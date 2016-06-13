@@ -26,6 +26,7 @@
 #include "qarm/qarmmessagebox.h"
 #include <QHBoxLayout>
 #include <QLabel>
+#include <QSizePolicy>
 #include "armProc/machine_config.h"
 
 ramView::ramView(machine *mac, QWidget *parent) :
@@ -34,7 +35,8 @@ ramView::ramView(machine *mac, QWidget *parent) :
     initRamView(mac);
 }
 
-ramView::ramView(machine *mac, Word start, Word end, QString label, QWidget *parent):
+ramView::ramView(machine *mac, Word start, Word end, QString label, bool offset, QWidget *parent):
+    offset(offset),
     QWidget(parent)
 {
     initRamView(mac);
@@ -53,6 +55,7 @@ void ramView::initRamView(machine *mac){
     mainLayout = new QVBoxLayout();
     QHBoxLayout *topPanel = new QHBoxLayout();
     mainLayout->addLayout(topPanel);
+    topPanel->setSizeConstraint(QLayout::SetMinAndMaxSize);
 
     QRegExp rx("[0-9,a-f]{1,8}", Qt::CaseInsensitive);
     QRegExpValidator *hexValidator = new QRegExpValidator(rx, this);
@@ -78,7 +81,18 @@ void ramView::initRamView(machine *mac){
 
     topPanel->addWidget(new QLabel("0x", this));
     topPanel->addWidget(startEd);
-    topPanel->addWidget(new QLabel("-> 0x", this));
+    topPanel->addWidget(new QLabel("->", this));
+
+    offsetButton = new QToolButton(this);
+    offsetButton->setText("+");
+    offsetButton->setAccessibleName("Second limit is an offset");
+    offsetButton->setCheckable(true);
+    offsetButton->setChecked(offset);
+    offsetButton->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    connect(offsetButton, SIGNAL(clicked(bool)), this, SLOT(toggleOffset(bool)));
+    topPanel->addWidget(offsetButton);
+
+    topPanel->addWidget(new QLabel("0x", this));
     topPanel->addWidget(endEd);
     topPanel->addWidget(visualizeB);
 
@@ -86,6 +100,10 @@ void ramView::initRamView(machine *mac){
     hide();
 
     connect(visualizeB, SIGNAL(clicked()), this, SLOT(visualize()));
+}
+
+void ramView::toggleOffset(bool val){
+    offset = val;
 }
 
 void ramView::newRamLabel(QWidget *parent){
@@ -97,9 +115,9 @@ void ramView::newRamLabel(QWidget *parent){
 }
 
 void ramView::refreshBounds(Word start, Word end){
-    startEd->setText(QString::number(start, 16));
+    setLablelVal(startEd,start);
     if(end != start){
-        endEd->setText(QString::number(end, 16));
+        setLablelVal(endEd, end);
     }
 }
 
@@ -126,11 +144,16 @@ void ramView::visualize(){
         bool conv = true, res;
         Word start = startEd->text().toUInt(&res,16);
         conv &= res;
-        Word end;
+        Word end, off = 0;
         if(endEd->text().isEmpty())
             end = start;
-        else
+        else {
             end = endEd->text().toUInt(&res,16);
+            if(offset){
+                off = end;
+                end += start;
+            }
+        }
         conv &= res;
 
         if(start > end || (end - start) > MAX_VIEWABLE_RAM){
@@ -158,14 +181,20 @@ void ramView::visualize(){
 
             if(start & 3){
                 start &= 0xFFFFFFFC;
-                startEd->setText(QString::number(start, 16));
+                setLablelVal(startEd, start);
             }
             if(end & 3){
-                end &= 0xFFFFFFFC;
-                endEd->setText(QString::number(end, 16));
+                if(offset){
+                    off &= 0xFFFFFFFC;
+                    setLablelVal(endEd,off);
+                } else {
+                    end &= 0xFFFFFFFC;
+                    setLablelVal(endEd, end);
+                }
             }
             startAddr = start;
-            endAddr = end;
+            if(!offset)
+                endAddr = end;
 
             if(ramViewer != NULL){
                 mainLayout->removeWidget(ramViewer);
@@ -179,9 +208,22 @@ void ramView::visualize(){
             newRamLabel(this);
             mainLayout->addWidget(ramLabel);
             ramViewer = new HexView(start, end, mac, this);
+            connect(ramViewer, SIGNAL(doubleClicked(Word)), this, SLOT(inspectPointer(Word)));
             mainLayout->addWidget(ramViewer);
         }
     }
+}
+
+void ramView::inspectPointer(Word addr){
+    if(startEd->text() != endEd->text() && !offset){
+        endEd->setText("");
+    }
+    setLablelVal(startEd, addr);
+    visualize();
+}
+
+void ramView::setLablelVal(QLineEdit *lab, Word val){
+    lab->setText(QString::number(val, 16));
 }
 
 #endif //QARM_RAMVIEW_CC
