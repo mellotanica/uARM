@@ -119,11 +119,11 @@ mainBar::mainBar(QWidget *parent) :
     utilsLowerL = new QHBoxLayout();
 
     ramB = new styledButton(utilsW);
-    ramB->setText("RAM");
-    ramB->setAccessibleName("RAM contents viewers Menu");
+    ramB->setText("Memory");
+    ramB->setAccessibleName("Memory contents viewers Menu");
     ramMenu = new QMenu(ramB);
 
-    ramAction = new QAction(QString("Ram Viewer"), ramMenu);
+    ramAction = new QAction(QString("Bus Viewer"), ramMenu);
     ramAction->setEnabled(true);
     connect(ramAction, SIGNAL(triggered()), this, SIGNAL(showRam()));
     ramMenu->addAction(ramAction);
@@ -165,10 +165,10 @@ mainBar::mainBar(QWidget *parent) :
 
     utilsUpperL->addWidget(breakpB);
     utilsUpperL->addWidget(new QWidget());
-    utilsUpperL->addWidget(ramB);
+    utilsUpperL->addWidget(tlbB);
     utilsLowerL->addWidget(windowB);
     utilsLowerL->addWidget(new QWidget());
-    utilsLowerL->addWidget(tlbB);
+    utilsLowerL->addWidget(ramB);
 
     utilsL->addLayout(utilsUpperL);
     utilsL->addLayout(utilsLowerL);
