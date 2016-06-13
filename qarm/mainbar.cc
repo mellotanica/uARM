@@ -123,7 +123,7 @@ mainBar::mainBar(QWidget *parent) :
     ramB->setAccessibleName("Memory contents viewers Menu");
     ramMenu = new QMenu(ramB);
 
-    ramAction = new QAction(QString("Bus Viewer"), ramMenu);
+    ramAction = new QAction(QString("Bus Inspector"), ramMenu);
     ramAction->setEnabled(true);
     connect(ramAction, SIGNAL(triggered()), this, SIGNAL(showRam()));
     ramMenu->addAction(ramAction);
