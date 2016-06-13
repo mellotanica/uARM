@@ -75,9 +75,9 @@ public:
 
     static const QFont getMonospaceFont()
     {
-        QFont monospaceFont("monospace");
+        QFont monospaceFont(QString(MC_Holder::getInstance()->mainConfigs.monofont_face.c_str()), 
+			    MC_Holder::getInstance()->mainConfigs.monofont_size);
         monospaceFont.setStyleHint(QFont::TypeWriter);
-        monospaceFont.setPointSize(MC_Holder::getInstance()->mainConfigs.monofont_size);
         return monospaceFont;
     }
 };
