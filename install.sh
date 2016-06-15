@@ -41,8 +41,11 @@ done
 ICONSD=$PREF"/lib/uarm/icons"
 mkdir -p "$ICONSD"
 cp icons/* "$ICONSD"
+RED='\033[0;31m'
+NC='\033[0m'
 HERE="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
+pushd "$HERE" > /dev/null
 if [ "$ICONSONLY" == "false" ]; then
 	INCLUDED=$PREF"/include/uarm"
 	TESTD=$PREF"/share/doc/uarm/examples"
@@ -68,6 +71,16 @@ if [ "$ICONSONLY" == "false" ]; then
 	fi
 	cp elf2uarm uarm-mkdev "$BIND"
 	cp -f "$HERE"/facilities/readuarm.py "$BIND"/uarm-readuarm
-	
-	cp default/* "$DEFAULTD"
+
+	for d in default/*; do
+		f=`basename "$d"`
+		if test -f "$DEFAULTD/$f"; then
+			printf "${RED}WARNING${NC}: $DEFAULTD/$f exists, not overwriting.. check $HERE/$d for new options\n"
+		else
+			cp "$d" "$DEFAULTD"
+		fi
+	done
 fi
+popd > /dev/null
+
+exit 0

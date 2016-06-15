@@ -44,7 +44,8 @@ enum ROMType {
 };
 
 typedef struct {
-    unsigned int monofont_size;
+    int monofont_size;
+    std::string monofont_face;
 } main_configs_s;
 
 class MachineConfig {

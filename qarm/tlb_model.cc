@@ -192,3 +192,23 @@ QString TLBModel::tlbEntryDetails(unsigned int index) const
 
     return buf;
 }
+
+void TLBModel::activate(QModelIndex index){
+    if(index.column() == COLUMN_PTE_HI || index.column() == COLUMN_PTE_LO){
+        emit entrySelected(tlbEntryDetails(index.row()));
+    }
+}
+
+QString TLBModel::getEmptyDetails() const
+{
+    QString buf(detailsTemplate);
+    buf.replace("%EntryNo%", "0");
+    buf.replace("%EntryHi.VPN%","00000");
+    buf.replace("%EntryHi.ASID%","0");
+    buf.replace("%EntryLo.PFN%","00000");
+    buf.replace("%EntryLo.D%", "0");
+    buf.replace("%EntryLo.V%", "0");
+    buf.replace("%EntryLo.G%", "0");
+
+    return buf;
+}
