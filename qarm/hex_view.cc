@@ -220,6 +220,7 @@ void HexView::keyPressEvent(QKeyEvent* event)
 }
 
 void HexView::mouseDoubleClickEvent(QMouseEvent *event){
+    (void)event;
     emit doubleClicked(dataAtCursor());
 }
 

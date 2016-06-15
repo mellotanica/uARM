@@ -36,8 +36,8 @@ ramView::ramView(machine *mac, QWidget *parent) :
 }
 
 ramView::ramView(machine *mac, Word start, Word end, QString label, bool offset, QWidget *parent):
-    offset(offset),
-    QWidget(parent)
+    QWidget(parent),
+    offset(offset)
 {
     initRamView(mac);
 
