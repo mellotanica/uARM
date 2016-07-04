@@ -1082,6 +1082,8 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
                 Word *spsr = getVisibleRegister(REG_SPSR);
                 if(spsr != NULL)
                     cpu_registers[REG_CPSR] = *spsr;
+                else
+                    spsr = (Word *)0xCACCA;
             } else {
                 if(W){					// base writeback should not be used in this case
                     unpredictable();

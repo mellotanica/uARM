@@ -121,6 +121,14 @@ QWidget* MachineConfigDialog::createGeneralTab(QWidget *parent)
     ramSizeSpinner->setMaximum(MachineConfig::MAX_RAM);
     ramSizeSpinner->setValue(config->getRamSize());
 
+    ramSizeLabel = new QLabel(tabWidget);
+    ramSizeLabel->setAccessibleName("Ram Size (Bytes)");
+    ramSizeLabel->setAccessibleDescription("Approximated ram size expressed in bytes");
+    ramSizeLabel->setToolTip(ramSizeLabel->accessibleDescription());
+    updateRamSize(ramSizeSpinner->value());
+
+    connect(ramSizeSpinner, SIGNAL(valueChanged(int)), this, SLOT(updateRamSize(int)));
+
     tlbSizeList = new QComboBox(tabWidget);
     tlbSizeList->setAccessibleName("TLB Size (Entries)");
     tlbSizeList->setAccessibleDescription("Size of the TLB cache (power of 2 between 4 and 64)");
@@ -210,6 +218,8 @@ QWidget* MachineConfigDialog::createGeneralTab(QWidget *parent)
         tempHL->addWidget(ramSizeSpinner);
         layout->addLayout(tempHL);
 
+        layout->addWidget(ramSizeLabel);
+
         tempHL = new QHBoxLayout();
         tempHL->addWidget(new QLabel("TLB Size (Entries):", tabWidget));
         tempHL->addWidget(tlbSizeList);
@@ -259,6 +269,7 @@ QWidget* MachineConfigDialog::createGeneralTab(QWidget *parent)
 
         layout->addWidget(new QLabel("RAM Size (Frames):", tabWidget), 3, 1);
         layout->addWidget(ramSizeSpinner, 3, 2);
+        layout->addWidget(ramSizeLabel, 3, 3);
 
         layout->addWidget(new QLabel("TLB Size (Entries):", tabWidget), 4, 1);
         layout->addWidget(tlbSizeList, 4, 2);
@@ -363,6 +374,26 @@ QWidget* MachineConfigDialog::createDeviceTab(QWidget *parent)
 
 
     return tab;
+}
+
+void MachineConfigDialog::updateRamSize(int frames){
+    int kilos = frames*4;
+    float megs = kilos / 1024.0;
+    float gigs = megs / 1024.0;
+    int sel = (gigs >= 0.7 ? 2 : (megs >= 1 ? 1 : 0));
+    QString text;
+    switch(sel){
+        case 0: //KB
+            text = QString::number(kilos) + " KB";
+            break;
+        case 1: //MB
+            text = QString::number(megs, 'g', 4) + " MB";
+            break;
+        case 2: //GB
+            text = QString::number(gigs, 'g', 4) + " GB";
+            break;
+    }
+    ramSizeLabel->setText(text);
 }
 
 void MachineConfigDialog::registerDeviceClass(const QString& label,

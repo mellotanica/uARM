@@ -33,6 +33,7 @@ class QComboBox;
 class QLineEdit;
 class QCheckBox;
 class AsidLineEdit;
+class QLabel;
 
 class MachineConfigDialog : public QDialog {
     Q_OBJECT
@@ -59,6 +60,7 @@ private:
     QCheckBox *refreshEnabledBox;
     QComboBox* tlbSizeList;
     QSpinBox* ramSizeSpinner;
+    QLabel* ramSizeLabel;
     QCheckBox* stopOnInterruptBox;
     QCheckBox* coreBootCheckBox;
     QCheckBox* accessibleModeCheckBox;
@@ -73,6 +75,8 @@ private:
     QStackedLayout* devFileChooserStack;
 
 private Q_SLOTS:
+    void updateRamSize(int frames);
+
     void getROMFileName(int index);
 
     void saveConfigChanges();
