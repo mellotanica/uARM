@@ -65,7 +65,7 @@ signals:
 
 public slots:
     void stop();
-    void kill();
+    void kill(int exitcode);
 
 private slots:
     void start(int speed);

@@ -411,19 +411,19 @@ LDST:
     MCR p15, #0, r0, c2, c0, #0
     MCR p15, #0, r0, c2, c0, #1
 
-    /* set Control */
-    MOV r0, #ROMSTACK_TOP
-    ADD r0, r0, #ROMSTACK_OFF
-    LDR r0, [r0]
-    LDR r0, [r0]
-    MCR p15, #0, r0, c1, c0, #0
-
     /* set Cause */
     MOV r0, #ROMSTACK_TOP
     ADD r0, r0, #ROMSTACK_OFF
     LDR r0, [r0]
     LDR r0, [r0, #8]
     MCR p15, #0, r0, c15, c0
+
+    /* set Control */
+    MOV r0, #ROMSTACK_TOP
+    ADD r0, r0, #ROMSTACK_OFF
+    LDR r0, [r0]
+    LDR r0, [r0]
+    MCR p15, #0, r0, c1, c0, #0
 
     /* set r0, CPSR and jump */
     MOV r0, #ROMSTACK_TOP

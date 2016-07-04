@@ -780,8 +780,8 @@ void systemBus::SignalTLBChanged(unsigned int index){
     mac->updateTLB(index);
 }
 
-void systemBus::signalExecutionEnded(){
-    mac->signalExecutionEnded();
+void systemBus::signalExecutionEnded(int exitCode){
+    mac->signalExecutionEnded(exitCode);
 }
 
 #endif //UARM_SYSTEMBUS_CC

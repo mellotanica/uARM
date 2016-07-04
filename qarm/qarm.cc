@@ -161,7 +161,7 @@ qarm::qarm(QApplication *app, QFile *confFile, bool autorun, bool runandexit):
 
     if(autorun){
         if(runandexit){
-            connect(mac, SIGNAL(executionTerminated()), this, SLOT(kill()));
+            connect(mac, SIGNAL(executionTerminated(int)), this, SLOT(kill(int)));
         }
         toolbar->poweron();
         toolbar->run();
@@ -469,9 +469,9 @@ void qarm::closeFWindow(){
     application->focusWindow()->close();
 }
 
-void qarm::kill(){
+void qarm::kill(int returncode){
     application->closeAllWindows();
-    application->exit();
+    application->exit(returncode);
 }
 
 #endif //QARM_QARM_CC
