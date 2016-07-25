@@ -28,13 +28,13 @@
 	\begin{bytefield}[bitwidth=19px,endianness=big,bitformatting=\fakethirtytwobits]{19}
 	\bitbox[]{4}{condition code flags} \bitbox[]{7}{reserved bits} \bitbox[]{8}{control flags}\\
 	\bitheader{0-18} \\
-	\bitboxes{1}{NZCV} \bitbox{7}{\color{gray}\rule{\width}{\height}} \bitboxes{1}{IFT} \bitboxes{1}{{M4} {M3} {M2} {M1} {M0}}\\
+	\bitboxes{1}{{\field{N}}{\field{Z}}{\field{C}}{\field{V}}} \bitbox{7}{\color{gray}\rule{\width}{\height}} \bitboxes{1}{{\field{I}}{\field{F}}{\field{T}}} \bitboxes{1}{{M4} {M3} {M2} {M1} {M0}}\\
 	\end{bytefield}
-	\begin{tabular}{ll}
-	N : Negative / less then & I : IRQ disabled \\
-	Z : Zero & F : FIQ disabled \\
-	C : Carry / Borrow / Extend & T : State bit (Thumb enabled)\\
-	V : Overflow & M : Mode bits \\
+	\begin{tabular}{l@{ : }ll@{ : }l}
+		\field{N} & Negative / less then &	\field{I} & IRQ disabled \\
+		\field{Z} & Zero & 			\field{F} & FIQ disabled \\
+		\field{C} & Carry / Borrow / Extend & 	\field{T} & State bit (Thumb enabled)\\
+		\field{V} & Overflow & 			\field{M} & Mode bits \\
 	\end{tabular} \\
 \end{framed}
 \end{minipage}

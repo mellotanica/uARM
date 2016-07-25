@@ -60,7 +60,7 @@ the last 6 header fields are unused.
 
 \asection{Hints}
 
-When writing Exception Handlers code, it is well advised to pay attention to the Program Counter value stored in the Old Area. As described in Exception Handling section, each exception leave a different value in Link Return register and this value is automatically moved to Old Area PC from low level exception handlers, so, for example, when handling an interrupt, the Old Area PC has to be decreased by 4 to point to the right return instruction.
+When writing Exception Handlers code, it is well advised to pay attention to the Program Counter value stored in the Old Area. As described in Exception Handling section, each exception leave a different value in Link Return register and this value is automatically moved to \register{Old Area.pc} from low level exception handlers, so, for example, when handling an interrupt, the \register{Old Area.pc} has to be decreased by 4 to point to the right return instruction.
 
 You may also want look closely to the Low Level Handlers section to better understand what actions are performed by the BIOS code.
 

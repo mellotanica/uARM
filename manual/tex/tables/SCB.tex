@@ -1,0 +1,50 @@
+\newcommand{\fakethirtytwobitsscb}[1]{%
+	\tiny
+	\ifnum#1=1234567890
+		#1
+	\else
+		\ifnum#1<3
+			#1%
+		\else
+			\ifnum#1<8
+				\ifnum#1=5
+					$\cdots$%
+				\fi
+			\else
+				\ifnum#1<13
+					\count15=#1
+					\advance\count15 by 5
+					\the\count15%
+				\else
+					\ifnum#1=15
+						$\cdots$%
+					\fi
+					\ifnum#1>17
+						\count32=#1
+						\advance\count32 by 12
+						\the\count32%
+					\fi
+				\fi
+			\fi
+		\fi
+	\fi
+}
+\begin{minipage}{\textwidth}
+\begin{framed}
+	\begin{center}
+		\textbf{System Control Register}
+	\end{center}
+
+	\centering
+	\ttfamily
+	\begin{bytefield}[bitwidth=18px,endianness=big,bitformatting=\fakethirtytwobitsscb]{20}
+	\bitheader{0-19} \\
+	\bitbox{9}{\color{gray}\rule{\width}{\height}} \bitbox{1}{{\field{T}}} \bitbox{9}{\color{gray}\rule{\width}{\height}} \bitbox{1}{{\field{VM}}}\\
+	\end{bytefield}
+
+	\begin{tabular}{l@{ : }l}
+		\field{VM} & if set, the virtual address translation is enabled\\
+		\field{T} & if set, changes to \register{CPSR}.\field{T} are ignored \\
+	\end{tabular} \\
+\end{framed}
+\end{minipage}

@@ -10,7 +10,7 @@ The lower addresses (below \texttt{0x8000}) are reserved for special uses and ar
 The address region between \texttt{0x0} and \texttt{0x8000} holds the fast exception vector, device registers, system information, bootstrap ROM and the kernel reserved frame. Any access to this memory area in User mode are (should be) prohibited and treated by the system bus as errors.
 
 \asubsection{Exception Vector}\label{sec:man:exceptionVector}
-The first locations (\texttt{0x0} $\rightarrow$ \texttt{0x1C}) are occupied by exception vector, the processor jumps automatically to these addresses if an exception is risen and the bootstrap ROM typically writes a set of branch instructions to exception handlers in these fields.
+The first locations (\texttt{0x0} $\rightarrow$ \texttt{0x1C}) are occupied by exception vector, the processor jumps automatically to these addresses if an exception is raised and the bootstrap ROM typically writes a set of branch instructions to exception handlers in these fields.
 
 Exception vector is organized as follows:
 \\

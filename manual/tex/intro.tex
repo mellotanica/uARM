@@ -20,10 +20,11 @@ This document will describe the main aspects of the emulated system, taking into
 Notational conventions:
 
 \begin{itemize}
-	\item Registers are \register{bold}-marked.
-	\item Fields and instructions are CAPITALIZED.
-	\item Field F of register \register{R} is denoted \register{R}.F.
-	\item Bits of storage are numbered right-to-left, starting with 0.
+	\item Registers and storage units are \register{bold}-marked.
+	\item Fields are \field{italicized}.
+	\item Instructions are CAPITALIZED.
+	\item Field \field{F} of register \register{R} is denoted \register{R}.\field{F}.
+	\item Bits of storage units are numbered right-to-left, starting with 0.
 	\item The i-th bit of a storage unit named N is denoted N[i].
 	\item Memory addresses and operation codes are given in hexadecimal and displayed in big-endian format.
 	\item All diagrams illustrating memory are going from low addresses to high addresses using a left to right, bottom to top orientation.
