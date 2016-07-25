@@ -1,0 +1,47 @@
+\begin{tabular}{|l|}
+\hline
+\\
+\multicolumn{1}{|c|}{\emph{\textbf{Thumb State General Registers}}}\\
+\\
+\ttfamily
+\small
+\begin{tabular}[b]{|l|c|l|c|l|c|l|c|l|c|l|}
+	\multicolumn{1}{c}{\emph{User /}} \\
+	\multicolumn{1}{c}{\emph{System}} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{\emph{FIQ}} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{\emph{Svc}} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{\emph{Abort}} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{\emph{IRQ}} & \multicolumn{1}{c}{} &\multicolumn{1}{c}{\emph{Undef}} \\
+	\hhline{-*{5}{~-}}
+	\register{R0} & & \register{R0} & & \register{R0} & & \register{R0} & & \register{R0} & & \register{R0}\\
+	\hhline{-*{5}{~-}}
+	\register{R1} & & \register{R1} & & \register{R1} & & \register{R1} & & \register{R1} & & \register{R1}\\
+	\hhline{-*{5}{~-}}
+	\register{R2} & & \register{R2} & & \register{R2} & & \register{R2} & & \register{R2} & & \register{R2}\\
+	\hhline{-*{5}{~-}}
+	\register{R3} & & \register{R3} & & \register{R3} & & \register{R3} & & \register{R3} & & \register{R3}\\
+	\hhline{-*{5}{~-}}
+	\register{R4} & & \register{R4} & & \register{R4} & & \register{R4} & & \register{R4} & & \register{R4}\\
+	\hhline{-*{5}{~-}}
+	\register{R5} & & \register{R5} & & \register{R5} & & \register{R5} & & \register{R5} & & \register{R5}\\
+	\hhline{-*{5}{~-}}
+	\register{R6} & & \register{R6} & & \register{R6} & & \register{R6} & & \register{R6} & & \register{R6}\\
+	\hhline{-*{5}{~-}}
+	\register{R7} & & \register{R7} & & \register{R7} & & \register{R7} & & \register{R7} & & \register{R7}\\
+	\hhline{-*{5}{~-}}
+	\register{SP} & & \cellcolor{gray!25}\register{SP\_fiq} & & \cellcolor{gray!25}\register{SP\_svc} & & \cellcolor{gray!25}\register{SP\_abt} & & \cellcolor{gray!25}\register{SP\_irq} & & \cellcolor{gray!25}\register{SP\_und} \\
+	\hhline{-*{5}{~-}}
+	\register{LR} & & \cellcolor{gray!25}\register{LR\_fiq} & & \cellcolor{gray!25}\register{LR\_svc} & & \cellcolor{gray!25}\register{LR\_abt} & & \cellcolor{gray!25}\register{LR\_irq} & & \cellcolor{gray!25}\register{LR\_und} \\
+	\hhline{-*{5}{~-}}
+	\register{R15} & & \register{R15} & & \register{R15} & & \register{R15} & & \register{R15} & & \register{R15} \\
+	\hhline{-*{5}{~-}}
+	\multicolumn{1}{c}{} \\
+	\hhline{-*{5}{~-}}
+	\register{CPSR} & & \register{CPSR} & & \register{CPSR} & & \register{CPSR} & & \register{CPSR} & & \register{CPSR} \\
+	\hhline{-*{5}{~-}}
+	\multicolumn{1}{c}{} & & \cellcolor{gray!25}\register{SPSR\_fiq} & & \cellcolor{gray!25}\register{SPSR\_svc} & & \cellcolor{gray!25}\register{SPSR\_abt} & & \cellcolor{gray!25}\register{SPSR\_irq} & & \cellcolor{gray!25}\register{SPSR\_und} \\
+	\hhline{~*{5}{~-}}
+\end{tabular}\\
+\\
+\ttfamily
+\small
+\begin{tabular}{ll}\cellcolor{gray!25} \ & = banked register \\ \end{tabular} \\
+\\
+\hline
+\end{tabular}

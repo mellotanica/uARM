@@ -1,0 +1,23 @@
+\begin{minipage}{\textwidth}
+\begin{framed}
+	\begin{center}
+		\textbf{Coprocessors Access Register}
+	\end{center}
+	\centering
+	\ttfamily
+	\begin{bytefield}[bitwidth=11px,endianness=big]{32}
+		\bitheader{0-28,31}\\
+		\bitbox{4}{SBZ}	\small\bitboxes{2}{{cp13} {cp12} {cp11} {cp10} {cp9} {cp8} {cp7} {cp6} {cp5} {cp4} {cp3} {cp2} {cp1} {cp0}}\\
+	\end{bytefield}
+	\begin{tabular}{p{1.1cm}p{0.3cm}p{12cm}}
+	SBZ : & & Should Be Zero \\
+	cp* : & 00 & Access Denied. \\
+	&    & \scriptsize(Accessing this coprocessor generates Undefined Exception)\\
+	& 01 & Privileged Access Only. \\
+	&    & \scriptsize (Accessing this coprocessor in user mode generates Undefined Exception)\\
+	& 10 & RESERVED. \\
+	&    & \scriptsize (Unpredictable)\\
+	& 11 & Full Access.\\
+	\end{tabular} \\
+\end{framed}
+\end{minipage}

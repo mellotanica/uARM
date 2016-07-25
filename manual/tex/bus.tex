@@ -1,0 +1,150 @@
+\achapter{System Bus}
+
+The system bus connects each component of the system and lets processing units access physical memory and devices.
+
+The CPU and the System Coprocessor (CP15) can directly access the bus reading or writing values from or to specific addresses.
+
+The lower addresses (below \texttt{0x8000}) are reserved for special uses and are accessible under certain conditions.
+
+\asection{Reserved address space}
+The address region between \texttt{0x0} and \texttt{0x8000} holds the fast exception vector, device registers, system information, bootstrap ROM and the kernel reserved frame. Any access to this memory area in User mode are (should be) prohibited and treated by the system bus as errors.
+
+\asubsection{Exception Vector}\label{sec:man:exceptionVector}
+The first locations (\texttt{0x0} $\rightarrow$ \texttt{0x1C}) are occupied by exception vector, the processor jumps automatically to these addresses if an exception is risen and the bootstrap ROM typically writes a set of branch instructions to exception handlers in these fields.
+
+Exception vector is organized as follows:
+\\
+
+\begin{tabular}{r|l}
+\texttt{0x0} & Reset \\
+\texttt{0x4} & Undefined Instruction \\
+\texttt{0x8} & Software Interrupt \\
+\texttt{0xC} & Prefetch Abort \\
+\texttt{0x10} & Data Abort \\
+\texttt{0x14} & \emph{reserved} \\
+\texttt{0x18} & Interrupt Request \\
+\texttt{0x1C} & Fast Interrupt Request \\
+\end{tabular}
+
+
+\asubsection{System Information Registers}
+Six registers, from address \texttt{0x2D0} to \texttt{0x2E8}, show system specific information:
+\\
+
+\begin{tabular}{r|l}
+\texttt{0x2D0} & ram base address \\
+\texttt{0x2D4} & ram top address \\
+\texttt{0x2D8} & device registers base address \\
+\texttt{0x2DC} & time of day (Hi) \\
+\texttt{0x2E0} & time of day (Low) \\
+\texttt{0x2E4} & interval timer \\
+\texttt{0x2E8} & timer scale (fixed to 1 MHz) \\
+\end{tabular}
+
+\asubsubsection{Interval Timer}
+
+Interval timer is decremented at each CPU cycle, when its value becomes 0 a software interrupt is thrown. It can be set to a desired value by writing its address in any privileged mode.
+
+\asubsection{Bootstrap ROM}
+The bootstrap ROM is loaded starting from address \texttt{0x300}, its maximum size is 109 KB.
+See BIOS chapter for details.
+
+\asubsection{Kernel Reserved Frame}\label{sec:man:kernelReservedFrame}
+The last memory frame (\texttt{0x7000} $\rightarrow$ \texttt{0x7FFC}) is reserved for kernel use:
+\begin{itemize}
+\item \texttt{0x7000} $\rightarrow$ \texttt{0x7500}: Exception states vector - memory area in which processor states are saved and loaded when entering into/exiting from exception handlers code.
+\item \texttt{0x7600} $\rightarrow$ \texttt{0x7C00}: Segment table - here is stored the 128 elements segment table describing the virtual address space, for each ASID (entries in the segment table) there are two pointers to ASID's private and shared page tables.
+\item \texttt{0x7FF0} $\rightarrow$ \texttt{0x7FFC}: Rom stack - when invoking ROM functions this stack is used to pass parameters to the hardware routines.
+\end{itemize}
+
+\asubsubsection{Stored Processor States}
+Processor states are defined by library data structure \emph{state\_t}, this structure is composed of 20 unsigned 32-bit integers representing processor registers' values and coprocessor's system control registers' values. 
+
+Its structure is shown below:
+\nopagebreak
+\\
+\texttt{ typedef struct\{}
+
+\nopagebreak
+\texttt{unsigned int a1;\ \ \ \ //r0}
+
+\nopagebreak
+\texttt{unsigned int a2;\ \ \ \ //r1}
+
+\nopagebreak
+\texttt{unsigned int a3;\ \ \ \ //r2}
+
+\nopagebreak
+\texttt{unsigned int a4;\ \ \ \ //r3}
+
+\nopagebreak
+\texttt{unsigned int v1;\ \ \ \ //r4}
+
+\nopagebreak
+\texttt{unsigned int v2;\ \ \ \ //r5}
+
+\nopagebreak
+\texttt{unsigned int v3;\ \ \ \ //r6}
+
+\nopagebreak
+\texttt{unsigned int v4;\ \ \ \ //r7}
+
+\nopagebreak
+\texttt{unsigned int v5;\ \ \ \ //r8}
+
+\nopagebreak
+\texttt{unsigned int v6;\ \ \ \ //r9}
+
+\nopagebreak
+\texttt{unsigned int sl;\ \ \ \ //r10}
+
+\nopagebreak
+\texttt{unsigned int fp;\ \ \ \ //r11}
+
+\nopagebreak
+\texttt{unsigned int ip;\ \ \ \ //r12}
+
+\nopagebreak
+\texttt{unsigned int sp;\ \ \ \ //r13}
+
+\nopagebreak
+\texttt{unsigned int lr;\ \ \ \ //r14}
+
+\nopagebreak
+\texttt{unsigned int pc;\ \ \ \ //r15}
+
+\nopagebreak
+\texttt{unsigned int cpsr;}
+
+\nopagebreak
+\texttt{unsigned int CP15\_Control;}
+
+\nopagebreak
+\texttt{unsigned int CP15\_EntryHi;}
+
+\nopagebreak
+\texttt{unsigned int CP15\_Cause;}\\
+\nopagebreak
+\texttt{\}state\_t; }
+\\
+
+These structures take 80 bytes each. Given this value, the BIOS code will look for the Old/New entries at the following addresses:
+\\
+
+\begin{tabular}{r|l}
+\texttt{0x7000} & Interrupt Old \\
+\texttt{0x7080} & Interrupt New \\
+\texttt{0x7100} & TLB Old \\
+\texttt{0x7180} & TLB New \\
+\texttt{0x7200} & PGMT Old \\
+\texttt{0x7280} & PGMT New \\
+\texttt{0x7300} & Syscall Old \\
+\texttt{0x7380} & Syscall New \\
+\end{tabular}
+
+\asubsubsection{ASID 0}
+The first ASID is reserved for kernel address space and is automatically enabled in any Privileged mode, this way if a User mode program performs a System Call, the kernel routine has access to its address space and to the program's address space through saved processor state.
+
+\asection{Memory address space}
+
+The remaining addresses are mapped to memory subsystem and can be accessed through a number of instructions, see Memory Interface chapter for details.

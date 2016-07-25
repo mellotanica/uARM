@@ -1,0 +1,29 @@
+\documentclass[a4paper,12pt]{report}
+
+\usepackage{graphicx}
+
+\input{manualIncludes.tex}
+
+\newcommand{\achapter}[1]{\chapter{#1}}
+\newcommand{\asection}[1]{\section{#1}}
+\newcommand{\asubsection}[1]{\subsection{#1}}
+\newcommand{\asubsubsection}[1]{\subsubsection{#1}}
+\newcommand{\specsd}{.}
+
+\textwidth=450pt\oddsidemargin=0pt
+
+\begin{document}
+
+\begin{titlepage}
+\begin{center}
+	\huge\textbf{$\mu$ARM Informal Specifications}
+\end{center}
+\vfill
+\Large{Marco Melletti - melletti.marco@gmail.com\\http://www.mellotanica.com/uarm}
+\end{titlepage}
+
+\tableofcontents
+
+\input{manualContent.tex}
+
+\end{document}

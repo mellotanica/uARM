@@ -1,0 +1,98 @@
+\achapter{Memory Interface}
+Memory system is controlled by Program Status Register (CPSR) and System Coprocessor's registers 1 and 2 (CP15.R1 \& CPSR.R2). It supports two operating modes:
+
+\begin{itemize}
+\item physical addressing mode, 
+\item virtual addressing mode.
+\end{itemize}
+
+In addition to address translation modes, the portion of accessible memory is dictated by processor operating mode:
+
+\begin{itemize}
+\item User mode $\rightarrow$ User Space
+\item Privileged mode $\rightarrow$ All Memory
+\end{itemize}
+
+In each addressing mode these portions have a specific definition.
+
+As described in System Bus chapter, addresses below \texttt{0x00008000} are reserved for hardware/protected functions and belong to the \emph{reserved address space}.
+
+\asection{Physical addressing mode}
+The machine starts execution in this mode, each address is used directly without conversions.
+
+All the available memory is directly accessible in Privileged mode and any address over 0x00008000 is directly accessible in User mode.
+
+\vspace{10px}
+
+\input{\specsd/tex/tables/mem_ph.tex}
+
+\asection{Virtual addressing mode}\label{sec:man:virtualMemory}
+By setting M flag in System Coprocessor's register 1 (CP15.R1.M, that is least significant bit), you enable memory address translation.
+
+When virtual memory is active, each address above \texttt{0x0000.8000} is treated as a logical address and translated to the corresponding physical address from the memory subsystem, addresses below \texttt{0x0000.8000} are always treated as physical addresses, as they refer to a memory region reserved for bus access.
+
+In Privileged mode all logical memory is accessible, when exacting in User mode, only User Segments are accessible instead: the first one (Useg2) starts from address \texttt{0x8000.0000} and extends over the next GB, the second one (Useg3) starts from address \texttt{0xC000.0000} and terminates at the top of the logical memory, address \texttt{0xFFFF.FFFF}.
+
+\vspace{10px}
+
+\input{\specsd/tex/tables/mem_vir.tex}
+
+\vspace{10px}
+
+When the MMU is enabled the user process ASID is stored in the EntryHy field of CP15's 64bit register R2 along with the Virtual Page number (e.g. the 20 most significant bits of the logical address). The EntryLow filed is filled with the Physical Page Frame address and is kept up to date after each modification of CP15.R2.EntryHy value.
+
+The CP15 register 2 is organized as a Page Table Entry (PTE):
+\\
+
+\vspace{5px}
+\begin{adjustbox}{center}
+\input{\specsd/tex/tables/CP15.R2.tex}
+\end{adjustbox}
+\vspace{5px}
+
+The Low half of each entry contains 4 flags used for memory protection:
+\begin{itemize}
+\item \textbf{N}on Chachable bit: not used by \uarm{} implementation.
+\item \textbf{D}irty bit: if the bit is clear, any write access to the physical frame locations will rise a TLB-Modification exception.
+\item \textbf{V}alid bit: if bit is set the Page Table Entry is considered valid, otherwise a TLB-Invalid exception is raised.
+\item \textbf{G}lobal bit: if the bit is set, the Page Table Entry will match the corresponding VPN regardless of the ASID.
+\end{itemize}
+
+Page Table Entries are grouped together in Page Tables, each Page Table begins with a special word (PgTbl-Header) composed of the PgTbl Magic Number \texttt{0x2A} stored in the most significant 8 bits and the number of page table entries in the least significant 20 bits.
+
+The Segment Table specifies the physical addresses of the Page Tables of the three Segments for each ASID, the general structure is shown below:
+\\
+
+\vspace{5px}
+\begin{adjustbox}{center}
+\input{\specsd/tex/tables/seg_tbl.tex}
+\end{adjustbox}
+\vspace{5px}
+
+\vspace{5px}
+\begin{adjustbox}{center}
+\input{\specsd/tex/tables/pag_tbl.tex}
+\end{adjustbox}
+\vspace{5px}
+
+
+\uarm{} implements a Translation Lookaside Buffer (TLB) to translate logical addresses to physical ones, the buffer contains a specific amount of recently used PTEs and uses a random algorithm to select which entry to replace with a newly retrieved PTE.
+The number of available TLB slots is variable between 4 and 64 elements, it is configurable through the settings window and needs a reset of the machine to effectively change.
+
+Each time a memory access is requested, the memory subsystem checks if the requested virtual Page has a corresponding PTE in the TLB for the current ASID or with the \texttt{G} flag set, if this is the case it concatenates the physical frame address with the actual requested offset to access the right address.
+
+If the necessary PTE is not present in the TLB, a TLB-Miss exception is raised and the BIOS reacts with a TLB Refill event, which executes the next steps:
+\begin{enumerate}
+\item Retrieve the PgTbl address from the Segment Table for the current ASID and required Segment.
+\item Access the PgTbl and check if it is well-formed and well-located:
+	\begin{itemize}
+	\item Address must be greater than \texttt{0x0000.8000},
+	\item Address must be word aligned,
+	\item PgTbl-Header must be valid (magic number is \texttt{0x2A}),
+	\item PgTbl must not extend outside physical memory (e.g. [PgTbl addr + PgTbl size] $<$ RAMTOP).
+	\end{itemize}
+\item Linearly search the PgTbl for matching Virtual Page with correct ASID or \texttt{G} flag set.
+\item If a matching PTE has been found, write it back in a random slot of the TLB and resume execution from the same instruction that raised the TLB-Miss exception, else raise a PTE-Miss exception.
+\end{enumerate}
+
+The random algorithm uses all the TLB slots besides the first one (e.g. item~0) to ensure a safe entry is always available.

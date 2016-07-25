@@ -1,0 +1,164 @@
+\achapter{BIOS \& System Library}
+
+\asection{BIOS}
+
+\asubsection{Bootstrap Function}
+
+The bootstrap program bundled with \uarm{} installation has initializes hardware facilities and starts execution.
+
+The operation it performs are:
+
+\begin{enumerate}
+\item populate Exception Vector with Branch instructions to basic exception handling routines
+\item set default Exception States Vector entries with \texttt{Branch to PANIC} instructions
+\item retrieve entry point from kernel binary file
+\item set execution mode to System mode with ARM ISA and all interrupts enabled
+\item set exit point and ramtop value
+\item clear all used scratch registers
+\item jump to entry point
+\end{enumerate}
+
+\asubsection{Low Level Handlers}
+
+In addition to bootstrapping the machine, BIOS code provides low level exception handlers:
+
+\asubsubsection{Undefined Instruction Exception Handler}
+
+When an Undefined Instruction Exception is risen, the processor stores its internal state at the moment of the exception into the \emph{Old Area} of the exception states vector relative to Undefined Exceptions and loads the content of the \emph{New Area}.
+
+\asubsubsection{Interrupts Exception Handlers}
+
+For both Fast and regular Interrupt Exceptions the processor behaves in a way similar to Undefined Exceptions, it stores its state at the time of the interrupt and loads the \emph{New Area} from Interrupts Exception States Vector's slot.
+
+\asubsubsection{Software Interrupt Handler}
+
+In addition to the regular operations (the same as the Undef and Interrupts handlers), in case of an SWI instruction the BIOS responds for known Low Level Services and sets the Cause register to the right value for the requested interruption (Syscall or Breakpoint).
+
+\asubsubsection{Data and Prefetch Exception Handlers}
+
+These two handlers share most of their code and perform special operations in case Virtual Memory is turned on:
+\begin{itemize}
+	\item if VM is disabled, Abort Exceptions are treated as Undefined Exceptions,
+	\item else low level TLB management is required.
+\end{itemize}
+
+In the latter case, the handler corrects the return address, setting it to the address of the faulting instruction and stores the processor state in the \emph{TLB Old Area} of the Exception States Vector.
+It then checks if the Abort was labeled as a TLB-Miss and, if it was the case, it performs the TLB Refill procedure described in Virtual Memory section.
+
+\asubsection{Low Level Services}
+
+Low level services are requested by issuing a SWI instruction with the right parameter:
+
+\asubsubsection{Halt}
+
+By executing \texttt{SWI \#1}, the BIOS will print "\texttt{SYSTEM HALTED.}" on Terminal 0 and shut down the virtual machine.
+
+\asubsubsection{Panic}
+
+By executing \texttt{SWI \#2}, the BIOS will print "\texttt{KERNEL PANIC.}" on Terminal 0 and enter an infinite loop.
+
+\asubsubsection{LDST}
+
+A \texttt{SWI \#3} instruction will begin the loading of the processor state stored at the address specified by \emph{a1} register to actual processor's registers, checking destination mode and setting only the right processor's registers window.
+
+\asubsubsection{Wait}
+
+By executing \texttt{SWI \#4}, the BIOS will put the machine in IDLE state waiting for an interrupt to wake the system up.
+
+\asubsubsection{System Calls / Breakpoints}
+
+If a \texttt{SWI \#8} or \texttt{SWI \#9} instruction is executed, the syscall handler passes up the call, setting the right cause in CP15 Cause register.
+
+\asection{System Library}
+
+System library is provided by \emph{libuarm}, it offers a small but increasing set of methods to access low level functionalities.
+
+\asubsubsection{tprint(char *s)}
+
+Print a '\textbackslash0' terminated array of chars to Terminal 0.
+
+This function uses busy waiting to wait for the device to be ready.
+
+\asubsubsection{HALT()}
+
+Run BIOS Halt function.
+
+\asubsubsection{PANIC()}
+
+Run BIOS Panic function.
+
+\asubsubsection{WAIT()}
+
+Run BIOS Wait function.
+
+\asubsubsection{LDST(void *addr)}
+
+Calls the BIOS function that loads the entire processor state from state\_t stored at \emph{addr} address.
+
+\asubsubsection{STST(void *addr)}
+
+Stores the actual processor state in state\_t structure pointed by \emph{addr}.
+
+\asubsubsection{SYSCALL(unsigned int sysNum, unsigned int arg1, unsigned int arg2, unsigned int arg3)}
+
+Generates a software exception leading to kernel defined Syscall handler.
+
+\asubsubsection{BREAK(unsigned int arg0, unsigned int arg1, unsigned int arg2, unsigned int arg3)}
+
+Generates a software exception leading to kernel defined Breakpoint handler.
+
+\asubsubsection{getSTATUS() / setSTATUS()}
+
+Manipulate Current Program Status Register.
+
+\asubsubsection{getCAUSE() / setCAUSE()}
+
+Manipulate Exception/Interrupt Cause register.
+
+\asubsubsection{getTIMER() / setTIMER()}
+
+Manipulate Interval Timer.
+
+\asubsubsection{getTODHI() / getTODLO()}
+
+Returns the upper/lower part of Time of Day 64-bit register.
+
+\asubsubsection{getCONTROL() / setCONTROL()}
+
+Manipulate System Control Register.
+
+\asubsubsection{getTLB\_Index() / setTLB\_Index(unsigned int index)}
+
+Manipulate TLB Index register.
+
+\asubsubsection{getTLB\_Random()}
+
+Returns TLB Random register.
+
+\asubsubsection{getEntryHi() / setEntryHi(unsigned int hi) / getEntryLo() / setEntryLo(unsigned int lo)}
+
+Manipulate TLB Entry Hi and Entry Low registers.
+
+\asubsubsection{getBadVAddr()}
+
+Returns BadVAddr register, which contains the faulting address in case of Page Fault Exceptions.
+
+\asubsubsection{TLBWR()}
+
+Write the contents of EntryHi and EntryLo to the TLB slot indicated by TLB Random register value.
+
+\asubsubsection{TLBWI()}
+
+Write the contents of EntryHi and EntryLo to the TLB slot indicated by TLB Index register value.
+
+\asubsubsection{TLBR()}
+
+Read the contents of TLB slot indicated by TLB Index register value in EntryHi and EntryLo registers.
+
+\asubsubsection{TLBP()}
+
+Scan the TLB searching for a pair that matches VPN in EntryHi and ASID in EntryHi or that has G flag set in EntryLo and is Valid, if a match is found, its index in the TLB cache is stored as TLB Index register value, otherwise that register will have 31st bit set to 1.
+
+\asubsubsection{TLBCLR()}
+
+Set all TLB contents to 0.

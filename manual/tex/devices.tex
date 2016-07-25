@@ -1,0 +1,38 @@
+\achapter{External Devices}
+
+\asubsection{Installed Device Table}
+Five words, from \texttt{0x20} to \texttt{0x30}, show the status of active devices. Each word represent a device line:
+\\
+
+\begin{tabular}{r|l}
+\texttt{0x20} & Disks \\
+\texttt{0x24} & Tapes \\
+\texttt{0x28} & Network \\
+\texttt{0x2C} & Printers \\
+\texttt{0x30} & Terminals \\
+\end{tabular}
+\\
+
+For each device line, if a specific device \emph{i} is enable, \emph{i}\textsuperscript{th} bit in representing word has value 1.
+
+\asubsection{Device Registers}
+Addresses \texttt{0x40} to \texttt{0x2C0} hold device registers, the behavior of this memory region is the same as $\mu$MPS machine's.
+
+\asubsection{Pending Interrupt Bitmap}
+Most of the interrupt lines are shared through all the devices of the same class, to identify which device is requesting for interrupt there are five registers from address \texttt{0x6FE0} to \texttt{0x6FF0} that hold a bitmap of interrupting devices per interrupt line.
+
+This region is organized exactly as the Installed Device Table:
+\\
+
+\begin{tabular}{r|l}
+\texttt{0x6FE0} & Disks \\
+\texttt{0x6FE4} & Tapes \\
+\texttt{0x6FE8} & Network \\
+\texttt{0x6FEC} & Printers \\
+\texttt{0x6FF0} & Terminals \\
+\end{tabular}
+\\
+
+For each word, \emph{i} bit is set if \emph{i}\textsuperscript{th} device on that line is requesting for interrupt.
+
+

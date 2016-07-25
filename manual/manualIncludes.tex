@@ -1,0 +1,24 @@
+\usepackage[table]{xcolor}
+\usepackage{longtable}
+\usepackage{array}
+\usepackage{multirow}
+\usepackage{ulem}
+\usepackage{bytefield}
+\usepackage{framed}
+\usepackage{adjustbox}
+\usepackage{hhline}
+
+% restore default italic emph behavior
+\makeatletter
+\DeclareRobustCommand{\myem}{%
+  \@nomath\em
+  \ifdim\fontdimen\@ne\font > \z@
+    \eminnershape
+  \else
+    \itshape
+  \fi}
+\DeclareTextFontCommand{\emph}{\myem}
+\makeatother
+
+\newcommand{\uarm}{$\mu$ARM}
+\newcommand{\register}[1]{\textbf{#1}}

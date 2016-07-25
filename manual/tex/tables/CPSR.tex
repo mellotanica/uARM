@@ -1,0 +1,40 @@
+\newcommand{\fakethirtytwobits}[1]{%
+	\tiny
+	\ifnum#1=1234567890
+		#1
+	\else
+		\ifnum#1>13
+			\count32=#1
+			\advance\count32 by 13
+			\the\count32%
+		\else
+			\ifnum#1<9
+				#1%
+			\else
+				\ifnum#1=11
+					$\cdots$%
+				\fi
+			\fi
+		\fi
+	\fi
+}
+\begin{minipage}{\textwidth}
+\begin{framed}
+	\begin{center}
+		\textbf{Program Status Register}
+	\end{center}
+	\centering
+	\ttfamily
+	\begin{bytefield}[bitwidth=19px,endianness=big,bitformatting=\fakethirtytwobits]{19}
+	\bitbox[]{4}{condition code flags} \bitbox[]{7}{reserved bits} \bitbox[]{8}{control flags}\\
+	\bitheader{0-18} \\
+	\bitboxes{1}{NZCV} \bitbox{7}{\color{gray}\rule{\width}{\height}} \bitboxes{1}{IFT} \bitboxes{1}{{M4} {M3} {M2} {M1} {M0}}\\
+	\end{bytefield}
+	\begin{tabular}{ll}
+	N : Negative / less then & I : IRQ disabled \\
+	Z : Zero & F : FIQ disabled \\
+	C : Carry / Borrow / Extend & T : State bit (Thumb enabled)\\
+	V : Overflow & M : Mode bits \\
+	\end{tabular} \\
+\end{framed}
+\end{minipage}
