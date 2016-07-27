@@ -59,7 +59,7 @@ The first memory frame (\addr{0x0000.7000} $\rightarrow$ \addr{0x0000.7FFC}) is 
 \spinput{bus_krf.tex}
 
 The \uline{Exception states vector} is a memory area to which processor states are saved and loaded from when entering into/exiting from exception handlers code.
-The \uline{Segment table} holds 128 elements describing the virtual address space, for each ASID (correspondingo to one entry in the segment table) there are three pointers to ASID's page tables (see sec. \ref{sec:man:segmentTable}).
+The \uline{Segment table} holds 128 elements describing the virtual address space, for each ASID (corresponding to one entry in the segment table) there are three pointers to ASID's page tables (see sec. \ref{sec:man:segmentTable}).
 When invoking ROM functions, the four words wide \uline{ROM stack} (the last four words in the frame) is used as a memory stack and to pass parameters by the low level routines.
 
 \asubsubsection{Stored Processor States}

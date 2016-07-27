@@ -18,7 +18,7 @@ In each addressing mode these portions have a specific definition.
 As stated in section \ref{sec:man:reservedAddressSpace}, addresses below \addr{0x0000.8000} are reserved for hardware/protected functions and belong to the \uline{reserved address space} independently from the active addressing mode.
 
 \asection{Physical addressing mode}
-This is the basic memory access scheme, when enabled, any memory access is directed to the physicall address specified in the request, without any conversions.
+This is the basic memory access scheme, when enabled, any memory access is directed to the physical address specified in the request, without any conversions.
 The machine begins execution with this mode active.
 
 All the available memory is directly accessible in Privileged mode and any address over \addr{0x0000.8000} is directly accessible in User mode.
