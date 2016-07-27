@@ -1,0 +1,15 @@
+\begin{minipage}{\textwidth}
+\begin{framed}
+	\begin{center}
+		\textbf{Kernel Reserved Frame}
+	\end{center}
+	\centering
+	\begin{bytefield}{26}
+		\memsection{0x0000.7FFC}{}{1}{16}{ROM Stack}\\
+		\memsection{}{}{4}{16}{\color{gray}\rule{\width}{\height}}\\
+		\memsection{0x0000.7C00}{0x0000.7600}{8}{16}{Segment Table}\\
+		\colorbitbox{gray}{16}{}\\
+		\memsection{0x0000.7500}{0x0000.7000}{5}{16}{Exception States Vector}
+	\end{bytefield}
+\end{framed}
+\end{minipage}

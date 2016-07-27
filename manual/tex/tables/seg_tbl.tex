@@ -1,23 +1,28 @@
-\begin{tabular}{r|c|c|c|l}
-\multicolumn{5}{c}{Segent Table:} \\
-\multicolumn{5}{c}{}\\
-\multicolumn{1}{c}{} & \multicolumn{1}{c}{Kseg0} & \multicolumn{1}{c}{Useg2} & \multicolumn{1}{c}{Useg3} & \multicolumn{1}{c}{} \\
-\multicolumn{1}{c}{} & \multicolumn{1}{c}{$\downarrow$} & \multicolumn{1}{c}{$\downarrow$} & \multicolumn{1}{c}{$\downarrow$} & \multicolumn{1}{c}{\texttt{0x0000.7C00}} \\
-\cline{2-4}
-ASID 127 $\rightarrow$ & PgTbl addr & PgTbl addr & PgTbl addr & \\
-\cline{2-4}
-ASID 126 $\rightarrow$ & PgTbl addr & PgTbl addr & PgTbl addr & \\
-\cline{2-4}
-\multicolumn{1}{c}{} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{$\cdot$} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{} \\
-\multicolumn{1}{c}{} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{$\cdot$} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{} \\
-\multicolumn{1}{c}{} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{$\cdot$} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{} \\
-\cline{2-4}
-& PgTbl addr & PgTbl addr & PgTbl addr & $\leftarrow$ ASID 2 \\
-\cline{2-4}
-& PgTbl addr & PgTbl addr & PgTbl addr & $\leftarrow$ ASID 1 \\
-\cline{2-4}
-\texttt{0x0000.7600} & PgTbl addr & PgTbl addr & PgTbl addr & $\leftarrow$ ASID 0 \\
-\cline{2-4}
-\end{tabular}
-
+\begin{minipage}{\textwidth}
+	\begin{framed}
+		\begin{center}
+			\textbf{Segment Table}
+		\end{center}
+		\centering
+		\begin{tabular}{r|c|c|c|l}
+			\multicolumn{1}{c}{} & \multicolumn{1}{c}{Kseg0} & \multicolumn{1}{c}{Useg2} & \multicolumn{1}{c}{Useg3} & \multicolumn{1}{c}{} \\
+			\multicolumn{1}{c}{} & \multicolumn{1}{c}{$\downarrow$} & \multicolumn{1}{c}{$\downarrow$} & \multicolumn{1}{c}{$\downarrow$} & \multicolumn{1}{c}{\addr{0x0000.7C00}} \\
+			\cline{2-4}
+			ASID 127 $\rightarrow$ & PgTbl addr & PgTbl addr & PgTbl addr & \\
+			\cline{2-4}
+			ASID 126 $\rightarrow$ & PgTbl addr & PgTbl addr & PgTbl addr & \\
+			\cline{2-4}
+			\multicolumn{1}{c}{} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{$\cdot$} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{} \\
+			\multicolumn{1}{c}{} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{$\cdot$} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{} \\
+			\multicolumn{1}{c}{} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{$\cdot$} & \multicolumn{1}{c}{} & \multicolumn{1}{c}{} \\
+			\cline{2-4}
+			& PgTbl addr & PgTbl addr & PgTbl addr & $\leftarrow$ ASID 2 \\
+			\cline{2-4}
+			& PgTbl addr & PgTbl addr & PgTbl addr & $\leftarrow$ ASID 1 \\
+			\cline{2-4}
+			\addr{0x0000.7600} & PgTbl addr & PgTbl addr & PgTbl addr & $\leftarrow$ ASID 0 \\
+			\cline{2-4}
+		\end{tabular}
+	\end{framed}
+\end{minipage}
 

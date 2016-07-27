@@ -1,0 +1,27 @@
+\begin{minipage}{\textwidth}
+\begin{framed}
+	\begin{center}
+		\textbf{Installed Devices Table}
+	\end{center}
+	\centering
+	\begin{bytefield}[bitheight=1.1\baselineskip]{18}
+		\bitbox{8}{Disks} & \bitbox[]{10}{\addr{0x0000.0020}}\\
+		\bitbox{8}{Tapes} & \bitbox[]{10}{\addr{0x0000.0024}}\\
+		\bitbox{8}{Network} & \bitbox[]{10}{\addr{0x0000.0028}}\\
+		\bitbox{8}{Printers} & \bitbox[]{10}{\addr{0x0000.002C}}\\
+		\bitbox{8}{Terminals} & \bitbox[]{10}{\addr{0x0000.0030}}\\
+	\end{bytefield}
+	\begin{bytefield}[endianness=big]{32}
+		\bitheader{0-31}\\
+		\colorbitbox{gray}{24}{Device Class Bitmap}
+		\bitbox{1}{\vertbox{D$_{7}$}}
+		\bitbox{1}{\vertbox{D$_{6}$}}
+		\bitbox{1}{\vertbox{D$_{5}$}}
+		\bitbox{1}{\vertbox{D$_{4}$}}
+		\bitbox{1}{\vertbox{D$_{3}$}}
+		\bitbox{1}{\vertbox{D$_{2}$}}
+		\bitbox{1}{\vertbox{D$_{1}$}}
+		\bitbox{1}{\vertbox{D$_{0}$}}
+	\end{bytefield}
+\end{framed}
+\end{minipage}

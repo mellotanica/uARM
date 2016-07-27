@@ -1,23 +1,22 @@
-\begin{tabular}{p{0.45\textwidth}p{0.45\textwidth}}
-\multicolumn{2}{c}{Page Table:} \\
-\multicolumn{2}{c}{}\\
-\hline
-\multicolumn{2}{|c|}{PgTbl Entry n}\\
-\hline
-\multicolumn{2}{c}{$\cdot$}\\
-\multicolumn{2}{c}{$\cdot$}\\
-\multicolumn{2}{c}{$\cdot$}\\
-\hline
-\multicolumn{2}{|c|}{PgTbl Entry 2}\\
-\hline
-\multicolumn{2}{|c|}{PgTbl Entry 1}\\
-\hline
-\multicolumn{2}{|c|}{PgTbl Entry 0}\\
-\hline
-\hfill PgTbl Header Word $\rightarrow$ & 
-	\begin{tabular}{lrclr}
-	\multicolumn{2}{|c|}{MagicNO} & \cellcolor{gray}& \multicolumn{2}{|c|}{\hspace{14px}EntryCNT\hspace{11px}\ } \\
-	\hline
-	\footnotesize{31} & \footnotesize{24} & \ \ \ \ & \footnotesize{19} & \footnotesize{0} \\
-	\end{tabular}
-\end{tabular}
+\begin{minipage}{\textwidth}
+	\begin{framed}
+		\begin{center}
+			\textbf{Page Table}
+		\end{center}
+		\centering
+		\begin{bytefield}[bitwidth=6px,endianness=big]{64}
+			\bitbox{64}{PgTbl Entry n}\\
+			\bitbox[]{64}{$\cdot$}\\
+			\bitbox[]{64}{$\cdot$}\\
+			\bitbox[]{64}{$\cdot$}\\
+			\bitbox{64}{PgTbl Entry 2}\\
+			\bitbox{64}{PgTbl Entry 1}\\
+			\bitbox{64}{PgTbl Entry 0}\\
+			\bitbox[]{32}{\hfill PgTbl Header Word $\rightarrow$ \hspace{3px}}
+			\bitbox{8}{\footnotesize MagicNO}
+			\bitbox{4}{\color{gray}\rule{\width}{\height}}
+			\bitbox{20}{EntryCNT}\\
+			\bitheader{0,19,24,31}
+		\end{bytefield}
+	\end{framed}
+\end{minipage}

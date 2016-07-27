@@ -1,18 +1,31 @@
-\begin{tabular}{|m{50px}|l c|m{50px}|l}
-\multicolumn{2}{c}{User Mode} & \multicolumn{1}{l}{} & \multicolumn{2}{c}{Kernel Mode}\\
-\cline{1-1}\cline{4-4}
-\centering \multirow{2}{*}{Useg3} & \texttt{0xFFFF.FFFF} & & \centering \multirow{2}{*}{Useg3} & 
-\texttt{0xFFFF.FFFF} \\
- & \texttt{0xC000.0000} & & & \texttt{0xC000.0000} \\
-\cline{1-1}\cline{4-4}
-\centering \multirow{2}{*}{Useg2} & & & \centering \multirow{2}{*}{Useg2} & \\
- & \texttt{0x8000.0000} & \hspace{20px} & & \texttt{0x8000.0000} \\
-\cline{1-1}\cline{4-4}
-\cellcolor{gray} & & & \centering \multirow{3}{*}{Kseg0} & \\
-\cellcolor{gray} & & & & \\
-\cellcolor{gray} & & & & \texttt{0x00008000} \\
-\cline{4-4}
-\cellcolor{gray}\hspace{50px} & \texttt{0x00000000} & & \centering BUS & \texttt{0x00000000} 
-\\
-\cline{1-1}\cline{4-4}
-\end{tabular}
+\begin{minipage}{\textwidth}
+	\begin{framed}
+		\begin{center}
+			\textbf{Physical Memory View}
+		\end{center}
+		\centering
+		\begin{minipage}{.47\textwidth}
+			\centering
+			User Mode
+
+			\vspace{4px}
+			\begin{bytefield}{18}
+				\memsection{0xFFFF.FFFF}{0xC000.0000}{4}{8}{Useg3}\\
+				\memsection{\vspace{.8\baselineskip}}{0x8000.0000}{4}{8}{Useg2}\\
+				\memsection{\vspace{.8\baselineskip}}{0x0000.0000}{8}{8}{\color{gray}\rule{\width}{\height}}\\
+			\end{bytefield}
+		\end{minipage}
+		\begin{minipage}{.47\textwidth}
+			\centering
+			Kernel Mode
+
+			\vspace{4px}
+			\begin{bytefield}{18}
+				\memsection{0xFFFF.FFFF}{0xC000.0000}{4}{8}{Useg3}\\
+				\memsection{\vspace{.8\baselineskip}}{0x8000.0000}{4}{8}{Useg2}\\
+				\memsection{\vspace{.8\baselineskip}}{0x0000.8000}{5}{8}{Kseg0}\\
+				\memsection{\vspace{.8\baselineskip}}{0x0000.0000}{3}{8}{BUS}\\
+			\end{bytefield}
+		\end{minipage}
+	\end{framed}
+\end{minipage}

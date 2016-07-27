@@ -1,0 +1,21 @@
+\begin{minipage}{\textwidth}
+\begin{framed}
+	\begin{center}
+		\textbf{Reserved Address Space}
+	\end{center}
+	\centering
+	\begin{bytefield}[]{30}
+		\memsection{0x0000.7FFC}{0x0000.7000}{10}{20}{Kernel Reserved Frame}\\
+		\memsection{0x0000.6FE0}{}{1}{20}{Pending Interrupts Bitmap}\\
+		\memsection{}{}{4}{20}{\color{gray}\rule{\width}{\height}}\\
+		\memsection{}{0x0000.0300}{16}{20}{Bootstrap ROM}\\
+		\memsection{}{}{1}{20}{\color{gray}\rule{\width}{\height}}\\
+		\memsection{0x0000.02D0}{}{1}{20}{System Information Registers}\\
+		\memsection{}{}{1}{20}{\color{gray}\rule{\width}{\height}}\\
+		\memsection{0x0000.02C0}{0x0000.0040}{3}{20}{Device Registers}\\
+		\memsection{}{}{1}{20}{\color{gray}\rule{\width}{\height}}\\
+		\memsection{0x0000.0020}{}{1}{20}{Installed Devices Table}\\
+		\memsection{0x0000.0000}{}{1}{20}{Exception Vector}\\
+	\end{bytefield}
+\end{framed}
+\end{minipage}

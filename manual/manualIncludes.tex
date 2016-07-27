@@ -11,15 +11,47 @@
 % restore default italic emph behavior
 \makeatletter
 \DeclareRobustCommand{\myem}{%
-  \@nomath\em
-  \ifdim\fontdimen\@ne\font > \z@
-    \eminnershape
-  \else
-    \itshape
-  \fi}
+	\@nomath\em
+	\ifdim\fontdimen\@ne\font > \z@
+	\eminnershape
+	\else
+	\itshape
+\fi}
 \DeclareTextFontCommand{\emph}{\myem}
 \makeatother
 
 \newcommand{\uarm}{$\mu$ARM}
 \newcommand{\register}[1]{\textbf{#1}}
 \newcommand{\field}[1]{\textit{#1}}
+\newcommand{\addr}[1]{\texttt{#1}}
+
+\newcommand{\centerinput}[1]{\vspace{5px}
+\begin{adjustbox}{center}
+	\input{#1}
+\end{adjustbox}
+\vspace{5px}}
+\newcommand{\spinput}[1]{\centerinput{\specsd/tex/tables/#1}}
+
+%bytefield macros
+\newcommand{\colorbitbox}[3]{%
+	\rlap{\bitbox{#2}{\color{#1}\rule{\width}{\height}}}%
+	\bitbox{#2}{#3}}
+% facilitates the creation of memory maps. Start address at the bottom,
+% end address at the top.
+% syntax:
+% \memsection{end address}{start address}{height in lines}{bits of textbox}{text in box}
+\newcommand{\memsection}[5]{%
+% define the height of the memsection
+	\bytefieldsetup{bitheight=#3\baselineskip}%
+	\bitbox{#4}{#5}% print box with caption
+	\bitbox[]{10}{%
+		\addr{#1}% print end address
+		\\
+		% do some spacing
+		\vspace{#3\baselineskip}
+		\vspace{-2\baselineskip}
+		\vspace{-#3pt}
+		\addr{#2}% print start address
+	}%
+}
+\newcommand{\vertbox}[1]{\rotatebox{90}{\footnotesize #1}}

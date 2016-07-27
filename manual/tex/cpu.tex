@@ -18,11 +18,7 @@ Only protected modes have the 17th register, which automatically stores the prev
 
 The first 8 registers, in addition to the Program Counter (\register{R15}) are common to each "window" of visible registers, each protected mode has its dedicated Stack Pointer and Link Return registers and Fast Interrupt mode has all the last 7 registers uniquely banked, to allow for a fast context switch, while System and User mode share the full set of 16 general purpose registers.
 
-\vspace{5px}
-\begin{adjustbox}{center}
-\input{\specsd/tex/tables/ARM_reg.tex}
-\end{adjustbox}
-\vspace{5px}
+\spinput{ARM_reg.tex}
 
 Even if the global 16 registers are defined as general purpose registers, there are some conventions adopted by the compiler in their use. The following list shows the full set of processor register visible in each mode with their conventional abbreviations and extended meaning:
 
@@ -51,11 +47,7 @@ When the processor is in Thumb state the register window is reduced, showing 12 
 
 Only the first 8 registers (\register{R0} $\rightarrow$ \register{R7}) are general purpose, the higher 3 are specialized registers that act as Stack Pointer, Link Return and Program Counter. Each protected mode has its own banked instance of Stack Pointer and Link Return in addition to Saved Program Status Register to allow for faster exception handling. 
 
-\vspace{5px}
-\begin{adjustbox}{center}
-\input{\specsd/tex/tables/Thumb_reg.tex}
-\end{adjustbox}
-\vspace{5px}
+\spinput{Thumb_reg.tex}
 
 \asection{System Coprocessor}
 
@@ -71,11 +63,7 @@ See sec. \ref{sec:manual:systemControlRegister} for further details.
 \asubsubsection{Register 1 (\register{CCB}) - Coprocessors Access Register}
 \register{R1.CCB} shows which coprocessors are available. Values can be written to this register to enable/disable available coprocessors a part from CP15.
 
-\vspace{5px}
-\begin{adjustbox}{center}
-\input{\specsd/tex/tables/CP15_CCB.tex}
-\end{adjustbox}
-\vspace{5px}
+\spinput{CP15_CCB.tex}
 
 \asubsubsection{Register 2 - Page Table Entry}
 \register{R2} is a 64-bit register which contains the active Page Table Entry when MMU is enabled. Its structure is the same as the Page Table Entry described in sec. \ref{sec:man:virtualMemory}.
@@ -106,11 +94,7 @@ Each of the two has a special structure and changes the way the system operates.
 
 The \register{CPSR} (as well as the \register{SPSR}, if the active mode has one) is always accessible in ARM state via the special instructions MSR (move register to PRS) and MRS (move PRS to register). This register shows arithmetical instructions' additional results (condition code flags), allows to toggle interrupts and switch states/modes. Its structure is shown below:
 
-\vspace{5px}
-\begin{adjustbox}{center}
-\input{\specsd/tex/tables/CPSR.tex}
-\end{adjustbox}
-\vspace{5px}
+\spinput{CPSR.tex}
 
 
 
@@ -136,11 +120,7 @@ The first 5 bits of \register{CPSR} are used to set processor execution mode, th
 
 System Coprocessor (CP15) holds the System control register (\register{CP15.R1}), which controls Virtual Memory and Thumb availability (plus some other hardware specific settings that are not implemented in current release):
 
-\vspace{5px}
-\begin{adjustbox}{center}
-\input{\specsd/tex/tables/SCB.tex}
-\end{adjustbox}
-\vspace{5px}
+\spinput{SCB.tex}
 
 \asection{Processor States}
 
@@ -154,11 +134,7 @@ The main Instruction Set is the ARM ISA, the processor starts execution in this 
 
 ARM instructions are 32 bits long and must be word-aligned. The table below shows a brief summary of the instruction set. (For a much detailed description of each instruction refer to \emph{ARM7TMI Data Sheet} and \emph{ARM7TMI Technical Reference Manual})
 
-\vspace{5px}
-\begin{adjustbox}{center}
-\input{\specsd/tex/tables/ARM_isa.tex}
-\end{adjustbox}
-\vspace{5px}
+\spinput{ARM_isa.tex}
 
 \asubsection{Thumb ISA}
 
@@ -168,11 +144,7 @@ Thumb instructions can be seen as "shortcuts" to execute ARM code, as the perfor
 
 The following table summarizes Thumb instructions. (For a much detailed description of each instruction refer to \emph{ARM7TMI Data Sheet} and \emph{ARM7TMI Technical Reference Manual})
 
-\vspace{5px}
-\begin{adjustbox}{center}
-\input{\specsd/tex/tables/Thumb_isa.tex}
-\end{adjustbox}
-\vspace{5px}
+\spinput{Thumb_isa.tex}
 
 \asection{Exception Handling}\label{sec:man:exceptionHandling}
 
@@ -191,9 +163,9 @@ Follows a brief description of the exceptions and the different return addresses
 \asubsubsection{Reset Exception}
 This exception is automatically raised each time the machine is started. 
 
-This exception is handled in Supervisor mode with all interrupts disabled, Link Return and SPSR registers have unpredictable values and execution starts from bus address \texttt{0x00000000}.
+This exception is handled in Supervisor mode with all interrupts disabled, Link Return and SPSR registers have unpredictable values and execution starts from bus address \addr{0x0000.0000}.
 
-The first bus world, when the execution starts, is always filled with a fixed Branch instruction that makes the processor jump to the beginning of the bus-mapped ROM (address \texttt{0x00000300}), where the BIOS is stored.
+The first bus word, when the execution starts, is always filled with a fixed Branch instruction that makes the processor jump to the beginning of the bus-mapped ROM (address \addr{0x0000.0300}), where the BIOS is stored.
 
 \asubsubsection{Undefined Instruction Exception}
 If a Coprocessor instruction cannot be executed from any Coprocessor or if an UNDEFINED instruction is executed, this exception is raised. 
@@ -224,7 +196,7 @@ When handling Interrupt Requests, the processor enters Interrupt mode with norma
 \asubsubsection{Fast Interrupt Request Exception}
 Fast Interrupts have higher priority than normal Interrupts, system Interval Timer is connected to this line of interrupts. 
 
-The Interval Timer's value is decreased at each execution cycle, when an underflow occurs (i.e. its value changes from \texttt{0x00000000} to \texttt{0xFFFFFFFF}), a Fast Interrupt is requested.
+The Interval Timer's value is decreased at each execution cycle, when an underflow occurs (i.e. its value changes from \addr{0x0000.0000} to \addr{0xFFFF.FFFF}), a Fast Interrupt is requested.
 
 When handling Fast Interrupt Requests, the processor enters Fast Interrupt mode with all interrupts disabled and Link Return register points to the address of the instruction that was not executed plus 4.
 

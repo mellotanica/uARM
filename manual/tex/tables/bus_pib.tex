@@ -1,0 +1,27 @@
+\begin{minipage}{\textwidth}
+\begin{framed}
+	\begin{center}
+		\textbf{Pending Interrupts Bitmap}
+	\end{center}
+	\centering
+	\begin{bytefield}[bitheight=1.1\baselineskip]{18}
+		\bitbox{8}{Disks} & \bitbox[]{10}{\addr{0x0000.6FE0}}\\
+		\bitbox{8}{Tapes} & \bitbox[]{10}{\addr{0x0000.6FE4}}\\
+		\bitbox{8}{Network} & \bitbox[]{10}{\addr{0x0000.6FE8}}\\
+		\bitbox{8}{Printers} & \bitbox[]{10}{\addr{0x0000.6FEC}}\\
+		\bitbox{8}{Terminals} & \bitbox[]{10}{\addr{0x0000.6FF0}}\\
+	\end{bytefield}
+	\begin{bytefield}[endianness=big]{32}
+		\bitheader{0-31}\\
+		\colorbitbox{gray}{24}{Device Bitmap}
+		\bitbox{1}{\vertbox{D$_{7}$}}
+		\bitbox{1}{\vertbox{D$_{6}$}}
+		\bitbox{1}{\vertbox{D$_{5}$}}
+		\bitbox{1}{\vertbox{D$_{4}$}}
+		\bitbox{1}{\vertbox{D$_{3}$}}
+		\bitbox{1}{\vertbox{D$_{2}$}}
+		\bitbox{1}{\vertbox{D$_{1}$}}
+		\bitbox{1}{\vertbox{D$_{0}$}}
+	\end{bytefield}
+\end{framed}
+\end{minipage}

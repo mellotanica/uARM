@@ -1,15 +1,31 @@
-\begin{tabular}{|c|l c|c|l}
-\multicolumn{2}{c}{User Mode} & \multicolumn{1}{l}{} & \multicolumn{2}{c}{Kernel Mode}\\
-\cline{1-1}\cline{4-4}
-\cellcolor{gray} & & & \cellcolor{gray} & \\
-\cellcolor{gray} & \texttt{RAMTOP} & & \cellcolor{gray} & \texttt{RAMTOP} \\
-\cline{1-1}\cline{4-4}
-\hspace{50px} & & & \hspace{50px} & \\
-\hspace{50px} & & & \hspace{50px} & \\
-\hspace{50px} & & & \hspace{50px} & \\
-\hspace{50px} & & & \hspace{50px} & \\
-\hspace{50px} & \texttt{0x0000.8000} & \hspace{20px} & \hspace{50px} & \texttt{0x0000.8000} \\
-\cline{1-1}\cline{4-4}
-\cellcolor{gray} & \texttt{0x0000.0000} & & \hspace{50px} & \texttt{0x0000.0000} \\
-\cline{1-1}\cline{4-4}
-\end{tabular}
+\begin{minipage}{\textwidth}
+	\begin{framed}
+		\begin{center}
+			\textbf{Physical Memory View}
+		\end{center}
+		\centering
+		\begin{minipage}{.47\textwidth}
+			\centering
+			User Mode
+
+			\vspace{4px}
+			\begin{bytefield}{18}
+				\memsection{}{}{5}{8}{\color{gray}\rule{\width}{\height}}\\
+				\memsection{RAMTOP}{0x0000.8000}{8}{8}{RAM}\\
+				\memsection{\vspace{.8\baselineskip}}{0x0000.0000}{3}{8}{\color{gray}\rule{\width}{\height}}\\
+			\end{bytefield}
+		\end{minipage}
+		\begin{minipage}{.47\textwidth}
+			\centering
+			Kernel Mode
+
+			\vspace{4px}
+			\begin{bytefield}{18}
+				\memsection{}{}{5}{8}{\color{gray}\rule{\width}{\height}}\\
+				\memsection{RAMTOP}{0x0000.8000}{8}{8}{RAM}\\
+				\memsection{0x0000.7000}{}{1}{8}{KRF}\\
+				\memsection{\vspace{.8\baselineskip}}{0x0000.0000}{2}{8}{BUS}\\
+			\end{bytefield}
+		\end{minipage}
+	\end{framed}
+\end{minipage}
