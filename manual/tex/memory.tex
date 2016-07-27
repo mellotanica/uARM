@@ -1,4 +1,4 @@
-\achapter{Memory Interface}
+\achapter{Memory Interface}\label{sec:man:memory}
 Memory system is controlled by Program Status Register (CPSR) and System Coprocessor's registers 1 and 2 (CP15.R1 \& CPSR.R2). It supports two operating modes:
 
 \begin{itemize}
@@ -96,3 +96,8 @@ If the necessary PTE is not present in the TLB, a TLB-Miss exception is raised a
 \end{enumerate}
 
 The random algorithm uses all the TLB slots besides the first one (e.g. item~0) to ensure a safe entry is always available.
+
+\asubsubsection{ASID 0}
+The first ASID is reserved for kernel address space and is automatically enabled in any Privileged mode, this way if a User mode program performs a System Call, the kernel routine has access to its address space and to the program's address space through saved processor state.
+
+

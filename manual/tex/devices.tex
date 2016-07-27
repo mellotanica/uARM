@@ -35,4 +35,8 @@ This region is organized exactly as the Installed Device Table:
 
 For each word, \emph{i} bit is set if \emph{i}\textsuperscript{th} device on that line is requesting for interrupt.
 
+\asection{Interval Timer}\label{sec:man:intervalTimer}
+
+Interval timer is decremented at each CPU cycle, when its value becomes 0 a software interrupt is thrown. It can be set to a desired value by writing its address in any privileged mode.
+
 

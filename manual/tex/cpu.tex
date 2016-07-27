@@ -228,7 +228,7 @@ The Interval Timer's value is decreased at each execution cycle, when an underfl
 
 When handling Fast Interrupt Requests, the processor enters Fast Interrupt mode with all interrupts disabled and Link Return register points to the address of the instruction that was not executed plus 4.
 
-\asubsection{ROM Level Exception Handling}
+\asubsection{ROM Level Exception Handling}\label{sec:man:romExceptionHandlers}
 
 During the bootstrap process, six of the seven Exception Vector registers must be initialized (the reset exception only occurs at system startup and the relative register has a fixed value).
 The BIOS code fills these registers with jump instruction opcodes pointing to its internal handler procedures.
