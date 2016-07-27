@@ -1,64 +1,66 @@
 \achapter{System Bus}
 
-The system bus connects each component in the system and lets processing units access physical memory and devices, as well as some dpecial purpose registes.
+The system bus connects each component in the system and lets processing units access physical memory and devices, as well as some special purpose registers.
 
 The CPU and the System Coprocessor (CP15) can directly access the bus reading or writing values from or to specific addresses.
 
-The lower addresses (below \texttt{0x8000}) are reserved for special uses and are accessible under certain conditions.
+The lower addresses (below \addr{0x0000.8000}) are reserved for special uses and are accessible under certain conditions.
 
-\asection{Reserved address space}
-The address region between \texttt{0x0} and \texttt{0x8000} holds the fast exception vector, device access registers, system information registers, bootstrap ROM and the kernel reserved frame (i.e. the first RAM frame). Any access to this memory area in User mode is (should be) prohibited and treated by the system bus as errors.
+\asection{Reserved address space}\label{sec:man:reservedAddressSpace}
+The address region between \addr{0x0000.0000} and \addr{0x0000.8000} holds the fast exception vector, device access registers, system information registers, bootstrap ROM and the kernel reserved frame (i.e. the first RAM frame). Any access to this memory area in User mode is (should be) prohibited and treated by the system bus as errors.
+
+\spinput{bus_org.tex}
 
 \asubsection{Exception Vector}\label{sec:man:exceptionVector}
-The first bus addresses (\texttt{0x0} $\rightarrow$ \texttt{0x1C}) are occupied by the fast exception vectors.
-Whenever an excpetion is risen, the processor automatically changes the \register{PC} register to point to one of these addresses. 
+The first bus addresses (\addr{0x0000.0000} $\rightarrow$ \addr{0x0000.001C}) are occupied by the fast exception vectors.
+Whenever an exception is risen, the processor automatically changes the \register{PC} register to point to one of these addresses. 
 This way, if the system was correctly set up, a branch instruction will lead execution to the correct exception handler.
-It is the bootstrap ROM whitch typically writes a set of branch instructions to exception handlers in these fields.
+It is the bootstrap ROM which typically writes a set of branch instructions to exception handlers in these fields.
 
 The exception vector is organized as follows:
-\\
 
-\begin{tabular}{r|l}
-\texttt{0x0} & Reset \\
-\texttt{0x4} & Undefined Instruction \\
-\texttt{0x8} & Software Interrupt \\
-\texttt{0xC} & Prefetch Abort \\
-\texttt{0x10} & Data Abort \\
-\texttt{0x14} & \emph{reserved / unused} \\
-\texttt{0x18} & Interrupt Request \\
-\texttt{0x1C} & Fast Interrupt Request \\
-\end{tabular}
+\spinput{bus_ev.tex}
 
+\asubsection{Installed Devices Table}
+Five words, from \addr{0x0000.0020} to \addr{0x0000.0030}, show the status of active devices. Each word represents a device class, for each word, if a specific device \emph{i} is enabled, \emph{i}\textsuperscript{th} bit in relative word has value 1.
+
+\spinput{bus_idt.tex}
+
+\asubsection{Device Registers}
+Addresses from \addr{0x0000.0040} to \addr{0x0000.02C0} hold device registers.
+Each device type has its own communication protocol, as described in chapter \ref{sec:man:devices}.
 
 \asubsection{System Information Registers}
-Six registers, from address \texttt{0x2D0} to \texttt{0x2E8}, show system specific information:
-\\
+Six registers, from address \addr{0x0000.02D0} to \addr{0x0000.02E4}, show system specific information:
 
-\begin{tabular}{r|l}
-\texttt{0x2D0} & ram base address \\
-\texttt{0x2D4} & ram top address \\
-\texttt{0x2D8} & device registers base address \\
-\texttt{0x2DC} & time of day (Hi) \\
-\texttt{0x2E0} & time of day (Low) \\
-\texttt{0x2E4} & interval timer \\
-\texttt{0x2E8} & timer scale (fixed to 1 MHz) \\
-\end{tabular}
+\spinput{bus_sir.tex}
 
-These registers are all read-only, except for the interval timer which is a special device register (see sec. \ref{sec:man:intervalTimer}), and are aimed to provide useful imformation to the operating system.
+These registers are all read-only, except for the interval timer which is a special device register (see sec. \ref{sec:man:intervalTimer}), and are aimed to provide useful information to the operating system.
 
 \asubsection{Bootstrap ROM}
-The bootstrap ROM is loaded starting from address \texttt{0x300}, its maximum size is 109 KB.
+The bootstrap ROM is loaded starting from address \addr{0x0000.0300}, its maximum size is 109 KB.
 The content of the ROM is actually flashed at each reboot of the emulator copying each byte of the input image starting from the ROM base address, so the BIOS image does not need any special offset set by the linker.
 
 See section \ref{sec:man:bios} for further details regarding provided BIOS implementation.
 
+\asubsection{Pending Interrupts Bitmap}
+All the devices of one class are connected to the same interrupt line, when a device needs to notify some activity to the processor it sends a message through its interrupt line.
+To identify which specific device is requesting an interruption, there are five registers from address \addr{0x0000.6FE0} to \addr{0x0000.6FF0} that hold a bitmap of interrupting devices per interrupt line.
+
+For each word, \emph{i} bit is set if \emph{i}\textsuperscript{th} device on that line is requesting for interrupt.
+
+This region is organized exactly as the Installed Device Table:
+
+\spinput{bus_pib.tex}
+
 \asubsection{Kernel Reserved Frame}\label{sec:man:kernelReservedFrame}
-The first memory frame (\texttt{0x7000} $\rightarrow$ \texttt{0x7FFC}) is reserved for kernel use:
-\begin{itemize}
-\item \texttt{0x7000} $\rightarrow$ \texttt{0x7500}: Exception states vector - memory area in which processor states are saved and loaded when entering into/exiting from exception handlers code.
-\item \texttt{0x7600} $\rightarrow$ \texttt{0x7C00}: Segment table - here is stored the 128 elements segment table describing the virtual address space, for each ASID (entries in the segment table) there are three pointers to ASID's page tables (see sec. \ref{sec:man:segmentTable}).
-\item \texttt{0x7FF0} $\rightarrow$ \texttt{0x7FFC}: Rom stack - when invoking ROM functions this stack is used to pass parameters to the low level routines.
-\end{itemize}
+The first memory frame (\addr{0x0000.7000} $\rightarrow$ \addr{0x0000.7FFC}) is reserved for kernel use:
+
+\spinput{bus_krf.tex}
+
+The \uline{Exception states vector} is a memory area to which processor states are saved and loaded from when entering into/exiting from exception handlers code.
+The \uline{Segment table} holds 128 elements describing the virtual address space, for each ASID (correspondingo to one entry in the segment table) there are three pointers to ASID's page tables (see sec. \ref{sec:man:segmentTable}).
+When invoking ROM functions, the four words wide \uline{ROM stack} (the last four words in the frame) is used as a memory stack and to pass parameters by the low level routines.
 
 \asubsubsection{Stored Processor States}
 Processor states are defined by library data structure \emph{state\_t}, this structure is composed of 22 unsigned 32-bit integers representing processor registers' values and coprocessor's system control registers' values as well as saving time. 
@@ -138,18 +140,8 @@ Its structure is shown below:
 \\
 
 These structures take 88 bytes each. Given this value, the BIOS code will look for the Old/New entries at the following addresses:
-\\
 
-\begin{tabular}{r|l}
-\texttt{0x7000} & Interrupt Old \\
-\texttt{0x7088} & Interrupt New \\
-\texttt{0x7110} & TLB Old \\
-\texttt{0x7198} & TLB New \\
-\texttt{0x7220} & PGMT Old \\
-\texttt{0x72A8} & PGMT New \\
-\texttt{0x7330} & Syscall Old \\
-\texttt{0x73B8} & Syscall New \\
-\end{tabular}
+\spinput{bus_esv.tex}
 
 Each time an exception is risen, the BIOS handlers will store the processor state before the exception into the proper Old area, perform other tasks where required (see sec. \ref{sec:man:romExceptionHandlers}) and eventually load the processor state stored in the corresponding New area.
 
@@ -157,6 +149,7 @@ The New areas must be filled with valid processor states pointing to kernel leve
 
 \asection{Memory address space}
 
-The remaining addresses (\texttt{0x8000} $\rightarrow$ \texttt{RAMTOP}) are mapped to memory subsystem, this bus region can be directly accessed by the rpocessor and the coprocessor, it is used to store the kernel execution code and data as well as any other program that has to be executed.
+The remaining addresses (\addr{0x0000.8000} $\rightarrow$ \addr{RAMTOP}) are mapped to memory subsystem, this bus region can be directly accessed by the processor and the coprocessor, it is used to store the kernel execution code and data as well as any other program that has to be executed.
 
 The memory is accessible in physical addressing mode or virtual addressing mode, access modes and memory structure are described in detail in chapter \ref{sec:man:memory}.
+
