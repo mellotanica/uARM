@@ -37,18 +37,19 @@ elif [[ "$platform" == "Darwin" ]]; then
         fi
     done
     QMCOMP=$(brew --prefix qt5)/bin/qmake
+    VERSION="QMAKE_MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}')"
 fi
 
 ./configure
 
-$QMCOMP elf2uarm.pro
+$QMCOMP $VERSION elf2uarm.pro
 make
 make clean
 
-$QMCOMP mkdev.pro
+$QMCOMP $VERSION mkdev.pro
 make
 make clean
 
-$QMCOMP qarm.pro
+$QMCOMP $VERSION qarm.pro
 make
 make clean
