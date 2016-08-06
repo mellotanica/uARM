@@ -2,10 +2,11 @@
 
 function usage(){
 	PNAME=$(basename $0)
-	echo -e "Usage\t$PNAME [-h] [target] -- [make options]"
+	echo -e "Usage\t$PNAME [-h] [-nc] [target] -- [make options]"
 	echo
 	echo -e "\t$PNAME\t compiles all binaries"
 	echo -e "\t$PNAME target\t compiles desired target"
+	echo -e "\t$PNAME -nc\t avoid ./configure execution before compilation"
 	echo -e "\t$PNAME -h\t shows this help"
 	echo
 	echo -e "\tmake options are used by make when compiling each target"
@@ -17,6 +18,7 @@ function usage(){
 }
 
 SET=""
+CONFIGURE=true
 
 if test $# -gt 0; then
 	SCAN=false
@@ -37,6 +39,9 @@ if test $# -gt 0; then
 				;;
 			"--")
 				SCAN=true
+				;;
+			"-nc")
+				CONFIGURE=false
 				;;
 			*)
 				echo "unknown target: $1"
@@ -71,21 +76,22 @@ if [ $QMAKERET -ne 127 ]; then
 		exit 1
 	fi
 	QMCOMP="qtchooser -run-tool=qmake -qt=$VERSION"
-	echo "compiler command: \"$QMCOMP\""
+	echo "compiler command: \"$QMCOMP $*\""
 	echo
 else
 	echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
 	exit 1
 fi
 
-./configure
+if $CONFIGURE; then
+	./configure
+fi
 
 if [[ "$SET" = *"u"* ]]; then
 	echo "Compiling uarm...."
 	echo
-	$QMCOMP elf2uarm.pro
+	$QMCOMP qarm.pro
 	make $*
-	make clean
 fi
 
 if [[ "$SET" = *"m"* ]]; then
@@ -93,13 +99,11 @@ if [[ "$SET" = *"m"* ]]; then
 	echo
 	$QMCOMP mkdev.pro
 	make $*
-	make clean
 fi
 
 if [[ "$SET" = *"e"* ]]; then
 	echo "Compiling elf2uarm...."
 	echo
-	$QMCOMP qarm.pro
+	$QMCOMP elf2uarm.pro
 	make $*
-	make clean
 fi
