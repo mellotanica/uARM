@@ -25,6 +25,8 @@
 #include <QMainWindow>
 #include <QDialogButtonBox>
 #include <QTableView>
+#include <QHBoxLayout>
+#include <QLabel>
 #include "armProc/machine.h"
 #include "qarm/tlb_model.h"
 
@@ -38,12 +40,18 @@ public:
 protected:
     virtual void closeEvent(QCloseEvent* event);
 
+private slots:
+    void updateDetails(QString details);
+
 signals:
     void hiding();
     void onMachineReset();
 
 private:
     QTableView *tlbView;
+    QHBoxLayout *hLayout;
+    QWidget *mainWidget;
+    QLabel *detailsLabel;
 };
 
 #endif // TLB_WINDOW_H

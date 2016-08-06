@@ -29,10 +29,16 @@
 tlb_window::tlb_window(machine *mac, QWidget * parent, Qt::WindowFlags flags):
     QMainWindow(parent, flags)
 {
-    tlbView = new QTableView(this);
+    hLayout = new QHBoxLayout;
+    mainWidget = new QWidget(this);
+
+    tlbView = new QTableView(mainWidget);
     TLBModel *innermodel = new TLBModel(mac, this);
     connect(this, SIGNAL(onMachineReset()), innermodel, SLOT(onMachineReset()));
     connect(innermodel, SIGNAL(dataChanged(QModelIndex,QModelIndex)), tlbView, SLOT(dataChanged(QModelIndex,QModelIndex)));
+    connect(tlbView, SIGNAL(activated(const QModelIndex)), innermodel, SLOT(activate(QModelIndex)));
+    connect(innermodel, SIGNAL(entrySelected(QString)), this, SLOT(updateDetails(QString)));
+
     tlbView->setModel(innermodel);
     tlbView->setSelectionMode(QAbstractItemView::SingleSelection);
     tlbView->setSelectionBehavior(QAbstractItemView::SelectRows);
@@ -44,12 +50,25 @@ tlb_window::tlb_window(machine *mac, QWidget * parent, Qt::WindowFlags flags):
     tlbView->setAlternatingRowColors(true);
     tlbView->setItemDelegate(new RIDelegateHex(this));
     tlbView->resizeRowsToContents();
+    tlbView->selectRow(0);
 
-    setCentralWidget(tlbView);
+    detailsLabel = new QLabel(mainWidget);
+    detailsLabel->setTextFormat(Qt::RichText);
+    detailsLabel->setText(innermodel->getEmptyDetails());
+
+    hLayout->addWidget(tlbView);
+    hLayout->addWidget(detailsLabel);
+
+    mainWidget->setLayout(hLayout);
+    setCentralWidget(mainWidget);
     setWindowTitle("TLB");
 }
 
 tlb_window::~tlb_window(){
+}
+
+void tlb_window::updateDetails(QString details){
+    detailsLabel->setText(details);
 }
 
 void tlb_window::closeEvent(QCloseEvent *event){

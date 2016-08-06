@@ -209,8 +209,8 @@ void machine::updateTLB(unsigned int index){
     }
 }
 
-void machine::signalExecutionEnded(){
-    emit executionTerminated();
+void machine::signalExecutionEnded(int exitCode){
+    emit executionTerminated(exitCode);
 }
 
 #endif //UARM_MACHINE_CC

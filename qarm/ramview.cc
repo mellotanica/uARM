@@ -51,7 +51,7 @@ void ramView::initRamView(machine *mac){
     this->mac = mac;
 
     setWindowFlags(Qt::Window);
-    setWindowTitle("Ram Inspector");
+    setWindowTitle("Bus Inspector");
     mainLayout = new QVBoxLayout();
     QHBoxLayout *topPanel = new QHBoxLayout();
     mainLayout->addLayout(topPanel);
@@ -86,6 +86,7 @@ void ramView::initRamView(machine *mac){
     offsetButton = new QToolButton(this);
     offsetButton->setText("+");
     offsetButton->setAccessibleName("Second limit is an offset");
+    offsetButton->setToolTip(offsetButton->accessibleName());
     offsetButton->setCheckable(true);
     offsetButton->setChecked(offset);
     offsetButton->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
@@ -108,7 +109,7 @@ void ramView::toggleOffset(bool val){
 
 void ramView::newRamLabel(QWidget *parent){
     ramLabel = new QLineEdit(parent);
-    ramLabel->setAccessibleName("Ram Portion Label");
+    ramLabel->setAccessibleName("Portion Label");
     ramLabel->setToolTip(ramLabel->accessibleName());
     ramLabel->setAccessibleDescription("Editable label usefull to note down ram portion meaning");
     ramLabel->setText(labelText);

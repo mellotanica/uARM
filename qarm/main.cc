@@ -23,11 +23,15 @@
 #include <QApplication>
 #include "armProc/machine_config.h"
 #include <QFile>
+#include <string>
 
 QString MONOSPACE_FONT_SIZE = "MONOSPACE_FONT_SIZE=";
+QString MONOSPACE_FONT_FACE = "MONOSPACE_FONT_FACE=";
 
 void readConfigs(){
     QFile *def = new QFile("/etc/default/uarm");
+    int fsize = 10;
+    std::string fface = "Courrier";
     if (def->open(QFile::ReadOnly)) {
         char buf[1024];
         QString line;
@@ -42,13 +46,17 @@ void readConfigs(){
                 int optStart = line.indexOf('\'') + 1;
                 int optLen = line.indexOf('\'', optStart) - optStart;
                 QString opt = line.mid(optStart, optLen);
-                unsigned int val = opt.toUInt();
-                MC_Holder::getInstance()->mainConfigs.monofont_size = val;
+                fsize = opt.toUInt();
+            }
+            if(line.contains(MONOSPACE_FONT_FACE)){
+                int optStart = line.indexOf('\'') + 1;
+                int optLen = line.indexOf('\'', optStart) - optStart;
+                fface = line.mid(optStart, optLen).toStdString();
             }
         }
-    } else {
-        MC_Holder::getInstance()->mainConfigs.monofont_size = 10;
     }
+    MC_Holder::getInstance()->mainConfigs.monofont_size = fsize;
+    MC_Holder::getInstance()->mainConfigs.monofont_face = fface;
 }
 
 int main(int argn, char **argv){

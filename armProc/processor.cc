@@ -615,7 +615,7 @@ void processor::setTLBLo(unsigned int index, Word value)
 void processor::halt()
 {
     status = PS_HALTED;
-    bus->signalExecutionEnded();
+    bus->signalExecutionEnded(0);
 }
 
 /* *************************** *
@@ -1079,7 +1079,11 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
                     dataAbortTrap();
                     return;
                 }
-                cpu_registers[REG_CPSR] = *getVisibleRegister(REG_SPSR);
+                Word *spsr = getVisibleRegister(REG_SPSR);
+                if(spsr != NULL)
+                    cpu_registers[REG_CPSR] = *spsr;
+                else
+                    spsr = (Word *)0xCACCA;
             } else {
                 if(W){					// base writeback should not be used in this case
                     unpredictable();

@@ -144,7 +144,7 @@ public:
     void HandleBusAccess(Word pAddr, Word access, processor* cpu);
     void HandleVMAccess(Word asid, Word vaddr, Word access, processor* cpu);
 
-    void signalExecutionEnded();
+    void signalExecutionEnded(int exitCode);
 
 private:
     machine *mac;
