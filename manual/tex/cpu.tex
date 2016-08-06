@@ -51,7 +51,7 @@ Only the first 8 registers (\register{R0} $\rightarrow$ \register{R7}) are gener
 
 \asection{System Coprocessor}
 
-CP15 gives access to a total of three 64-bit and one 32-bit registers which provide additional information and functionalities to regular processor operations:
+CP15 gives access to a total of three 64-bit and three 32-bit registers which provide additional information and functionalities to regular processor operations:
 
 \asubsubsection{Register 0 (\register{IDC}) - ID Codes}
 \register{R0} is a read-only 64-bit register that contains system implementation information such as \emph{Processor ID} and \emph{TLB type}, as required by ARM specifications.
@@ -67,6 +67,16 @@ See sec. \ref{sec:manual:systemControlRegister} for further details.
 
 \asubsubsection{Register 2 - Page Table Entry}
 \register{R2} is a 64-bit register which contains the active Page Table Entry when MMU is enabled. Its structure is the same as the Page Table Entry described in sec. \ref{sec:man:virtualMemory}.
+
+The lower 32 bits of this register are addressed as \register{CP15.R2.EntryLow} or just \register{EntryLow} and the higher 32 bits are addressed as \register{CP15.R2.EntryHi} or simply \register{EntryHi}.
+
+\asubsubsection{Register 8 - TLB Random}
+\register{R8} is a special read-only register used to index the TLB randomly (see sec. \ref{sec:man:tlb}).
+This register is also addressed as \register{Random} or \register{TLBR}.
+
+\asubsubsection{Register 10 - TLB Index}
+\register{R10} is a special register used to index the TLB programmatically (see sec. \ref{sec:man:tlb}).
+This register is also addressed as \register{Index} or \register{TLBI}.
 
 \asubsubsection{Register 15 (\field{Cause}) - Exception Cause}
 \register{R15}.\field{Cause} contains the last raised exception cause, it can be read or written by the processor.

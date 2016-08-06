@@ -21,55 +21,90 @@ As stated in section \ref{sec:man:reservedAddressSpace}, addresses below \addr{0
 This is the basic memory access scheme, when enabled, any memory access is directed to the physical address specified in the request, without any conversions.
 The machine begins execution with this mode active.
 
+The physical address space is divided into equal sized frames of 4KB each. 
+Hence a physical address has two components; a 20-bit Physical Frame Number or \field{PFN}, and a 12-bit \field{Offset} into the frame. 
+Physical addresses have the following format:
+
+\spinput{phy_addr.tex}
+
 All the available memory is directly accessible in Privileged mode and any address over \addr{0x0000.8000} is directly accessible in User mode.
 
 \spinput{mem_ph.tex}
 
-Trying to access an address below \addr{0x0000.8000} while in User Mode will raise a \texttt{BUSERROR} exception.
+Trying to access an address below \addr{0x0000.8000} while in User Mode will raise an \texttt{Address Error} exception.
+
+The installed physical RAM starts at \addr{0x0000.7000} and continues up to \addr{RAMTOP}, this area will hold:
+\begin{itemize}
+	\item The operating system code (\uline{text}), global variables/structures (\uline{data}), and stack(s).
+	\item The user processes’ \uline{text}, data and stacks.
+	\item The Kernel Reserved Frame. 
+		As detailed in section \ref{sec:man:kernelReservedFrame}, the BIOS code needs some writable storage to interact with the Kernel. 
+		The first 4KB (i.e. the first frame) of physical RAM are reserved for this purpose.
+\end{itemize}
+
+The first 7KB of the physical address space are reserved for Bus functions, as described in section \ref{sec:man:reservedAddressSpace}. Any attempt to access an unidentified memory area will generate a \texttt{BUSERROR} exception.
 
 \asection{Virtual addressing mode}\label{sec:man:virtualMemory}
-When virtual memory is active, each address above \addr{0x0000.8000} is treated as a logical address and translated to the corresponding physical address from the memory subsystem, addresses below \addr{0x0000.8000} are always treated as physical addresses, as they refer to a memory region reserved for bus access.
+When virtual memory is active, each address above \addr{0x0000.8000} is treated as a logical address and translated to the corresponding physical address from the memory subsystem.
+Addresses below \addr{0x0000.8000} are \uline{always} treated as physical addresses, as they refer to a reserved address region (see sec. \ref{sec:man:reservedAddressSpace}).
 
 By setting \field{M} flag in System Coprocessor's register 1 (\register{CP15.R1}.\field{M}), you enable memory address translation.
 
-In Privileged mode all logical memory is accessible, when exacting in User mode, only User Segments are accessible instead: the first one (Useg2) starts from address \addr{0x8000.0000} and extends over the next GB, the second one (Useg3) starts from address \addr{0xC000.0000} and terminates at the top of the logical memory, address \addr{0xFFFF.FFFF}.
+The first two bits of a virtual address are the Segment Number (\field{SEGNO}).
+Virtual pages are the same size as physical frames, the final 12-bits indicate an \field{Offset} into a memory frame.
+The remaining 18-bits indicate the Virtual Page Number or \field{VPN}. 
+Virtual addresses have the following format:
+
+\spinput{virt_addr.tex}
+
+The segment number is composed of two bits, the most important one differentiates kernel and user segments, the least important one is meaningful only in user segment and identifies private segment and global segment:
+\begin{itemize}
+	\item Kseg0 (\field{SEGNO} 0 and 1) is the 2GB segment for the OS \uline{text}, \uline{data}, stacks, as well as the ROM code and device registers that sit at the beginning of this segment.
+	\item Useg2 (\field{SEGNO} 2) is the 1GB virtual address space for the use of User mode processes as privarte memory region.
+	\item Useg3 (\field{SEGNO} 3) is the 1GB virtual address space for the use of User mode processes as shared/global memory region.
+\end{itemize}
+
+In Privileged mode all logical memory is accessible, while in User mode only User Segments are accessible and any access to Kseg0 segment will generate an \texttt{Address Error} exception.
 
 \spinput{mem_vir.tex}
 
+As part of its VM implementation, \uarm{} assigns to each process a 7-bit identifier; hence \uarm{} natively allows up to $2^7 = 128$ concurrent processes. To reflect the fact that each of these processes will run in its own virtual address space, this identifier is called the Address Space Identifier (\field{ASID}). The “current” \field{ASID} is part of the processor state and is stored in \register{EntryHi}.\field{ASID} (\register{CP15.R2.EntryHi}.\field{ASID}).
 
-When the MMU is enabled the user process ASID is stored in the EntryHy field of CP15's 64bit register R2 along with the Virtual Page number (e.g. the 20 most significant bits of the logical address). The EntryLow filed is filled with the Physical Page Frame address and is kept up to date after each modification of CP15.R2.EntryHy value.
+When the MMU is enabled the user process \field{ASID} is stored in the \register{EntryHi} register along with the Virtual Page number (i.e. the 20 most significant bits of the logical address). The \register{EntryLow} register is filled with the Physical Frame Number from the relevant page table and is kept up to date after each modification of \register{CP15.R2.EntryHi} value.
 
 \asubsection{Page Table}\label{sec:man:pageTable}
-The CP15 register 2 is organized as a Page Table Entry (PTE):
-\\
+The \register{CP15.R2} register is organized as a Page Table Entry (PTE):
 
 \spinput{CP15.R2.tex}
 
-The Low half of each entry contains 4 flags used for memory protection:
+The Hi half of each entry identifies the logical frame to which the entry refers and the \field{ASID} of the owning process.
+The Low half of each entry specifies the physical correspondig frame (if any) and contains 3 flags used for memory protection schemes:
 \begin{itemize}
-\item \textbf{N}on Chachable bit: not used by \uarm{} implementation.
-\item \textbf{D}irty bit: if the bit is clear, any write access to the physical frame locations will rise a TLB-Modification exception.
-\item \textbf{V}alid bit: if bit is set the Page Table Entry is considered valid, otherwise a TLB-Invalid exception is raised.
-\item \textbf{G}lobal bit: if the bit is set, the Page Table Entry will match the corresponding VPN regardless of the ASID.
+	\item \textbf{D}irty bit: if the flag is clear, any write access to the physical frame locations will rise a \texttt{TLB-Modification} exception.
+\item \textbf{V}alid bit: if the flag is set the Page Table Entry is considered valid, otherwise a \texttt{TLB-Invalid} exception is raised.
+	This flag should be set only when the \field{PFN} points to the actual memory frame.
+\item \textbf{G}lobal bit: if the flag is set, the Page Table Entry will match the corresponding \field{VPN} regardless of the \field{ASID}.
 \end{itemize}
 
-Page Table Entries are grouped together in Page Tables, each Page Table begins with a special word (PgTbl-Header) composed of the PgTbl Magic Number \texttt{0x2A} stored in the most significant 8 bits and the number of page table entries in the least significant 20 bits.
+Page Table Entries are grouped together in Page Tables, each Page Table begins with a special word (PgTbl-Header) composed of the PgTbl Magic Number \texttt{0x2A} stored in the most significant 8 bits and the number of page table entries in the least significant 20 bits, as shown below.
 
 \spinput{pag_tbl.tex}
 
 
 \asubsection{Segment Table}\label{sec:man:segmentTable}
-The Segment Table specifies the physical addresses of the Page Tables of the three Segments for each ASID, the general structure is shown below:
-\\
+The Segment Table specifies the physical addresses of the Page Tables describing the three Segments for each \field{ASID}, the general structure is shown below:
 
 \spinput{seg_tbl.tex}
 
-\uarm{} implements a Translation Lookaside Buffer (TLB) to translate logical addresses to physical ones, the buffer contains a specific amount of recently used PTEs and uses a random algorithm to select which entry to replace with a newly retrieved PTE.
-The number of available TLB slots is variable between 4 and 64 elements, it is configurable through the settings window and needs a reset of the machine to effectively change.
+The segment table is automatically accessed from BIOS code when the Page Table Entry describing a needed memory frame is not present inside the TLB and needs to be retrieved (see sec. \ref{sec:man:tlb}).
 
-Each time a memory access is requested, the memory subsystem checks if the requested virtual Page has a corresponding PTE in the TLB for the current ASID or with the \texttt{G} flag set, if this is the case it concatenates the physical frame address with the actual requested offset to access the right address.
+\asubsection{Translation Lookaside Buffer}\label{sec:man:tlb}
 
-If the necessary PTE is not present in the TLB, a TLB-Miss exception is raised and the BIOS reacts with a TLB Refill event, which executes the next steps:
+\uarm{} implements a Translation Lookaside Buffer (TLB) to translate virtual addresses to physical addresses, the buffer contains a specific amount of recently used PTEs and can use a variety of algorithms to select which entry to replace with a newly retrieved PTE (the BIOS handler implements a simple random selection).
+The number of available TLB slots is variable between 4 and 64 elements, it is configurable through the settings window of the emulator and needs a reset of the machine to effectively change.
+
+Each time a memory access is requested, the memory subsystem checks if the requested Virtual Page has a corresponding PTE in the TLB for the current \field{ASID} or with the \field{G} flag set.
+If the necessary PTE is not present in the TLB, a \texttt{TLB-Miss} exception is raised and the BIOS reacts with a TLB Refill event, which is composed of the next steps:
 \begin{enumerate}
 \item Retrieve the PgTbl address from the Segment Table for the current ASID and required Segment.
 \item Access the PgTbl and check if it is well-formed and well-located:
@@ -79,13 +114,43 @@ If the necessary PTE is not present in the TLB, a TLB-Miss exception is raised a
 	\item PgTbl-Header must be valid (magic number is \texttt{0x2A}),
 	\item PgTbl must not extend outside physical memory (e.g. [PgTbl addr + PgTbl size] $<$ RAMTOP).
 	\end{itemize}
-\item Linearly search the PgTbl for matching Virtual Page with correct ASID or \texttt{G} flag set.
-\item If a matching PTE has been found, write it back in a random slot of the TLB and resume execution from the same instruction that raised the TLB-Miss exception, else raise a PTE-Miss exception.
+	If one of these checks fails a \texttt{Bad-PgTbl} exception is raised.
+\item Linearly search the PgTbl for matching Virtual Page with correct \field{ASID} or \field{G} flag set.
+\item If a matching PTE has been found, write it back in a random slot of the TLB and resume execution from the same instruction that raised the \texttt{TLB-Miss} exception, else raise a \texttt{PTE-Miss} exception.
 \end{enumerate}
 
-The random algorithm uses all the TLB slots besides the first one (e.g. item~0) to ensure a safe entry is always available.
+At this point, either there is a matching PTE, or an exception has been raised (either an \texttt{Address Error}, \texttt{Bad-PgTbl}, or \texttt{PTE-Miss} exception). 
+If there is a matching TLB entry then the \field{V} and \field{D} control bits of the matching PTE are checked respectively. 
+If no \texttt{TLB-Invalid} or \texttt{TLB-Modification} exception is raised, the physical address is constructed by concatenating the \field{Offset} from the virtual address to be translated to the \field{PFN} from the matching PTE.
 
-\asubsubsection{ASID 0}
-The first ASID is reserved for kernel address space and is automatically enabled in any Privileged mode, this way if a User mode program performs a System Call, the kernel routine has access to its address space and to the program's address space through saved processor state.
+\asubsubsection{CP15 registers used in address translation}
+CP15 implements four registers used to support virtual address translation.
+The first two have already been described, they are \register{CP15.R1} and \register{CP15.R2}, used respectively to turn on or off address translation and to cache the active Page Table Entry.
 
+The contents of the TLB can be modified by writing values into the \register{EntryHi} and \register{EntryLo} registers and issuing either the TLB-Write-Index (TLBWI) or TLB-Write-Random (TLBWR) CP15 instruction. 
+Which slot in the TLB the entry is written into is determined by which instruction is used and the contents of either the \register{CP15.R8} (\register{Random}) or \register{CP15.R10} (\register{Index}) register.
+Both the \register{Random} and the \register{Index} registers have a 6-bit \field{TLB-Index} field which addresses one of the \texttt{TLBSIZE} slots in the TLB.
+
+\spinput{CP15_index.tex}
+
+The \register{Index} register is a read/writable register. When a TLBWI instruction is executed, the contents of the \register{CP15.R2} register are written into the slot indicated by \register{Index}.\field{TLB-Index}.
+
+\spinput{CP15_random.tex}
+
+The \register{Random} register is a read-only register used to index the TLB randomly; allowing for more effective TLB-refiling schemes. 
+\register{Random}.\field{TLB-Index} is initialized to \texttt{TLBSIZE}-1 and is automatically decremented by one every processor cycle until it reaches 1 at which point it starts back again at \texttt{TLBSIZE}-1.
+This leaves one TLB “safe” entry (entry 0) which cannot be indexed by \register{Random}. 
+When a TLBWR instruction is executed, the contents of the \register{CP15.R2} register are written into the slot indicated by \register{Random}.\field{TLB-Index}. (\uarm{}’s TLB Refill algorithm uses TLBWR to populate the TLB.)
+
+Three other useful CP15 instructions associated with the TLB are the TLB-Read (TLBR), TLB-Probe (TLBP), and the TLB-Clear (TLBCLR) commands.
+\begin{itemize}
+	\item The TLBR command places the TLB entry indexed by \register{Index}.\field{TLB-Index} into the \register{CP15.R2} register. 
+		Note, that this instruction has the potentially dangerous affect of altering the value of \register{EntryHi}.\field{ASID}.
+	\item The TLBP command initiates a TLB search for a matching entry in the TLB that matches the current values in the \register{EntryHi} register. 
+		If a matching entry is found in the TLB the corresponding index value is loaded into \register{Index}.\field{TLB-Index} and the Probe bit (\register{Index}.\field{P}) is set to 0. If no match is found, \register{Index}.\field{P} is set to 1.
+	\item The TLBCLR command zero’s out the “unsafe” TLB entries; entries 1 through \texttt{TLBSIZE}-1.
+		This command effectively invalidates the current contents of the TLB cache.
+\end{itemize}
+
+See Sections \ref{sec:man:systemLibrary} for more details on the TLBWI, TLBWR, TLBR, TLBP, TLBCLR CP15 instructions and how to access the \register{CP15.R2} and \register{Index} registers.
 

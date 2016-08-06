@@ -1,0 +1,13 @@
+\begin{minipage}{\textwidth}
+\begin{framed}
+	\begin{center}
+		\textbf{Physical Address Format}
+	\end{center}
+	\centering
+	\ttfamily
+	\begin{bytefield}[bitwidth=12px,endianness=big]{32}
+		\bitheader{0,11,12,31}\\
+		\bitbox{20}{\field{PFN} (Physical Frame Number)} \bitbox{12}{\field{Offset}} \\
+	\end{bytefield}\\
+\end{framed}
+\end{minipage}

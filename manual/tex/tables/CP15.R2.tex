@@ -5,19 +5,19 @@
 	\end{center}
 	\centering
 	\ttfamily
-	\begin{bytefield}[bitwidth=10px,endianness=big]{32}
+	\begin{bytefield}[bitwidth=10px,bitheight=25px,endianness=big]{32}
 		\bitheader{0,4,5,11,12,29,30,31}\\
 		\begin{rightwordgroup}{R2.Hi}
-		\bitbox{2}{\footnotesize Seg.\\No} \bitbox{18}{Virtual Page Number (VPN)} \bitbox{7}{ASID} \bitbox{5}{\color{gray}\rule{\width}{\height}}
+			\bitbox{2}{\footnotesize\field{SEG NO}} \bitbox{18}{Virtual Page Number (VPN)} \bitbox{7}{ASID} \bitbox{5}{\color{gray}\rule{\width}{\height}}
 		\end{rightwordgroup}\\
 		\bitheader{0,7-12,31}\\
-		\begin{rightwordgroup}{R2.Lo}
-		\bitbox{20}{Physical Frame Number (PFN)} \bitbox{1}{N} \bitbox{1}{D} \bitbox{1}{V} \bitbox{1}{G} \bitbox{8}{\color{gray}\rule{\width}{\height}}
+		\begin{rightwordgroup}{R2.Low}
+			\bitbox{20}{Physical Frame Number (PFN)} \bitbox{1}{\color{gray}\rule{\width}{\height}} \bitbox{1}{D} \bitbox{1}{V} \bitbox{1}{G} \bitbox{8}{\color{gray}\rule{\width}{\height}}
 		\end{rightwordgroup}\\
 	\end{bytefield}\\
 	\begin{tabular}{ll}
-	\textbf{N} : Non Cachable bit & \textbf{V} : Valid bit \\
-	\textbf{D} : Dirty bit & \textbf{G} : Global bit \\
+	\textbf{V} : Valid bit & \textbf{D} : Dirty bit \\
+	\textbf{G} : Global bit \\
 	\end{tabular}
 \end{framed}
 \end{minipage}

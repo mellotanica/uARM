@@ -1,0 +1,13 @@
+\begin{minipage}{\textwidth}
+\begin{framed}
+	\begin{center}
+		\textbf{Virtual Address Format}
+	\end{center}
+	\centering
+	\ttfamily
+	\begin{bytefield}[bitwidth=12px,bitheight=25px,endianness=big]{32}
+		\bitheader{0,11,12,29-31}\\
+		\bitbox{2}{\footnotesize\field{SEG NO}}\bitbox{18}{\field{VPN} (Virtual Page Number)} \bitbox{12}{\field{Offset}} \\
+	\end{bytefield}\\
+\end{framed}
+\end{minipage}
