@@ -1,37 +1,105 @@
 #!/bin/bash
 
+function usage(){
+	PNAME=$(basename $0)
+	echo -e "Usage\t$PNAME [-h] [target] -- [make options]"
+	echo
+	echo -e "\t$PNAME\t compiles all binaries"
+	echo -e "\t$PNAME target\t compiles desired target"
+	echo -e "\t$PNAME -h\t shows this help"
+	echo
+	echo -e "\tmake options are used by make when compiling each target"
+	echo 
+	echo -e "\tPossible targets are:"
+	echo -e "\t\telf2uarm"
+	echo -e "\t\tmkdev"
+	echo -e "\t\tuarm"
+}
+
+SET=""
+
+if test $# -gt 0; then
+	SCAN=false
+	while test -n "$1"; do
+		case "$1" in
+			"uarm")
+				SET="u:$SET"
+				;;
+			"mkdev")
+				SET="m:$SET"
+				;;
+			"elf2uarm")
+				SET="e:$SET"
+				;;
+			"-h")
+				usage
+				exit 0
+				;;
+			"--")
+				SCAN=true
+				;;
+			*)
+				echo "unknown target: $1"
+				usage
+				exit 1
+				;;
+		esac
+		shift
+		if $SCAN; then
+			break
+		fi
+	done
+fi
+
+if test -z "$SET"; then
+	SET="u:m:e"
+fi
+
 qtchooser >> /dev/null 2> /dev/null
 QMAKERET=`echo $?`
 
 if [ $QMAKERET -ne 127 ]; then
-  VERSION=0
-  for v in `qtchooser -l`; do
-    if [[ $v == 5* ]]; then
-	VERSION=`echo $v`
-	break
-    fi
-  done
-  if [ "$VERSION" == 0 ]; then
-    echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
-    exit 1
-  fi
-  QMCOMP="qtchooser -run-tool=qmake -qt=$VERSION"
-  echo "compiler command: \"$QMCOMP\""
+	VERSION=0
+	for v in `qtchooser -l`; do
+		if [[ $v == 5* ]]; then
+			VERSION=`echo $v`
+			break
+		fi
+	done
+	if [ "$VERSION" == 0 ]; then
+		echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
+		exit 1
+	fi
+	QMCOMP="qtchooser -run-tool=qmake -qt=$VERSION"
+	echo "compiler command: \"$QMCOMP\""
+	echo
 else
-  echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
-  exit 1
+	echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
+	exit 1
 fi
 
 ./configure
 
-$QMCOMP elf2uarm.pro
-make $*
-make clean
+if [[ "$SET" = *"u"* ]]; then
+	echo "Compiling uarm...."
+	echo
+	$QMCOMP elf2uarm.pro
+	make $*
+	make clean
+fi
 
-$QMCOMP mkdev.pro
-make $*
-make clean
+if [[ "$SET" = *"m"* ]]; then
+	echo "Compiling mkdev...."
+	echo
+	$QMCOMP mkdev.pro
+	make $*
+	make clean
+fi
 
-$QMCOMP qarm.pro
-make $*
-make clean
+if [[ "$SET" = *"e"* ]]; then
+	echo "Compiling elf2uarm...."
+	echo
+	$QMCOMP qarm.pro
+	make $*
+	make clean
+fi
