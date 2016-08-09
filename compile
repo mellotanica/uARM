@@ -1,7 +1,70 @@
 #!/bin/bash
 
-platform=`uname`
-if [[ "$platform" == "Linux" ]]; then
+function usage(){
+	PNAME=$(basename $0)
+	echo -e "Usage\t$PNAME [-h] [-nc] [target] -- [make options]"
+	echo
+	echo -e "\t$PNAME\t compiles all binaries"
+	echo -e "\t$PNAME target\t compiles desired target"
+	echo -e "\t$PNAME -nc\t avoid ./configure execution before compilation"
+	echo -e "\t$PNAME -h\t shows this help"
+	echo
+	echo -e "\tmake options are used by make when compiling each target"
+	echo 
+	echo -e "\tPossible targets are:"
+	echo -e "\t\telf2uarm"
+	echo -e "\t\tmkdev"
+	echo -e "\t\tuarm"
+}
+
+SET=""
+CONFIGURE=true
+
+if test $# -gt 0; then
+	SCAN=false
+	while test -n "$1"; do
+		case "$1" in
+			"uarm")
+				SET="u:$SET"
+				;;
+			"mkdev")
+				SET="m:$SET"
+				;;
+			"elf2uarm")
+				SET="e:$SET"
+				;;
+			"-h")
+				usage
+				exit 0
+				;;
+			"--")
+				SCAN=true
+				;;
+			"-nc")
+				CONFIGURE=false
+				;;
+			*)
+				echo "unknown target: $1"
+				usage
+				exit 1
+				;;
+		esac
+		shift
+		if $SCAN; then
+			break
+		fi
+	done
+fi
+
+if test -z "$SET"; then
+	SET="u:m:e"
+fi
+
+QMCOMP="qmake"
+VERSION=""
+PLATFORM=`uname -s`
+
+if [[ "$PLATFORM" == "Linux" ]]; then
     qtchooser >> /dev/null 2> /dev/null
     QMAKERET=`echo $?`
 
@@ -23,7 +86,7 @@ if [[ "$platform" == "Linux" ]]; then
       echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
       exit 1
     fi
-elif [[ "$platform" == "Darwin" ]]; then
+elif [[ "$PLATFORM" == "Darwin" ]]; then
     which -s brew
     if [[ $? != 0 ]] ; then
         /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
@@ -40,16 +103,27 @@ elif [[ "$platform" == "Darwin" ]]; then
     VERSION="QMAKE_MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}')"
 fi
 
-./configure
+if $CONFIGURE; then
+	./configure
+fi
 
-$QMCOMP $VERSION elf2uarm.pro
-make
-make clean
+if [[ "$SET" = *"u"* ]]; then
+	echo "Compiling uarm...."
+	echo
+	$QMCOMP $VERSION qarm.pro
+	make $*
+fi
 
-$QMCOMP $VERSION mkdev.pro
-make
-make clean
+if [[ "$SET" = *"m"* ]]; then
+	echo "Compiling mkdev...."
+	echo
+	$QMCOMP $VERSION mkdev.pro
+	make $*
+fi
 
-$QMCOMP $VERSION qarm.pro
-make
-make clean
+if [[ "$SET" = *"e"* ]]; then
+	echo "Compiling elf2uarm...."
+	echo
+	$QMCOMP $VERSION elf2uarm.pro
+	make $*
+fi
