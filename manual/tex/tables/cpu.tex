@@ -1,0 +1,244 @@
+\achapter{Processor}
+The \uarm{} machine runs on an emulated ARM7TDMI processor, which implements both ARM and Thumb instruction sets, is able to perform each operation listed in \emph{ARM7TDMI Data Sheet} (a brief summary is shown below) and to accept painlessly binary programs compiled with the Gnu C Compiler for ARM7 architecture.
+
+\asection{Operating modes and Processor registers}\label{sec:man:processorRegisters}
+The processor can work in seven different modes:
+\begin{itemize}
+\item User mode (usr) - regular user process execution
+\item System mode (sys) - typical privileged mode execution (e.g. kernel code execution)
+\item Supervisor (svc) - protected mode kernel execution
+\item Fast Interrupt (fiq) - protected mode for fast interrupt handling
+\item Interrupt (irq) - protected mode for regular interrupt handling
+\item Abort (abt) - protected mode for data/instruction abort exception handling
+\item Undefined (und) - protected mode for undefined instruction exception handling
+\end{itemize}
+
+In each mode the processor can access a limited portion of all its registers, varying from 16 registers in User/System modes to 17 registers in each protected mode in ARM state, plus the Current Program Status Register (\register{CPRS}), which is shared by all modes.
+Only protected modes have the 17th register, which automatically stores the previous value of the \register{CPSR} when raising an exception.
+
+The first 8 registers, in addition to the Program Counter (\register{R15}) are common to each "window" of visible registers, each protected mode has its dedicated Stack Pointer and Link Return registers and Fast Interrupt mode has all the last 7 registers uniquely banked, to allow for a fast context switch, while System and User mode share the full set of 16 general purpose registers.
+
+\spinput{ARM_reg.tex}
+
+Even if the global 16 registers are defined as general purpose registers, there are some conventions adopted by the compiler in their use. The following list shows the full set of processor register visible in each mode with their conventional abbreviations and extended meaning:
+
+\begin{itemize}
+	\item \register{R0} (\register{a1}) - first function argument / integer result
+	\item \register{R1} (\register{a2}) - second function argument
+	\item \register{R2} (\register{a3}) - third function argument
+	\item \register{R3} (\register{a4}) - fourth function argument
+	\item \register{R4} (\register{v1}) - register variable
+	\item \register{R5} (\register{v2}) - register variable
+	\item \register{R6} (\register{v3}) - register variable
+	\item \register{R7} (\register{v4}) - register variable
+	\item \register{R8} (\register{v5}) - register variable
+	\item \register{R9} (\register{v6}/\register{rfp}) - register variable / real frame pointer
+	\item \register{R10} (\register{sl}) - stack limit
+	\item \register{R11} (\register{fp}) - frame pointer / argument pointer
+	\item \register{R12} (\register{ip}) - instruction pointer / temporary workspace
+	\item \register{R13} (\register{sp}) - stack pointer
+	\item \register{R14} (\register{lr}) - link register
+	\item \register{R15} (\register{pc}) - program counter
+	\item \register{CPSR} - current program status register
+	\item \register{SPSR\_\emph{mode}} - saved program status register
+\end{itemize}
+
+When the processor is in Thumb state the register window is reduced, showing 12 registers in User/System mode and 13 registers in protected modes, in addition to the Current Program Status Register, which is common to all modes. 
+
+Only the first 8 registers (\register{R0} $\rightarrow$ \register{R7}) are general purpose, the higher 3 are specialized registers that act as Stack Pointer, Link Return and Program Counter. Each protected mode has its own banked instance of Stack Pointer and Link Return in addition to Saved Program Status Register to allow for faster exception handling. 
+
+\spinput{Thumb_reg.tex}
+
+\asection{System Coprocessor}
+
+CP15 gives access to a total of three 64-bit and three 32-bit registers which provide additional information and functionalities to regular processor operations:
+
+\asubsubsection{Register 0 (\register{IDC}) - ID Codes}
+\register{R0} is a read-only 64-bit register that contains system implementation information such as \emph{Processor ID} and \emph{TLB type}, as required by ARM specifications.
+
+\asubsubsection{Register 1 (\register{SCB}) - System Control Bits}
+\register{R1.SCB} is the System Control Register, this register holds system-wide settings flags.
+See sec. \ref{sec:manual:systemControlRegister} for further details.
+
+\asubsubsection{Register 1 (\register{CCB}) - Coprocessors Access Register}
+\register{R1.CCB} shows which coprocessors are available. Values can be written to this register to enable/disable available coprocessors a part from CP15.
+
+\spinput{CP15_CCB.tex}
+
+\asubsubsection{Register 2 - Page Table Entry}
+\register{R2} is a 64-bit register which contains the active Page Table Entry when MMU is enabled. Its structure is the same as the Page Table Entry described in sec. \ref{sec:man:virtualMemory}.
+
+The lower 32 bits of this register are addressed as \register{CP15.R2.EntryLow} or just \register{EntryLow} and the higher 32 bits are addressed as \register{CP15.R2.EntryHi} or simply \register{EntryHi}.
+
+\asubsubsection{Register 8 - TLB Random}
+\register{R8} is a special read-only register used to index the TLB randomly (see sec. \ref{sec:man:tlb}).
+This register is also addressed as \register{Random} or \register{TLBR}.
+
+\asubsubsection{Register 10 - TLB Index}
+\register{R10} is a special register used to index the TLB programmatically (see sec. \ref{sec:man:tlb}).
+This register is also addressed as \register{Index} or \register{TLBI}.
+
+\asubsubsection{Register 15 (\field{Cause}) - Exception Cause}
+\register{R15}.\field{Cause} contains the last raised exception cause, it can be read or written by the processor.
+
+A scheme of Memory Access exception cause codes is shown below:
+\\
+\\
+\begin{tabular}{ll}
+Memory Error & = \texttt{1}\\
+Bus Error & = \texttt{2}\\
+Address Error & = \texttt{3}\\
+Segment Error & = \texttt{4}\\
+Page Error & = \texttt{5}\\
+\end{tabular}
+
+\asubsubsection{Register 15 (\field{IPC}) - Interrupt Cause}
+\register{R15}.\field{IPC} shows on which lines interrupts are pending, when interrupts have been handled (i.e. the interrupt request has been acknowledged, see sec. \ref{sec:man:device}) the value of this register is updated.
+
+\asection{Execution Control}
+
+The processor behavior can be set up by modifying the contents of two special registers: the Current Program Status Register (\register{CPSR}) and the System Control Register (\register{CP15.SCB}).
+Each of the two has a special structure and changes the way the system operates.
+
+\asubsection{Program Status Register}
+
+The \register{CPSR} (as well as the \register{SPSR}, if the active mode has one) is always accessible in ARM state via the special instructions MSR (move register to PRS) and MRS (move PRS to register). This register shows arithmetical instructions' additional results (condition code flags), allows to toggle interrupts and switch states/modes. Its structure is shown below:
+
+\spinput{CPSR.tex}
+
+
+
+The first 5 bits of \register{CPSR} are used to set processor execution mode, the possible values are:
+\\
+
+\begin{tabular}{r|l}
+\texttt{0x10} & User Mode \\
+\texttt{0x11} & Fast Interrupt Mode \\
+\texttt{0x12} & Interrupt Mode \\
+\texttt{0x13} & Supervisor Mode \\
+\texttt{0x17} & Abort Mode \\
+\texttt{0x1B} & Undefined Mode \\
+\texttt{0x1F} & System Mode \\
+\end{tabular}
+\\
+
+\uline{User Mode} is the only unprivileged mode, this means that if the processor is running in User Mode, it cannot access reserved memory regions (see System Bus chapter) and it cannot modify CPSR control bits.
+
+\uline{System Mode} is the execution mode reserved for regular Kernel code execution, all other modes are automatically activated when exceptions are raised (see sec. \ref{sec:man:exceptionHandling}).
+
+\asubsection{System Control Register}\label{sec:manual:systemControlRegister}
+
+System Coprocessor (CP15) holds the System control register (\register{CP15.R1}), which controls Virtual Memory and Thumb availability (plus some other hardware specific settings that are not implemented in current release):
+
+\spinput{SCB.tex}
+
+\asection{Processor States}
+
+The \emph{T} flag of the Program Status Register shows the state of the processor, when the bit is clear the processor operates in ARM state, otherwise it works in Thumb state. To switch between the two states a Branch and Exchange (BX) instruction is required.
+
+The first difference between the two states is the register set that is accessible (see sec. \ref{sec:man:processorRegisters}), the other main difference is the Instruction Set the processor is able to decode.
+
+\asubsection{ARM ISA}
+
+The main Instruction Set is the ARM ISA, the processor starts execution in this state and is forced to ARM state when an exception is raised.
+
+ARM instructions are 32 bits long and must be word-aligned. The table below shows a brief summary of the instruction set. (For a much detailed description of each instruction refer to \emph{ARM7TMI Data Sheet} and \emph{ARM7TMI Technical Reference Manual})
+
+\spinput{ARM_isa.tex}
+
+\asubsection{Thumb ISA}
+
+Thumb instruction set is a simpler (smaller) instruction set composed of 16-bit, halfword aligned instructions, which offer less refined functionalities but less memory usage.
+
+Thumb instructions can be seen as "shortcuts" to execute ARM code, as the performed operations are the same but this ISA offers less options for each instruction.
+
+The following table summarizes Thumb instructions. (For a much detailed description of each instruction refer to \emph{ARM7TMI Data Sheet} and \emph{ARM7TMI Technical Reference Manual})
+
+\spinput{Thumb_isa.tex}
+
+\asection{Exception Handling}\label{sec:man:exceptionHandling}
+
+When an exception is raised (e.g. a read instruction is performed on a forbidden bus address), the processor automatically begins a special routine to solve the problem. 
+In addition to low level automatic exception handling facilities, the BIOS code implements a wrapper to simplify OS level handlers setup and functioning.
+
+\asubsection{Hardware Level Exception Handling}\label{sec:man:hardwareExceptions}
+
+There are seven different exceptions handled by the processor, each of those has a specific bus address to which the execution jumps on exception raising (see sec. \ref{sec:man:exceptionVector}).
+
+When an exception is raised, the processor state is forced to ARM mode, the execution mode and the interrupt flags are set accordingly to the exception type, the \register{LR} register is filled with a return address and the \register{PC} is loaded with the correct address of the bus area Exception Vector. 
+If the Exception Vector has been correctly initialized, the instruction pointed to by the \register{PC} is a Branch instruction leading to some handler code.
+
+Follows a brief description of the exceptions and the different return addresses.
+
+\asubsubsection{Reset Exception}
+This exception is automatically raised each time the machine is started. 
+
+This exception is handled in Supervisor mode with all interrupts disabled, Link Return and SPSR registers have unpredictable values and execution starts from bus address \addr{0x0000.0000}.
+
+The first bus word, when the execution starts, is always filled with a fixed Branch instruction that makes the processor jump to the beginning of the bus-mapped ROM (address \addr{0x0000.0300}), where the BIOS is stored.
+
+\asubsubsection{Undefined Instruction Exception}
+If a Coprocessor instruction cannot be executed from any Coprocessor or if an UNDEFINED instruction is executed, this exception is raised. 
+
+Processor mode is set to Undefined, normal interrupts are disabled and Link Return register points to the instruction right after the one that caused the Undefined Exception.
+
+\asubsubsection{Software Interrupt Exception}
+This exception is caused by a SWI instruction and is meant to provide a neat way to implement System Calls. 
+
+When handling Software Interrupt Exceptions, the processor switches to Supervisor mode with normal interrupts disabled and the Link Return register points to the instruction after the SWI that caused the exception.
+
+\asubsubsection{Data Abort Exception}
+If the processor tries to access a memory address that is not valid or available, this exception is raised.
+
+When handling Data Aborts, the processor switches to Abort mode with normal interrupts disabled and Link Return register is set to the address of the instruction that caused the Abort plus 8.
+
+
+\asubsubsection{Prefetch Abort Exception}
+If the processor tries to execute an instruction that generated a data abort while being fetched, this exception is raised.
+
+When handling Prefetch Aborts, the processor enters Abort mode with normal interrupts disabled and Link Return register points to the address of the instruction after the one that caused the exception.
+
+\asubsubsection{Interrupt Request Exception}
+When a connected device requires the processor's attention, it fires an Interrupt Request.
+
+When handling Interrupt Requests, the processor enters Interrupt mode with normal interrupts disabled and Link Return register is set to the address of the instruction that was not executed plus 4.
+
+\asubsubsection{Fast Interrupt Request Exception}
+Fast Interrupts have higher priority than normal Interrupts, system Interval Timer is connected to this line of interrupts. 
+
+The Interval Timer's value is decreased at each execution cycle, when an underflow occurs (i.e. its value changes from \addr{0x0000.0000} to \addr{0xFFFF.FFFF}), a Fast Interrupt is requested.
+
+When handling Fast Interrupt Requests, the processor enters Fast Interrupt mode with all interrupts disabled and Link Return register points to the address of the instruction that was not executed plus 4.
+
+\asubsection{ROM Level Exception Handling}\label{sec:man:romExceptionHandlers}
+
+During the bootstrap process, six of the seven Exception Vector registers must be initialized (the reset exception only occurs at system startup and the relative register has a fixed value).
+The BIOS code fills these registers with jump instruction opcodes pointing to its internal handler procedures.
+
+The BIOS exception handlers provide a safe and automatic way to enter kernel level handlers by storing the processor state as it was before the exception was raised and loading the kernel handler's processor state from a known memory location inside the Kernel Reserved Frame (see sec. \ref{sec:man:kernelReservedFrame}).
+
+In addition to this general behavior, some handlers provide other functionalities as described below.
+
+\asubsubsection{Undefined Instruction Handler}
+
+An Undefined Instruction Exception needs no special treatment, its handler stores the old processor state into the PGMT Old Area and loads the processor state stored into the PGMT New Area.
+
+\asubsubsection{Software Interrupt Handler}
+
+Software interruptions recognized by the BIOS handler can be of two types: \uline{System Calls} or \uline{Breakpoints}, the foremost being interpreted as a request to the kernel, while the latter can also be a BIOS service request.
+
+This handler is capable of recognizing BIOS service requests and serving them directly, if a System Call or an unrecognized Breakpoint is requested, the exception is handled with the default behavior, the old processor state is stored into the Syscall Old Area and the processor state stored into the Syscall New Area is loaded.
+
+\asubsubsection{Data Abort and Prefetch Abort Handler}
+
+If Virtual Memory is enabled (see sec. \ref{sec:man:virtualMemory}), both Data and Prefetch Aborts can be raised while accessing a memory frame whose VPN is not loaded into the TLB, event signaled by the memory subsystem through these two exceptions.
+If this is the case, the BIOS will automatically perform a TLB\_Refill cycle, searching the active Page Tables for the required entry; otherwise the exception is treated as a generic exception, storing the old processor state into TLB Old Area and then loading the processor state stored into the TLB New Area.
+
+Since the two different exception types have different return address offsets (see sec. \ref{sec:man:hardwareExceptions}), this handler modifies the return address stored within the old processor state in order to be the correct address to jump to.
+This behavior is necessary, because discerning the exception type from kernel level handler could be quite difficult, or even impossible at times, without the knowledge of the hardware level exception, that is given from processor mode and \register{CPSR.R15}.\field{Cause} and could be lost during the pass-up.
+
+\asubsubsection{Interrupt and Fast Interrupt Handlers}
+
+Both these exceptions are treated as generic exceptions and the BIOS handlers will adopt the default behavior, storing the old processor state into the Interrupt Old Area and then loading the processor state stored into the Interrupt New Area.
+
+

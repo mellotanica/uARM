@@ -1,0 +1,17 @@
+\begin{minipage}{\textwidth}
+\begin{framed}
+	\begin{center}
+		\textbf{Disk Device \register{COMMAND} Field}
+	\end{center}
+	\centering
+	\ttfamily
+	\begin{bytefield}[bitheight=1.6\baselineskip,bitwidth=12px,endianness=big]{32}
+		\bitheader{0,7,8,15,16,23,24,31}\\
+		\bitbox{8}{\color{gray}\rule{\width}{\height}}\bitbox{8}{\footnotesize HEADNUM}\bitbox{8}{\footnotesize SECTNUM}\bitbox{8}{\footnotesize READBLK \\ WRITEBLK}\\
+		\\
+		\bitbox{8}{\color{gray}\rule{\width}{\height}}\bitbox{16}{\footnotesize CYLNUM}\bitbox{8}{\footnotesize SEEKCYL}\\
+		\\
+		\bitbox{24}{\color{gray}\rule{\width}{\height}}\bitbox{8}{\footnotesize RESET \\ ACK}\\
+	\end{bytefield}\\
+\end{framed}
+\end{minipage}

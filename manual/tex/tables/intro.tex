@@ -1,0 +1,32 @@
+\achapter{Introduction}
+
+\uarm{} is an emulator program that implements a complete system with an emulated version of the ARM7TDMI processor as its core component.
+The processor's specifications have been respected, so instruction set, exception handling and processor structure are the same as any real processor of the same family.
+Since ARM7TDMI architecture does not detail a device interface and the memory management scheme is a bit too complex, these two components are based on $\mu$MPS2 architecture, which in turn takes inspiration from commonly known architectures.
+
+In a more schematic fashion, \uarm{} is composed of:
+\begin{itemize}
+	\item An ARM7TDMI processor.
+	\item A system coprocessor, \emph{CP15}, incorporated into the processor.
+	\item Bootstrap and execution ROM.
+	\item RAM memory little-endian subsystem with optional virtual address translation mechanisms based on Translation Lookaside Buffer.
+	\item Peripheral devices: up to eight instances for each of five device classes. 
+		The five device classes are disks, tape devices, printers, terminals, and network interface devices.
+	\item A system bus connecting all the system components.
+\end{itemize}
+
+This document will describe the main aspects of the emulated system, taking into exam each of its components and describing their interactions, further details regarding the processor can be found in the \emph{ARM7TDMI Dustsheet} and the \emph{ARM7TDMI Technical Reference Manual}.
+
+Notational conventions:
+
+\begin{itemize}
+	\item Registers and storage units are \register{bold}-marked.
+	\item Fields are \field{italicized}.
+	\item Instructions are CAPITALIZED.
+	\item Field \field{F} of register \register{R} is denoted \register{R}.\field{F}.
+	\item Bits of storage units are numbered right-to-left, starting with 0.
+	\item The i-th bit of a storage unit named N is denoted N[i].
+	\item Memory addresses and operation codes are given in hexadecimal and displayed in big-endian format.
+	\item All diagrams illustrating memory are going from low addresses to high addresses using a left to right, bottom to top orientation.
+\end{itemize}
+

@@ -1,0 +1,13 @@
+\begin{minipage}{\textwidth}
+\begin{framed}
+	\begin{center}
+		\textbf{Network Adapter \register{DATA1} Field}
+	\end{center}
+	\centering
+	\ttfamily
+	\begin{bytefield}[bitwidth=12px,endianness=big]{32}
+		\bitheader{0,7,8,15,16,23,24,31}\\
+		\bitbox{8}{$6^{th}$ MAC Octet}\bitbox{8}{$5^{th}$ MAC Octet}\bitbox{8}{$4^{th}$ MAC Octet}\bitbox{8}{$3^{rd}$ MAC Octet}\\
+	\end{bytefield}\\
+\end{framed}
+\end{minipage}

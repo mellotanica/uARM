@@ -1,0 +1,13 @@
+\begin{minipage}{\textwidth}
+\begin{framed}
+	\begin{center}
+		\textbf{Disk Device \register{DATA1} Field}
+	\end{center}
+	\centering
+	\ttfamily
+	\begin{bytefield}[bitwidth=12px,endianness=big]{32}
+		\bitheader{0,7,8,15,16,31}\\
+		\bitbox{16}{\field{MAXCYL}}\bitbox{8}{\field{MAXHEAD}}\bitbox{8}{\field{MAXSECT}}\\
+	\end{bytefield}\\
+\end{framed}
+\end{minipage}

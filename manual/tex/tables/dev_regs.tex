@@ -1,0 +1,18 @@
+\begin{minipage}{\textwidth}
+\begin{framed}
+	\begin{center}
+		\textbf{Device Registers Area}
+	\end{center}
+	\centering
+	\begin{bytefield}[bitheight=2\baselineskip]{25}
+		\bitbox{15}{\color{gray}\rule{\width}{\height}} & \bitbox[]{7}{\vspace{\baselineskip}\addr{DEVTOP}}\\
+		\bitbox{15}{IntLineNo 7, DevNo 7 Device Register} & \bitbox[]{10}{\vspace{\baselineskip}\addr{0x0000.02B0}}\\
+		\bitbox[]{25}{$\cdots$}\\
+		\bitbox{15}{IntLineNo 4, DevNo 0 Device Register} & \bitbox[]{10}{\vspace{\baselineskip}\addr{0x0000.00C0}}\\
+		\bitbox{15}{IntLineNo 3, DevNo 7 Device Register} & \bitbox[]{10}{\vspace{\baselineskip}\addr{0x0000.00B0}}\\
+		\bitbox[]{25}{$\cdots$}\\
+		\bitbox{15}{IntLineNo 3, DevNo 1 Device Register} & \bitbox[]{10}{\vspace{\baselineskip}\addr{0x0000.0050}}\\
+		\bitbox{15}{IntLineNo 3, DevNo 0 Device Register} & \bitbox[]{10}{\vspace{\baselineskip}\addr{0x0000.0040}}\\
+	\end{bytefield}
+\end{framed}
+\end{minipage}

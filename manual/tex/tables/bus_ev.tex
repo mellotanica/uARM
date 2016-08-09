@@ -5,14 +5,14 @@
 	\end{center}
 	\centering
 	\begin{bytefield}[bitheight=1.1\baselineskip]{25}
-		\bitbox{15}{Reset} & \bitbox[]{10}{\addr{0x0000.0000}}\\
-		\bitbox{15}{Undefined Instruction} & \bitbox[]{10}{\addr{0x0000.0004}}\\
-		\bitbox{15}{Software Interrupt} & \bitbox[]{10}{\addr{0x0000.0008}}\\
-		\bitbox{15}{Prefetch Abort} & \bitbox[]{10}{\addr{0x0000.000C}}\\
-		\bitbox{15}{Data Abort} & \bitbox[]{10}{\addr{0x0000.0010}}\\
-		\colorbitbox{gray}{15}{reserved/unused} & \bitbox[]{10}{\addr{0x0000.0014}}\\
-		\bitbox{15}{Interrupt Request} & \bitbox[]{10}{\addr{0x0000.0018}}\\
 		\bitbox{15}{Fast Interrupt Request} & \bitbox[]{10}{\addr{0x0000.001C}}\\
+		\bitbox{15}{Interrupt Request} & \bitbox[]{10}{\addr{0x0000.0018}}\\
+		\colorbitbox{gray}{15}{reserved/unused} & \bitbox[]{10}{\addr{0x0000.0014}}\\
+		\bitbox{15}{Data Abort} & \bitbox[]{10}{\addr{0x0000.0010}}\\
+		\bitbox{15}{Prefetch Abort} & \bitbox[]{10}{\addr{0x0000.000C}}\\
+		\bitbox{15}{Software Interrupt} & \bitbox[]{10}{\addr{0x0000.0008}}\\
+		\bitbox{15}{Undefined Instruction} & \bitbox[]{10}{\addr{0x0000.0004}}\\
+		\bitbox{15}{Reset} & \bitbox[]{10}{\addr{0x0000.0000}}\\
 	\end{bytefield}
 \end{framed}
 \end{minipage}

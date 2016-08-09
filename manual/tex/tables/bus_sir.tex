@@ -5,12 +5,12 @@
 	\end{center}
 	\centering
 	\begin{bytefield}[bitheight=1.1\baselineskip]{26}
-		\bitbox{16}{RAM base address} & \bitbox[]{10}{\addr{0x0000.02D0}}\\
-		\bitbox{16}{RAM top address} & \bitbox[]{10}{\addr{0x0000.02D4}}\\
-		\bitbox{16}{Device registers base addr.} & \bitbox[]{10}{\addr{0x0000.02D8}}\\
-		\bitbox{16}{Time of day (High)} & \bitbox[]{10}{\addr{0x0000.02DC}}\\
+		\bitbox{16}{Interval Timer} & \bitbox[]{10}{\addr{0x0000.02E4}}\\
 		\bitbox{16}{Time of day (Low)} & \bitbox[]{10}{\addr{0x0000.02E0}}\\
-		\bitbox{16}{Interval Timer} & \bitbox[]{10}{\addr{0x0000.02E4}}
+		\bitbox{16}{Time of day (High)} & \bitbox[]{10}{\addr{0x0000.02DC}}\\
+		\bitbox{16}{Device registers base addr.} & \bitbox[]{10}{\addr{0x0000.02D8}}\\
+		\bitbox{16}{RAM top address} & \bitbox[]{10}{\addr{0x0000.02D4}}\\
+		\bitbox{16}{RAM base address} & \bitbox[]{10}{\addr{0x0000.02D0}}\\
 	\end{bytefield}
 \end{framed}
 \end{minipage}
