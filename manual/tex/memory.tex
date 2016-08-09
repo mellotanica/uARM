@@ -35,8 +35,8 @@ Trying to access an address below \addr{0x0000.8000} while in User Mode will rai
 
 The installed physical RAM starts at \addr{0x0000.7000} and continues up to \addr{RAMTOP}, this area will hold:
 \begin{itemize}
-	\item The operating system code (\uline{text}), global variables/structures (\uline{data}), and stack(s).
-	\item The user processes’ \uline{text}, data and stacks.
+	\item The operating system code (.text), global variables/structures (.data), and stack(s).
+	\item The user processes’ .text, .data and stacks.
 	\item The Kernel Reserved Frame. 
 		As detailed in section \ref{sec:man:kernelReservedFrame}, the BIOS code needs some writable storage to interact with the Kernel. 
 		The first 4KB (i.e. the first frame) of physical RAM are reserved for this purpose.
@@ -59,8 +59,8 @@ Virtual addresses have the following format:
 
 The segment number is composed of two bits, the most important one differentiates kernel and user segments, the least important one is meaningful only in user segment and identifies private segment and global segment:
 \begin{itemize}
-	\item Kseg0 (\field{SEGNO} 0 and 1) is the 2GB segment for the OS \uline{text}, \uline{data}, stacks, as well as the ROM code and device registers that sit at the beginning of this segment.
-	\item Useg2 (\field{SEGNO} 2) is the 1GB virtual address space for the use of User mode processes as privarte memory region.
+	\item Kseg0 (\field{SEGNO} 0 and 1) is the 2GB segment for the OS .text, .data, stacks, as well as the ROM code and device registers that sit at the beginning of this segment.
+	\item Useg2 (\field{SEGNO} 2) is the 1GB virtual address space for the use of User mode processes as private memory region.
 	\item Useg3 (\field{SEGNO} 3) is the 1GB virtual address space for the use of User mode processes as shared/global memory region.
 \end{itemize}
 
@@ -78,7 +78,7 @@ The \register{CP15.R2} register is organized as a Page Table Entry (PTE):
 \spinput{CP15.R2.tex}
 
 The Hi half of each entry identifies the logical frame to which the entry refers and the \field{ASID} of the owning process.
-The Low half of each entry specifies the physical correspondig frame (if any) and contains 3 flags used for memory protection schemes:
+The Low half of each entry specifies the physical corresponding frame (if any) and contains 3 flags used for memory protection schemes:
 \begin{itemize}
 	\item \textbf{D}irty bit: if the flag is clear, any write access to the physical frame locations will rise a \texttt{TLB-Modification} exception.
 \item \textbf{V}alid bit: if the flag is set the Page Table Entry is considered valid, otherwise a \texttt{TLB-Invalid} exception is raised.
