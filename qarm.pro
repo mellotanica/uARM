@@ -4,158 +4,157 @@ TARGET = uarm
 
 CONFIG += c++11
 QMAKE_LIBS += -ldl
+QMAKE_LIBS += -lelf
 CONFIG += qt debug
 
 DEFINES += UARM_MACHINE_COMPILING
 #DEFINES += UARM_DUMMY_DISASSEMBLER
 
 HEADERS += \
-    armProc/types.h \
-    armProc/Thumbisa.h \
-    armProc/registers.h \
-    armProc/ramMemory.h \
-    armProc/pu.h \
-    armProc/processor.h \
-    armProc/machine.h \
-    armProc/cp15.h \
-    armProc/const.h \
-    armProc/bus.h \
-    armProc/basic_types.h \
-    armProc/ARMisa.h \
-    qarm/qarm.h \
-    services/util.h \
-    qarm/mainbar.h \
-    qarm/guiConst.h \
-    qarm/procdisplay.h \
-    qarm/QLine.h \
-    qarm/ramview.h \
-    qarm/hex_view_priv.h \
-    qarm/hex_view.h \
-    armProc/blockdev_params.h \
     armProc/aout.h \
-    services/debug.h \
-    armProc/device.h \
-    armProc/machine_config.h \
-    services/json.h \
-    services/error.h \
-    services/lang.h \
+    armProc/ARMisa.h \
+    armProc/basic_types.h \
     armProc/blockdev.h \
-    armProc/vde_network.h \
-    armProc/time_stamp.h \
-    armProc/libvdeplug_dyn.h \
+    armProc/blockdev_params.h \
+    armProc/bus.h \
+    armProc/const.h \
+    armProc/cp15.h \
+    armProc/device.h \
     armProc/event.h \
-    services/utility.h \
-    qarm/mac_id_edit.h \
-    qarm/address_line_edit.h \
-    qarm/machine_config_dialog_priv.h \
-    qarm/machine_config_dialog.h \
+    armProc/libvdeplug_dyn.h \
+    armProc/machine.h \
+    armProc/machine_config.h \
     armProc/mpic.h \
-    qarm/terminal_window_priv.h \
-    qarm/terminal_window.h \
-    qarm/terminal_view.h \
-    qarm/flat_push_button.h \
-    qarm/breakpoint_window.h \
-    facilities/arch.h \
-    services/disass.h \
-    qarm/symbol_table_model.h \
-    qarm/add_breakpoint_dialog.h \
-    services/symbol_table.h \
-    services/debug_session.h \
-    qarm/stoppoint_list_model.h \
+    armProc/processor.h \
+    armProc/pu.h \
+    armProc/ramMemory.h \
+    armProc/registers.h \
     armProc/stoppoint.h \
-    qarm/ui_utils.h \
+    armProc/Thumbisa.h \
+    armProc/time_stamp.h \
+    armProc/tlbentry.h \
+    armProc/types.h \
+    armProc/vde_network.h \
+    facilities/arch.h \
     facilities/uARMconst.h \
     facilities/uARMtypes.h \
-    armProc/tlbentry.h \
+    qarm/add_breakpoint_dialog.h \
+    qarm/address_line_edit.h \
+    qarm/breakpoint_window.h \
+    qarm/flat_push_button.h \
+    qarm/guiConst.h \
+    qarm/hex_view.h \
+    qarm/hex_view_priv.h \
+    qarm/mainbar.h \
+    qarm/mac_id_edit.h \
+    qarm/machine_config_dialog.h \
+    qarm/machine_config_dialog_priv.h \
+    qarm/procdisplay.h \
+    qarm/qarm.h \
+    qarm/qarmmessagebox.h \
+    qarm/QLine.h \
+    qarm/ramview.h \
+    qarm/register_item_delegate.h \
+    qarm/select_structures_dialog.h \
+    qarm/stoppoint_list_model.h \
+    qarm/structures_window.h \
+    qarm/symbol_table_model.h \
+    qarm/terminal_view.h \
+    qarm/terminal_window.h \
+    qarm/terminal_window_priv.h \
     qarm/tlb_model.h \
     qarm/tlb_window.h \
-    qarm/register_item_delegate.h \
-    qarm/qarmmessagebox.h \
-    qarm/structures_window.h \
-    qarm/select_structures_dialog.h
+    qarm/ui_utils.h \
+    services/debug.h \
+    services/debug_session.h \
+    services/disass.h \
+    services/error.h \
+    services/json.h \
+    services/lang.h \
+    services/symbol_table.h \
+    services/util.h \
+    services/utility.h
 
 SOURCES += \
-    armProc/Thumbisa.cc \
-    armProc/processor.cc \
-    armProc/machine.cc \
-    armProc/cp15.cc \
-    armProc/bus.cc \
     armProc/ARMisa.cc \
-    qarm/qarm.cc \
+    armProc/blockdev.cc \
+    armProc/bus.cc \
+    armProc/cp15.cc \
+    armProc/device.cc \
+    armProc/event.cc \
+    armProc/machine.cc \
+    armProc/machine_config.cc \
+    armProc/mpic.cc \
+    armProc/processor.cc \
+    armProc/stoppoint.cc \
+    armProc/Thumbisa.cc \
+    armProc/time_stamp.cc \
+    armProc/tlbentry.cpp \
+    armProc/vde_network.cc \
+    qarm/add_breakpoint_dialog.cc \
+    qarm/address_line_edit.cc \
+    qarm/breakpoint_window.cc \
+    qarm/flat_push_button.cc \
+    qarm/hex_view.cc \
+    qarm/mac_id_edit.cc \
+    qarm/machine_config_dialog.cc \
     qarm/main.cc \
     qarm/mainbar.cc \
     qarm/procdisplay.cc \
+    qarm/qarm.cc \
+    qarm/qarmmessagebox.cpp \
     qarm/ramview.cc \
-    qarm/hex_view.cc \
-    armProc/device.cc \
-    armProc/machine_config.cc \
-    services/json.cc \
-    armProc/blockdev.cc \
-    armProc/time_stamp.cc \
-    armProc/vde_network.cc \
-    armProc/event.cc \
-    services/utility.cc \
-    services/error.cc \
-    qarm/mac_id_edit.cc \
-    qarm/address_line_edit.cc \
-    qarm/machine_config_dialog.cc \
-    armProc/mpic.cc \
-    qarm/terminal_window.cc \
-    qarm/terminal_view.cc \
-    qarm/flat_push_button.cc \
-    services/debug.cc \
-    services/disass.c \
-    qarm/breakpoint_window.cc \
-    qarm/symbol_table_model.cc \
-    qarm/add_breakpoint_dialog.cc \
-    services/symbol_table.cc \
-    services/debug_session.cc \
+    qarm/register_item_delegate.cc \
+    qarm/select_structures_dialog.cc \
     qarm/stoppoint_list_model.cc \
-    armProc/stoppoint.cc \
-    qarm/ui_utils.cc \
-    armProc/tlbentry.cpp \
+    qarm/structures_window.cc \
+    qarm/symbol_table_model.cc \
+    qarm/terminal_view.cc \
+    qarm/terminal_window.cc \
     qarm/tlb_model.cc \
     qarm/tlb_window.cc \
-    qarm/register_item_delegate.cc \
-    qarm/qarmmessagebox.cpp \
-    qarm/select_structures_dialog.cc \
-    qarm/structures_window.cc
+    qarm/ui_utils.cc \
+    services/debug.cc \
+    services/debug_session.cc \
+    services/disass.c \
+    services/error.cc \
+    services/json.cc \
+    services/symbol_table.cc \
+    services/utility.cc
 
 OTHER_FILES += \
-    compile \
     assemble_BIOS \
-    icons/step.png \
-    icons/reset.png \
-    icons/play.png \
-    icons/pause.png \
-    README.txt \
-    test/dataP_MOV_MVN_BIC.s \
-    icons/machine_settings-22.png \
-    elf2uarm.pro \
-    facilities/BIOS.s \
-    facilities/bios_const.h \
-    facilities/libuarm.h \
-    facilities/libuarm.o \
-    facilities/crtso.S \
-    facilities/libuarm.S \
-    ldscript/elf32ltsarm.h.uarmcore.x \
-    ldscript/elf32ltsarm.h.uarmaout.x \
+    compile \
+    config.h.in \
     configure \
     configure.ac \
-    config.h.in \
-    test/helloWorld.c \
-    facilities/crtso.o \
-    facilities/BIOS.rom.uarm \
-    icons/window_default-48.png \
-    icons/poweron.png \
-    install.sh \
     default/uarm \
+    elf2uarm.pro \
+    facilities/BIOS.rom.uarm \
+    facilities/BIOS.s \
+    facilities/bios_const.h \
     facilities/crti.o \
     facilities/crti.s \
-    facilities/libuarm.s \
+    facilities/crtso.o \
     facilities/crtso.s \
+    facilities/libdiv.o \
     facilities/libdiv.s \
-    facilities/libdiv.o
+    facilities/libuarm.h \
+    facilities/libuarm.o \
+    facilities/libuarm.s \
+    icons/machine_settings-22.png \
+    icons/pause.png \
+    icons/play.png \
+    icons/poweron.png \
+    icons/reset.png \
+    icons/step.png \
+    icons/window_default-48.png \
+    install.sh \
+    ldscript/elf32ltsarm.h.uarmaout.x \
+    ldscript/elf32ltsarm.h.uarmcore.x \
+    README.txt \
+    test/dataP_MOV_MVN_BIC.s \
+    test/helloWorld.c
 
 DISTFILES += \
     todo.txt
