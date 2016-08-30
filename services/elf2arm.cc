@@ -63,7 +63,7 @@ static const size_t kBlockSize = 4096;
 #define forEachSectionData(sd, data) \
     for (data = elf_getdata(sd, NULL); data != NULL; data = elf_getdata(sd, data))
 
-#define elfError(emsg) ({*error = emsg; return 1;})
+#define elfError(emsg) ({*error = (char *) emsg; return 1;})
 
 struct elfSymbol {
     elfSymbol(const std::string& name, Elf32_Sym* details)
@@ -101,9 +101,9 @@ private:
 
 uint32_t toTargetEndian(uint32_t x);
 
-static void elf2aout(bool isCore);
-static void createSymbolTable();
-static void elf2bios();
+// static void elf2aout(bool isCore);
+// static void createSymbolTable();
+// static void elf2bios();
 
 
 const char* programName;
@@ -112,7 +112,7 @@ const char* programName;
 const char* fileName = NULL;
 
 // Be verbose
-static bool verbose = false;
+// static bool verbose = false;
 
 
 static Elf_Scn* getSectionByType(Elf32_Word type, Elf *elf)
@@ -128,12 +128,12 @@ static Elf_Scn* getSectionByType(Elf32_Word type, Elf *elf)
     return NULL;
 }
 
-const int initf(const char * fileName, e2adata* data, char **error)
+int initf(const char * fileName, e2adata* data, char **error)
 {
     if (elf_version(EV_CURRENT) == EV_NONE)
         elfError("ELF library out of date");
 
-    if (fileName == "") {
+    if (strcmp(fileName, "") == 0) {
         elfError("File not found");
     }
 
@@ -167,8 +167,8 @@ inline uint32_t toTargetEndian(uint32_t x, Elf32_Ehdr *elfHeader)
 
 
 elfSymbolTableIterator::elfSymbolTableIterator(Elf* elf)
-    : stSec(getSectionByType(SHT_SYMTAB, elf)),
-      elf(elf),
+    : elf(elf),
+      stSec(getSectionByType(SHT_SYMTAB, elf)),
       stSecHeader(elf32_getshdr(stSec))
 {
     (void)elf;
@@ -370,7 +370,7 @@ static int readStab(e2adata *edata, char **error, Word asid, SymbolTable **rstab
             (type == STT_FUNC || type == STT_OBJECT) &&
             (s.name[0] != '_' || s.name == "__start"))
         {
-            sprintf(typeStr, "%s:0x%.8lX:0x%.8lX:%s\0",
+            sprintf(typeStr, "%s:0x%.8lX:0x%.8lX:%s",
                                typeName[type],
                                (unsigned long) s.details->st_value,
                                (unsigned long) s.details->st_size,
@@ -396,13 +396,13 @@ void elfLoader::closeElf(){
 
 biosElf::biosElf(const char *fname){
     address = 0;
-    error = "";
+    error = (char *) "";
     bool err = false;
     if(!initf(fname, &edata, &error)){
 
         // Check ELF object type
         if (edata.elfHeader->e_type != ET_REL)
-            error = "Not a relocatable ELF object file";
+            error = (char *) "Not a relocatable ELF object file";
         else{
 
             // Find .text section
@@ -410,7 +410,7 @@ biosElf::biosElf(const char *fname){
             forEachSection(sd, edata.elf) {
                 Elf32_Shdr* sh = elf32_getshdr(sd);
                 if (sh == NULL){
-                    error = "Not a regular ELF file";
+                    error = (char *) "Not a regular ELF file";
                     err = true;
                     break;
                 }
@@ -423,7 +423,7 @@ biosElf::biosElf(const char *fname){
             }
             if(!err){
                 if (sd == NULL)
-                    error = "Could not find .text section";
+                    error = (char *) "Could not find .text section";
                 else{
 
                     Elf_Data* data;
@@ -444,7 +444,7 @@ biosElf::biosElf(const char *fname){
 coreElf::coreElf(const char *fname, Word asid, const char *stabFname){
     daddr = taddr = 0;
     dsize = tsize = 0;
-    error = "";
+    error = (char *) "";
     if(!initf(fname, &edata, &error)){
         if(!readCore(&edata, &error, this, &dbuf, &tbuf, &dsize, &tsize)){
             closeElf();
@@ -458,7 +458,7 @@ coreElf::coreElf(const char *fname, Word asid, const char *stabFname){
 coreElf::coreElf(const char *fname, Word asid){
     daddr = taddr = 0;
     dsize = tsize = 0;
-    error = "";
+    error = (char *) "";
     if(!initf(fname, &edata, &error)){
         if(!readCore(&edata, &error, this, &dbuf, &tbuf, &dsize, &tsize)){
             readStab(&edata, &error, asid, &stab);
@@ -472,6 +472,5 @@ coreElf::~coreElf(){
         delete[](dbuf);
     if(tbuf != NULL)
         delete[](tbuf);
-    if(header != NULL)
-        delete[](header);
+    delete[](&header);
 }

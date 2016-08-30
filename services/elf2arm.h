@@ -42,7 +42,7 @@ public:
     Byte readByte() {return (address < size ? buf[address++] : 0);}
 
 private:
-    int address;
+    unsigned int address;
     Word size;
     uint8_t *buf;
 };
@@ -67,7 +67,7 @@ public:
     SymbolTable *getSymbolTable() {return stab;}
 private:
     Word dsize, tsize;
-    int daddr, taddr;
+    unsigned int daddr, taddr;
     uint8_t *dbuf, *tbuf;
     SymbolTable *stab;
 };
