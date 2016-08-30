@@ -47,10 +47,13 @@
 #include "qarm/mac_id_edit.h"
 #include "qarm/machine_config_dialog_priv.h"
 #include "qarm/procdisplay.h"
+#include "qarm/qarmmessagebox.h"
+#include "services/debug_session.h"
 
 MachineConfigDialog::MachineConfigDialog(MachineConfig* config, QWidget* parent)
     : QDialog(parent),
-      config(config)
+      config(config),
+      restartNeededNotified(false)
 {
     setWindowTitle("Machine Configuration");
     setWindowIcon(QIcon(LIB_PATH "icons/config.png"));
@@ -147,12 +150,12 @@ QWidget* MachineConfigDialog::createGeneralTab(QWidget *parent)
 
     QSignalMapper* fileChooserMapper = new QSignalMapper(this);
     connect(fileChooserMapper, SIGNAL(mapped(int)), this, SLOT(getROMFileName(int)));
-    QPushButton *BIOSFileChooserButton, *coreFileChooserButton, *stabFileChooserButton;
+    QPushButton *BIOSFileChooserButton, *coreFileChooserButton;
 
     romFileInfo[ROM_TYPE_BIOS].description = "Execution ROM";
     romFileInfo[ROM_TYPE_BIOS].lineEdit = new QLineEdit(tabWidget);
     romFileInfo[ROM_TYPE_BIOS].lineEdit->setAccessibleName("Execution ROM");
-    romFileInfo[ROM_TYPE_BIOS].lineEdit->setAccessibleDescription("Path to Execution ROM file (*.rom.uarm)");
+    romFileInfo[ROM_TYPE_BIOS].lineEdit->setAccessibleDescription("Path to Execution ROM file");
     romFileInfo[ROM_TYPE_BIOS].lineEdit->setToolTip(romFileInfo[ROM_TYPE_BIOS].lineEdit->accessibleDescription());
     romFileInfo[ROM_TYPE_BIOS].lineEdit->setText(config->getROM(ROM_TYPE_BIOS).c_str());
     BIOSFileChooserButton = new QPushButton("Browse...", tabWidget);
@@ -170,7 +173,7 @@ QWidget* MachineConfigDialog::createGeneralTab(QWidget *parent)
     romFileInfo[ROM_TYPE_CORE].description = "Core";
     romFileInfo[ROM_TYPE_CORE].lineEdit = new QLineEdit(tabWidget);
     romFileInfo[ROM_TYPE_CORE].lineEdit->setAccessibleName("Core file");
-    romFileInfo[ROM_TYPE_CORE].lineEdit->setAccessibleDescription("Path to Core file (*.core.uarm)");
+    romFileInfo[ROM_TYPE_CORE].lineEdit->setAccessibleDescription("Path to Core file");
     romFileInfo[ROM_TYPE_CORE].lineEdit->setToolTip(romFileInfo[ROM_TYPE_CORE].lineEdit->accessibleDescription());
     romFileInfo[ROM_TYPE_CORE].lineEdit->setText(config->getROM(ROM_TYPE_CORE).c_str());
     coreFileChooserButton = new QPushButton("Browse...", tabWidget);
@@ -178,16 +181,24 @@ QWidget* MachineConfigDialog::createGeneralTab(QWidget *parent)
     connect(coreFileChooserButton, SIGNAL(clicked()), fileChooserMapper, SLOT(map()));
     fileChooserMapper->setMapping(coreFileChooserButton, ROM_TYPE_CORE);
 
-    romFileInfo[ROM_TYPE_STAB].description = "Symbol Table";
+    romFileInfo[ROM_TYPE_STAB].description = "External Symbol Table";
     romFileInfo[ROM_TYPE_STAB].lineEdit = new QLineEdit(tabWidget);
-    romFileInfo[ROM_TYPE_STAB].lineEdit->setAccessibleName("Symbol Table");
-    romFileInfo[ROM_TYPE_STAB].lineEdit->setAccessibleDescription("Path to Symbol Table file (*.stab.uarm)");
+    romFileInfo[ROM_TYPE_STAB].lineEdit->setAccessibleName("External Symbol Table");
+    romFileInfo[ROM_TYPE_STAB].lineEdit->setAccessibleDescription("Path to external executable to read Symbol Table from");
     romFileInfo[ROM_TYPE_STAB].lineEdit->setToolTip(romFileInfo[ROM_TYPE_STAB].lineEdit->accessibleDescription());
     romFileInfo[ROM_TYPE_STAB].lineEdit->setText(config->getROM(ROM_TYPE_STAB).c_str());
     stabFileChooserButton = new QPushButton("Browse...", tabWidget);
-    stabFileChooserButton->setAccessibleName("Browse for Symbol Table file");
+    stabFileChooserButton->setAccessibleName("Browse for external executable file");
     connect(stabFileChooserButton, SIGNAL(clicked()), fileChooserMapper, SLOT(map()));
+    connect(romFileInfo[ROM_TYPE_STAB].lineEdit, SIGNAL(textChanged(QString)), this, SLOT(alertNeedsRestart()));
     fileChooserMapper->setMapping(stabFileChooserButton, ROM_TYPE_STAB);
+
+    externalStabBox = new QCheckBox("External Symbol Table", tabWidget);
+    connect(externalStabBox, SIGNAL(toggled(bool)), this, SLOT(toggleExternalStab(bool)));
+    externalStabBox->setAccessibleName("Enable external Symbol Table");
+    externalStabBox->setChecked(config->getExternalStab());
+    toggleExternalStab(externalStabBox->isChecked());
+    connect(externalStabBox, SIGNAL(toggled(bool)), this, SLOT(alertNeedsRestart()));
 
     stabAsidEdit = new AsidLineEdit(tabWidget);
     stabAsidEdit->setAccessibleName("Symbol Table ASID");
@@ -246,14 +257,19 @@ QWidget* MachineConfigDialog::createGeneralTab(QWidget *parent)
         layout->addWidget(new QLabel("<b>Debugging Support</b>", tabWidget));
 
         tempHL = new QHBoxLayout();
-        tempHL->addWidget(new QLabel("Symbol Table:", tabWidget));
-        tempHL->addWidget(romFileInfo[ROM_TYPE_STAB].lineEdit);
-        tempHL->addWidget(stabFileChooserButton);
+        tempHL->addWidget(new QLabel("Symbol Table ASID:", tabWidget));
+        tempHL->addWidget(stabAsidEdit);
         layout->addLayout(tempHL);
 
         tempHL = new QHBoxLayout();
-        tempHL->addWidget(new QLabel("Symbol Table ASID:", tabWidget));
-        tempHL->addWidget(stabAsidEdit);
+        tempHL->addWidget(new QLabel("Enable External Symbol Table:", tabWidget));
+        tempHL->addWidget(externalStabBox);
+        layout->addLayout(tempHL);
+
+        tempHL = new QHBoxLayout();
+        tempHL->addWidget(new QLabel("External Symbol Table File:", tabWidget));
+        tempHL->addWidget(romFileInfo[ROM_TYPE_STAB].lineEdit);
+        tempHL->addWidget(stabFileChooserButton);
         layout->addLayout(tempHL);
     } else {
         QGridLayout *layout = new QGridLayout(tabWidget);
@@ -290,12 +306,15 @@ QWidget* MachineConfigDialog::createGeneralTab(QWidget *parent)
 
         layout->addWidget(new QLabel("<b>Debugging Support</b>", tabWidget), 10, 0, 1, 3);
 
-        layout->addWidget(new QLabel("Symbol Table:", tabWidget), 11, 1);
-        layout->addWidget(romFileInfo[ROM_TYPE_STAB].lineEdit, 11, 2, 1, 2);
-        layout->addWidget(stabFileChooserButton, 11, 4);
+        layout->addWidget(new QLabel("Symbol Table ASID:", tabWidget), 11, 1);
+        layout->addWidget(stabAsidEdit, 11, 2);
+        layout->addWidget(externalStabBox, 11, 3);
 
-        layout->addWidget(new QLabel("Symbol Table ASID:", tabWidget), 12, 1);
-        layout->addWidget(stabAsidEdit, 12, 2);
+        layout->addWidget(new QLabel("External Symbol Table:", tabWidget), 12, 1);
+        layout->addWidget(romFileInfo[ROM_TYPE_STAB].lineEdit, 12, 2, 1, 2);
+        layout->addWidget(stabFileChooserButton, 12, 4);
+
+
     }
 
     return tabWidget;
@@ -418,6 +437,20 @@ void MachineConfigDialog::registerDeviceClass(const QString& label,
     devClassView->addItem(QIcon(icon), devClassName);
 }
 
+void MachineConfigDialog::alertNeedsRestart(){
+    if(DebuggerHolder::getInstance()->getDebugSession()->isRunning() && !restartNeededNotified){
+        QarmMessageBox *warning = new QarmMessageBox(QarmMessageBox::WARNING, "Warning",
+                                                     "Changes may need a restart to take effect.", this);
+        warning->show();
+        restartNeededNotified = true;
+    }
+}
+
+void MachineConfigDialog::toggleExternalStab(bool state){
+    romFileInfo[ROM_TYPE_STAB].lineEdit->setEnabled(state);
+    stabFileChooserButton->setEnabled(state);
+}
+
 void MachineConfigDialog::getROMFileName(int index)
 {
     QString title = QString("Select a %1 File").arg(romFileInfo[index].description);
@@ -448,6 +481,7 @@ void MachineConfigDialog::saveConfigChanges()
     config->setLoadCoreEnabled(coreBootCheckBox->isChecked()); */
     config->setStopOnException(stopOnInterruptBox->isChecked());
     config->setSymbolTableASID(stabAsidEdit->getAsid());
+    config->setExternalStab(externalStabBox->isChecked());
 
     config->setAccessibleMode(accessibleModeCheckBox->isChecked());
 }

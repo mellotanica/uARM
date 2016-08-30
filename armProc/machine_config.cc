@@ -116,8 +116,11 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
 
         if (root->HasMember("symbol-table")) {
             JsonObject* stab = root->Get("symbol-table")->AsObject();
-            config->setROM(ROM_TYPE_STAB, stab->Get("file")->AsString());
+            if(stab->HasMember("external-stab")){
+                config->setExternalStab(stab->Get("external-stab")->AsBool());
+            }
             config->setSymbolTableASID(stab->Get("asid")->AsNumber());
+            config->setROM(ROM_TYPE_STAB, stab->Get("file")->AsString());
         }
 
         if (root->HasMember("devices")) {
@@ -183,8 +186,9 @@ void MachineConfig::Save()
     root->Set("execution-rom", getROM(ROM_TYPE_BIOS));
 
     JsonObject* stabObject = new JsonObject;
-    stabObject->Set("file", romFiles[ROM_TYPE_STAB]);
     stabObject->Set("asid", (int) symbolTableASID);
+    stabObject->Set("external-stab", externalStab);
+    stabObject->Set("file", romFiles[ROM_TYPE_STAB]);
     root->Set("symbol-table", stabObject);
 
     JsonObject* devicesObject = new JsonObject;
@@ -285,6 +289,10 @@ void MachineConfig::setSymbolTableASID(Word asid)
     symbolTableASID = bumpProperty(MIN_ASID, asid, MAX_ASID);
 }
 
+void MachineConfig::setExternalStab(bool enabled){
+    externalStab = enabled;
+}
+
 void MachineConfig::setStopOnTLBChange(bool value)
 {
     stopOnTLBChange = value;
@@ -359,13 +367,13 @@ void MachineConfig::resetToFactorySettings()
 
     setAccessibleMode(DEFAULT_ACCESSIBLE_MODE);
 
-    // STATIC: this is a temp bios, there needs to be a more complete one..
-    setROM(ROM_TYPE_BIOS, "/usr/include/uarm/BIOS.rom.uarm");
+    setROM(ROM_TYPE_BIOS, "/usr/include/uarm/BIOS");
 
     setLoadCoreEnabled(true);
-    setROM(ROM_TYPE_CORE, "kernel.core.uarm");
-    setROM(ROM_TYPE_STAB, "kernel.stab.uarm");
+    setROM(ROM_TYPE_CORE, "kernel");
+    setROM(ROM_TYPE_STAB, "");
     setSymbolTableASID(0);
+    setExternalStab(false);
 
     for (unsigned int i = 0; i < N_EXT_IL; ++i)
         for (unsigned int j = 0; j < N_DEV_PER_IL; ++j)

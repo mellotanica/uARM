@@ -20,7 +20,7 @@
  */
  
 /* 
- * This interface defines the common coprocessor - processor communication methods
+ *
  */
 
 #ifndef UARM_MEMORY_H
@@ -63,6 +63,8 @@ public:
         return ramSize;
     }
 	
+    void cleanram(){std::fill_n(memVector, ramSize, 0);}
+
     bool read(Word *address, Byte *dest) {return read(address, dest, ENDIANESS_BIGENDIAN);}
     bool write(Word *address, Byte data) {return write(address, data, ENDIANESS_BIGENDIAN);}
 	

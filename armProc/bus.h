@@ -61,7 +61,7 @@ public:
 
 	Word pipeline[PIPELINE_STAGES];
 
-    bool loadBIOS(char *buffer, Word size);
+    void initBIOS(Word size);
     bool loadRAM(char *buffer, Word size, bool kernel);
 
     bool prefetch(Word addr, bool exec);

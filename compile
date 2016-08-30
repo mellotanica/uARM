@@ -12,7 +12,6 @@ function usage(){
 	echo -e "\tmake options are used by make when compiling each target"
 	echo 
 	echo -e "\tPossible targets are:"
-	echo -e "\t\telf2uarm"
 	echo -e "\t\tmkdev"
 	echo -e "\t\tuarm"
 }
@@ -29,9 +28,6 @@ if test $# -gt 0; then
 				;;
 			"mkdev")
 				SET="m:$SET"
-				;;
-			"elf2uarm")
-				SET="e:$SET"
 				;;
 			"-h")
 				usage
@@ -101,9 +97,3 @@ if [[ "$SET" = *"m"* ]]; then
 	make $*
 fi
 
-if [[ "$SET" = *"e"* ]]; then
-	echo "Compiling elf2uarm...."
-	echo
-	$QMCOMP elf2uarm.pro
-	make $*
-fi

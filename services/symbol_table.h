@@ -96,6 +96,7 @@ public:
     // This method builds a symbol table from .stab file fName produced by
     // elf2mps utility
     SymbolTable(Word asid, const char * fName);
+    SymbolTable(Word asid, int numF, int numO);
 
     ~SymbolTable();
 
@@ -114,6 +115,9 @@ public:
     std::list<const Symbol*> Lookup(const char* name) const;
     std::list<const Symbol*> Lookup(const char* name, Symbol::Type type) const;
 
+    int addSymbol(const char *sName, const char *sType);
+    int finalizeSymbolTable(int error);
+
 private:
     static void sortTable(Symbol** table, size_t size);
 
@@ -128,6 +132,9 @@ private:
     // Number of function/object symbols
     unsigned int ftSize;
     unsigned int otSize;
+
+    // counters used in alternate construction
+    unsigned int lastF, lastO;
 
     // Symbol tables: one for functions, other for memory object symbols
     Symbol** fTable;

@@ -26,7 +26,6 @@
 
 #include "armProc/types.h"
 
-
 // This function sets to 1 the (bitPos % 32) bit of the word w
 Word SetBit (Word w, unsigned int bitPos);
 

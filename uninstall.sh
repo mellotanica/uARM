@@ -34,7 +34,7 @@ then
   rmdir --ignore-fail-on-non-empty `dirname "$TESTD"`
 fi
 
-rm -f "$BIND"/uarm "$BIND"/elf2uarm "$BIND"/uarm-mkdev
+rm -f "$BIND"/uarm "$BIND"/uarm-readuarm "$BIND"/elf2uarm "$BIND"/uarm-mkdev
 
 cd default
 for i in *

@@ -65,6 +65,8 @@ private:
     QCheckBox* coreBootCheckBox;
     QCheckBox* accessibleModeCheckBox;
     AsidLineEdit* stabAsidEdit;
+    QPushButton* stabFileChooserButton;
+    QCheckBox* externalStabBox;
 
     struct {
         const char* description;
@@ -74,11 +76,16 @@ private:
     QComboBox* devClassView;
     QStackedLayout* devFileChooserStack;
 
+    bool restartNeededNotified;
+
 private Q_SLOTS:
+
     void updateRamSize(int frames);
 
     void getROMFileName(int index);
+    void toggleExternalStab(bool state);
 
+    void alertNeedsRestart();
     void saveConfigChanges();
 };
 

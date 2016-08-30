@@ -125,6 +125,9 @@ public:
     void setSymbolTableASID(Word asid);
     Word getSymbolTableASID() const { return symbolTableASID; }
 
+    void setExternalStab(bool enabled);
+    bool getExternalStab() { return externalStab; }
+
     void setAccessibleMode(bool enabled);
     bool getAccessibleMode() const { return accessibleMode; }
 
@@ -164,6 +167,7 @@ private:
 
     std::string romFiles[N_ROM_TYPES];
     Word symbolTableASID;
+    bool externalStab;
 
     std::string devFiles[N_EXT_IL][N_DEV_PER_IL];
     bool devEnabled[N_EXT_IL][N_DEV_PER_IL];

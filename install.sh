@@ -68,8 +68,7 @@ if [ "$ICONSONLY" == "false" ]; then
 	else
 		cp -r uarm.app /applications
 	fi
-	cp elf2uarm uarm-mkdev "$BIND"
-	cp -f "$HERE"/facilities/readuarm.py "$BIND"/uarm-readuarm
+	cp uarm-mkdev "$BIND"
 	
 	for d in default/*; do
 		f=`basename "$d"`
