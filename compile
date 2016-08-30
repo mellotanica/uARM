@@ -12,7 +12,6 @@ function usage(){
 	echo -e "\tmake options are used by make when compiling each target"
 	echo 
 	echo -e "\tPossible targets are:"
-	echo -e "\t\telf2uarm"
 	echo -e "\t\tmkdev"
 	echo -e "\t\tuarm"
 }
@@ -29,9 +28,6 @@ if test $# -gt 0; then
 				;;
 			"mkdev")
 				SET="m:$SET"
-				;;
-			"elf2uarm")
-				SET="e:$SET"
 				;;
 			"-h")
 				usage
@@ -61,7 +57,6 @@ if test -z "$SET"; then
 fi
 
 QMCOMP="qmake"
-VERSION=""
 PLATFORM=`uname -s`
 
 if [[ "$PLATFORM" == "Linux" ]]; then
@@ -99,8 +94,7 @@ elif [[ "$PLATFORM" == "Darwin" ]]; then
             brew install "$pkg"
         fi
     done
-    QMCOMP=$(brew --prefix qt5)/bin/qmake
-    VERSION="QMAKE_MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}')"
+    QMCOMP="$(brew --prefix qt5)/bin/qmake QMAKE_MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}')"
 fi
 
 if $CONFIGURE; then
@@ -110,20 +104,14 @@ fi
 if [[ "$SET" = *"u"* ]]; then
 	echo "Compiling uarm...."
 	echo
-	$QMCOMP $VERSION qarm.pro
+	$QMCOMP qarm.pro
 	make $*
 fi
 
 if [[ "$SET" = *"m"* ]]; then
 	echo "Compiling mkdev...."
 	echo
-	$QMCOMP $VERSION mkdev.pro
+	$QMCOMP mkdev.pro
 	make $*
 fi
 
-if [[ "$SET" = *"e"* ]]; then
-	echo "Compiling elf2uarm...."
-	echo
-	$QMCOMP $VERSION elf2uarm.pro
-	make $*
-fi

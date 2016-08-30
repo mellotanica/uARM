@@ -52,7 +52,8 @@ const unsigned int DebugSession::kIterInterval[kNumSpeedLevels] = {
 */
 DebugSession::DebugSession(QApplication *application, QMainWindow *mainWindow) :
     mainW(mainWindow),
-    app(application)
+    app(application),
+    running(false)
 //      status(MS_HALTED),
 //      idleSteps(0)
 {
@@ -96,6 +97,10 @@ void DebugSession::resetSymbolTable(){
     }
     symbolTable.reset(stab);
     emit stabUpdated();
+}
+
+void DebugSession::startMachine(){
+    running = true;
 }
 
 /*
@@ -281,7 +286,7 @@ void DebugSession::initializeMachine()
 void DebugSession::onMachineConfigChanged()
 {
     emit stabUnavavilable();
-    resetSymbolTable();
+    //resetSymbolTable();
 /*    if (Appl()->getConfig() != NULL)
         startMachineAction->setEnabled(true);
 

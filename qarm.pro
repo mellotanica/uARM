@@ -73,7 +73,8 @@ HEADERS += \
     services/lang.h \
     services/symbol_table.h \
     services/util.h \
-    services/utility.h
+    services/utility.h \
+    services/elf2arm.h
 
 SOURCES += \
     armProc/ARMisa.cc \
@@ -117,6 +118,7 @@ SOURCES += \
     services/debug.cc \
     services/debug_session.cc \
     services/disass.c \
+    services/elf2arm.cc \
     services/error.cc \
     services/json.cc \
     services/symbol_table.cc \

@@ -40,7 +40,6 @@
 #include <ctype.h>
 #include <algorithm>
 
-
 // This function sets to 1 the (bitPos % 32) bit of the word w
 Word SetBit (Word w, unsigned bitPos)
 {

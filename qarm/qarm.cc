@@ -26,6 +26,8 @@
 #include "armProc/aout.h"
 #include "qarm/machine_config_dialog.h"
 #include "services/error.h"
+#include "services/elf2arm.h"
+#include "services/utility.h"
 
 #include "qarm/qarmmessagebox.h"
 
@@ -38,6 +40,12 @@
 #include <QWindow>
 
 #include <stdio.h>
+
+inline Word SWAP_ENDIANESS(Word wp){
+    Byte *tp = (Byte *) &wp;
+    Word ret = ((Byte) (*tp) | ((Byte) *(tp+1)) << 8 | ((Byte) *(tp+2)) << 16 | ((Byte) *(tp+3)) << 24);
+    return ret;
+}
 
 qarm::qarm(QApplication *app, QFile *confFile, bool autorun, bool runandexit):
     application(app)
@@ -115,6 +123,7 @@ qarm::qarm(QApplication *app, QFile *confFile, bool autorun, bool runandexit):
     connect(toolbar, SIGNAL(showTerminal(uint)), this, SLOT(showTerminal(uint)));
     connect(this, SIGNAL(setTerminalEnabled(uint,bool)), toolbar, SLOT(setTerminalEnabled(uint,bool)));
     connect(this, SIGNAL(poweredOn()), toolbar, SLOT(doPowerOn()));
+    connect(this, SIGNAL(poweredOn()), debugger, SLOT(startMachine()));
     connect(this, SIGNAL(poweredOff()), toolbar, SLOT(doPowerOff()));
 
     connect(toolbar, SIGNAL(showBPW()), bpWindow, SLOT(show()));
@@ -152,7 +161,6 @@ qarm::qarm(QApplication *app, QFile *confFile, bool autorun, bool runandexit):
 
     connect(mac, SIGNAL(updateStatus(QString)), toolbar, SLOT(updateStatus(QString)));
 
-    connect(this, SIGNAL(resetMachine()), debugger, SLOT(resetSymbolTable()));
     connect(debugger, SIGNAL(stabUpdated()), bpWindow, SLOT(updateContent()));
     connect(debugger, SIGNAL(stabUpdated()), structWindow, SLOT(updateContent()));
     connect(this, SIGNAL(resumeExec()), debugger, SIGNAL(MachineRan()));
@@ -297,7 +305,7 @@ void qarm::selectCore(){
     }
     QString fileName = QFileDialog::getOpenFileName(this, "Open Program File", "", "Program Files (*.core.uarm);;Binary Files (*.bin);;All Files (*.*)");
     if(fileName != ""){
-        coreF = fileName;
+        coreF = fileName.toStdString();
         dataLoaded = true;
     }
 }
@@ -317,70 +325,75 @@ void qarm::selectBios(){
     }
     QString fileName = QFileDialog::getOpenFileName(this, "Open BIOS File", "", "BIOS Files (*.rom.uarm);;Binary Files (*.bin);;All Files (*.*)");
     if(fileName != ""){
-        biosF = fileName;
+        biosF = fileName.toStdString();
         biosLoaded = true;
     }
 }
 
 bool qarm::openRAM(){
-    coreF = QString::fromStdString(MC_Holder::getInstance()->getConfig()->getROM(ROM_TYPE_CORE));
+    const char *coreF = MC_Holder::getInstance()->getConfig()->getROM(ROM_TYPE_CORE).c_str();
     if(coreF != ""){
-        QFile f (coreF);
-        if(!f.open(QIODevice::ReadOnly)) {
-            QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error", "Could not open Core file", this);
+        coreElf *elf;
+        if(MC_Holder::getInstance()->getConfig()->getExternalStab()){
+            elf = new coreElf(coreF, MC_Holder::getInstance()->getConfig()->getSymbolTableASID(),
+                               MC_Holder::getInstance()->getConfig()->getROM(ROM_TYPE_STAB).c_str());
+        } else {
+            elf = new coreElf(coreF, MC_Holder::getInstance()->getConfig()->getSymbolTableASID());
+        }
+        if(!elf->allRight()){
+            QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "BIOS Error", elf->getError(), this);
             error->show();
             return false;
         }
-        QDataStream in(&f);
-        ramMemory *ram = mac->getBus()->getRam();
-        if(ram != NULL){
-            Word len = (Word) f.size();
-            char *buffer = new char[len];
-            int sz = in.readRawData(buffer, len);
-            if(sz <= 0 || (buffer[0] | buffer[1]<<8 | buffer[2]<<16 | buffer[3]<<24) != COREFILEID){
-                QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error", "Irregular Core file", this);
-                error->show();
-                return false;
+        Word address = SWAP_ENDIANESS(((Word)elf->header[AOUT_HE_TEXT_VADDR]));
+        Word dataVAddr = SWAP_ENDIANESS(((Word)elf->header[AOUT_HE_DATA_VADDR]));
+        Word dataOffset = SWAP_ENDIANESS(((Word)elf->header[AOUT_HE_DATA_OFFSET]));
+        Word totsize = elf->header[AOUT_HE_TEXT_MEMSZ] + elf->header[AOUT_HE_DATA_MEMSZ];
+        bool text = true;
+
+        //copy provided data only for legit ram addresses
+        for(Word i = 0; i < totsize; i++, address++){
+            Byte mb = (text ? elf->readTextByte() : elf->readDataByte());
+            if(address >= RAMBASEADDR){
+                if(i >= dataOffset && text){
+                    address = dataVAddr;
+                    text = false;
+                    mb = elf->readDataByte();
+                }
+                mac->getBus()->writeB(&address, mb);
             }
-            if(sz <= 0 || !mac->getBus()->loadRAM(buffer, (Word) sz, true)){
-                QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error", "Problems while loading Core file", this);
-                error->show();
-                return false;
-            }
-            delete [] buffer;
         }
-        f.close();
-        //mac->refreshData();
+
+        //now make sure core header is at its place at the beginning of ram
+        elf->seekText();
+        for(Word i = 0, address = RAMBASEADDR; i < WS*N_AOUT_HDR_ENT; i++, address++){
+            mac->getBus()->writeB(&address, elf->readTextByte());
+        }
+
+        //setup symbol table
+        DebuggerHolder::getInstance()->getDebugSession()->setSymbolTable(elf->getSymbolTable());
+
     }
     return true;
 }
 
 bool qarm::openBIOS(){
-    biosF = QString::fromStdString(MC_Holder::getInstance()->getConfig()->getROM(ROM_TYPE_BIOS));
-    if(biosF != ""){
-        QFile f (biosF);
-        if(!f.open(QIODevice::ReadOnly)) {
-            QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error", "Could not open BIOS file", this);
+    const char *bfile = MC_Holder::getInstance()->getConfig()->getROM(ROM_TYPE_BIOS).c_str();
+    if(bfile != ""){
+        biosElf *elf = new biosElf(bfile);
+        Word address, size;
+        if(!elf->allRight()){
+            QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "BIOS Error", elf->getError(), this);
             error->show();
             return false;
         }
-        QDataStream in(&f);
-        Word len = (Word) f.size();
-        char *buffer = new char[len];
-        Word sz = in.readRawData(buffer, len);
-        if(sz <= 0 || (buffer[0] | buffer[1]<<8 | buffer[2]<<16 | buffer[3]<<24) != BIOSFILEID){
-            QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error", "Irregular BIOS file", this);
-            error->show();
-            return false;
+        size = elf->getSize();
+        mac->getBus()->initBIOS(size);
+        address = BIOSBASEADDR;
+        for(Word i = 0; i < size; i++, address++){
+            mac->getBus()->writeB(&address, elf->readByte());
         }
-        sz -= 8;
-        if(sz <= 0 || !mac->getBus()->loadBIOS(buffer+8, (Word) sz)){
-            QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Error", "Problems while flashing BIOS ROM", this);
-            error->show();
-            return false;
-        }
-        delete [] buffer;
-        f.close();
+        elf->closeElf();
     }
     return true;
 }

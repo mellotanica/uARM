@@ -75,11 +75,14 @@ public:
 
     Machine* getMachine() const { return machine.get(); }*/
     SymbolTable* getSymbolTable() { return symbolTable.get(); }
+    void setSymbolTable(SymbolTable *stab) { symbolTable.reset(stab); emit stabUpdated(); }
 
     StoppointSet* getBreakpoints() { return &breakpoints; }
 
     StoppointSet* getSuspects() { return &suspects; }
     StoppointSet* getTracepoints() { return &tracepoints; }
+
+    bool isRunning() { return running; }
 /*
     StoppointListModel* getBreakpointListModel() { return bplModel.get(); }
 
@@ -151,37 +154,16 @@ private:
     scoped_ptr<StoppointListModel> bplModel;
 */
 
+    bool running;
+
     StoppointSet breakpoints;
     StoppointSet suspects;
     StoppointSet tracepoints;
-/*
-    scoped_ptr<CpuStatusMap> cpuStatusMap;
 
-    bool stoppedByUser;
-
-    bool stepping;
-    unsigned int stepsLeft;
-
-    QTimer* timer;
-    QTimer* idleTimer;
-
-    uint32_t idleSteps;
-*/
 private Q_SLOTS:
 
     void onMachineConfigChanged();
-/*
     void startMachine();
-    void onHaltMachine();
-    void onResetMachine();
-    void onContinue();
-    void onStep();
-
-    void updateActionSensitivity();
-
-    void runIteration();
-    void skip();
-*/
 };
 
 
@@ -199,6 +181,7 @@ public:
 
     DebugSession *getDebugSession() {return session;}
     void setDebugSession(DebugSession *debug) {session = debug;}
+
 };
 
 #endif // QMPS_DEBUG_SESSION_H

@@ -29,8 +29,6 @@
 #include "services/error.h"
 #include "services/debug.h"
 
-#define SWAP_ENDIANESS(wp) ((Byte) (*wp) | ((Byte) *(wp+1)) << 8 | ((Byte) *(wp+2)) << 16 | ((Byte) *(wp+3)) << 24)
-
 // DeviceAreaAddress is a convenience class used to find a specific
 // device in bus device area
 class DeviceAreaAddress {
@@ -138,6 +136,7 @@ void systemBus::reset(){
     memset(intBitmap, 0, (CDEV_BITMAP_END - CDEV_BITMAP_BASE));
 
     ram->reset(MC_Holder::getInstance()->getConfig()->getRamSize());
+    ram->cleanram();
     if(activeCpus != MC_Holder::getInstance()->getConfig()->getNumProcessors()){
         //if there will be less cpus then what are active now destroy exceding instances
         //and reset the other ones
@@ -308,23 +307,19 @@ bool systemBus::get_unpredictableB(){
     return rand() % 1;
 }
 
-bool systemBus::loadBIOS(char *buffer, Word size){
+void systemBus::initBIOS(Word size){
     BIOSTOP = size + BIOSBASEADDR;
     if(bios != NULL)
         delete [] bios;
     bios = new Byte[size];
-    Word address = BIOSBASEADDR;
-    for(Word i = 0; i < size; i++, address++){
-        writeB(&address, (Byte) buffer[i]);
-    }
-    return true;
 }
 
+/*
 bool systemBus::loadRAM(char *buffer, Word size, bool kernel){
     if(kernel){
-        Word address = SWAP_ENDIANESS((&buffer[(AOUT_HE_TEXT_VADDR*WS)]));
-        Word dataVAddr = SWAP_ENDIANESS((&buffer[(AOUT_HE_DATA_VADDR*WS)]));
-        Word dataOffset = SWAP_ENDIANESS((&buffer[(AOUT_HE_DATA_OFFSET*WS)]));
+        Word address = SWAP_ENDIANESS((buffer[(AOUT_HE_TEXT_VADDR*WS)]));
+        Word dataVAddr = SWAP_ENDIANESS((buffer[(AOUT_HE_DATA_VADDR*WS)]));
+        Word dataOffset = SWAP_ENDIANESS((buffer[(AOUT_HE_DATA_OFFSET*WS)]));
         //copy provided data only for legit ram addresses
         for(Word i = 0; i < size; i++, address++){
             if(address >= RAMBASEADDR){
@@ -343,7 +338,7 @@ bool systemBus::loadRAM(char *buffer, Word size, bool kernel){
     else{   //user program, to be placed somewhere else.. should be loaded via os
         return false;
     }
-}
+}*/
 
 AbortType systemBus::writeB(Word *address, Byte data){
     return writeB(address, data, false);

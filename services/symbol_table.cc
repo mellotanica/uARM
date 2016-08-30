@@ -102,6 +102,74 @@ void Symbol::setSize(Word size)
     sSize = size;
 }
 
+SymbolTable::SymbolTable(Word asid, int numF, int numO)
+    : asid(asid),
+      ftSize(numF),
+      otSize(numO)
+{
+    if (ftSize > 0) {
+        fTable = new Symbol* [ftSize];
+        for (int i = 0; i < ftSize; i++)
+            fTable[i] = NULL;
+    }
+    if (otSize > 0)  {
+        oTable = new Symbol* [otSize];
+        for (int i = 0; i < otSize; i++)
+            oTable[i] = NULL;
+    }
+    lastF = lastO = 0;
+}
+
+int SymbolTable::addSymbol(const char *sName, const char *sType){
+    if (sType[0] == 'F') {
+        fTable[lastF] = new Symbol(sName, sType);
+        lastF++;
+    } else if(sType[0] == 'O') {
+        oTable[lastO] = new Symbol(sName, sType);
+        lastO++;
+    } else
+        return 1;
+    return 0;
+}
+
+int SymbolTable::finalizeSymbolTable(int error){
+    if (error) {
+        // Clean up first
+        if (ftSize > 0) {
+            for (unsigned int i = 0; i < ftSize; i++)
+                if (fTable[i] != NULL)
+                    delete fTable[i];
+            delete fTable;
+        }
+        if (otSize > 0) {
+            for (unsigned int i = 0; i < otSize; i++)
+                if (oTable[i] != NULL)
+                    delete oTable[i];
+            delete oTable;
+        }
+        return error;
+    }
+
+    // sort tables
+    if (ftSize > 1) {
+        sortTable(fTable, ftSize);
+
+        // backpatch FUN part of symbol table for gcc bug
+        for (int i = 0; i < ftSize - 1; i++)
+            if (fTable[i]->getEnd() == fTable[i]->getStart())
+                // backpatch needed
+                fTable[i]->setSize(fTable[i+1]->getStart() - fTable[i]->getStart());
+    }
+
+    if (otSize > 1)
+        sortTable(oTable, otSize);
+
+    for (unsigned int i = 0; i < Size(); i++) {
+        const Symbol* s = Get(i);
+        map[s->getName()].push_back(s);
+    }
+}
+
 // This method builds a symbol table from .stab file fName produced by
 // elf2mps utility
 SymbolTable::SymbolTable(Word asid, const char* fName)

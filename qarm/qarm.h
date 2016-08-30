@@ -87,7 +87,7 @@ private:
     QApplication *application;
     machine *mac;
     bool dataLoaded = false, biosLoaded = false, initialized = false, doReset = true, resuming = true;
-    QString coreF, biosF;
+    std::string coreF, biosF;
 
     breakpoint_window *bpWindow;
     structures_window *structWindow;
