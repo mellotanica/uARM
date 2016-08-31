@@ -3,15 +3,18 @@ QMAKE_LIBS += -lelf
 TARGET = uarm-mkdev
 
 DEFINES += UARM_MACHINE_COMPILING
+DEFINES += MKDEV_BUILD
 
 HEADERS += \
     armProc/blockdev_params.h \
     armProc/const.h \
     armProc/types.h \
-    armProc/aout.h
+    armProc/aout.h \
+    services/elf2arm.h
 
 SOURCES += \
-    services/mkdev.cc
+    services/mkdev.cc \
+    services/elf2arm.cc
 
 macx {
     INCLUDEPATH += /usr/local/include

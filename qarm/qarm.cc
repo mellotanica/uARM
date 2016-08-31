@@ -86,14 +86,14 @@ qarm::qarm(QApplication *app, QFile *confFile, bool autorun, bool runandexit):
     closeSc = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Q), this, NULL, NULL, Qt::ApplicationShortcut);
     connect(closeSc, SIGNAL(activated()), this, SLOT(closeFWindow()));
 
-    mac = new machine(debugger->getBreakpoints(),debugger->getSuspects(),debugger->getTracepoints());
-
     setWindowTitle("uARM");
     setWindowIcon(QIcon(LIB_PATH "icons/window_default-48.png"));
 
     mainWidget = new QWidget(this);
     toolbar = new mainBar(mainWidget);
     display = new procDisplay(mainWidget);
+
+    mac = new machine(debugger->getBreakpoints(),debugger->getSuspects(),debugger->getTracepoints());
 
     toolbar->setSpeed(IPSMAX);
 
@@ -155,6 +155,7 @@ qarm::qarm(QApplication *app, QFile *confFile, bool autorun, bool runandexit):
     }
 
     connect(this, SIGNAL(resetMachine()), tlbWindow, SIGNAL(onMachineReset()));
+    connect(mac, SIGNAL(resetting()), this, SLOT(onMachineReset()));
 
     connect(this, SIGNAL(stopSig()), clock, SLOT(stop()));
     connect(this, SIGNAL(stopSig()), toolbar, SLOT(stop()));
@@ -181,6 +182,12 @@ void qarm::powerOn(){
     softReset();
     if(initialized)
         emit poweredOn();
+}
+
+void qarm::powerOff(){
+    stop();
+    initialized = false;
+    emit poweredOff();
 }
 
 void qarm::pause(){
@@ -213,9 +220,11 @@ bool qarm::initialize(){
 }
 
 void qarm::stop(){
-    emit stopSig();
-    resuming = true;
-    mac->setUIupdate(0);
+    if(initialized){
+        emit stopSig();
+        resuming = true;
+        mac->setUIupdate(0);
+    }
 }
 
 void qarm::step(){
@@ -372,7 +381,7 @@ bool qarm::openRAM(){
 
         //setup symbol table
         DebuggerHolder::getInstance()->getDebugSession()->setSymbolTable(elf->getSymbolTable());
-
+        delete elf;
     }
     return true;
 }
@@ -393,7 +402,8 @@ bool qarm::openBIOS(){
         for(Word i = 0; i < size; i++, address++){
             mac->getBus()->writeB(&address, elf->readByte());
         }
-        elf->closeElf();
+
+        delete elf;
     }
     return true;
 }
@@ -447,6 +457,21 @@ void qarm::closeEvent(QCloseEvent* event)
 void qarm::show(){
     QMainWindow::show();
     emit resetDisplay();
+}
+
+void qarm::disableMainbar(bool fromConfig, bool value){
+    if(fromConfig){
+        if(toolbar->getDisabled()){
+            powerOff();
+            emit resetMachine();
+        }
+    } else {
+        toolbar->disableMainbar(value);
+    }
+}
+
+void qarm::onMachineReset(){
+    disableMainbar(false, false);
 }
 
 void qarm::onMachineHalted()

@@ -73,16 +73,17 @@ signals:
     void updateStatus(QString state);
     void tlbChanged(unsigned int index);
     void executionTerminated(int exitCode);
+    void resetting();
 
 public slots:
     void step();
     void refreshData();
     void refreshData(bool force);
     void clearCause();
+    void reset();
 
 private slots:
     void run();
-    void reset();
     void toggleBP(bool status);
     void toggleTLBPause(bool status);
 

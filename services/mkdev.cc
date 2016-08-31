@@ -39,6 +39,7 @@
 #include <armProc/types.h>
 #include <armProc/blockdev_params.h>
 #include <armProc/aout.h>
+#include <services/elf2arm.h>
 
 #define UARMFILETYPE	".uarm"
 
@@ -67,7 +68,7 @@ HIDDEN int mkDisk(int argc, char * argv[]);
 HIDDEN int mkTape(int argc, char * argv[]);
 HIDDEN bool decodeDriveP(int idx, unsigned int * par, const char * str);
 HIDDEN int writeDisk(const char * prg, const char * fname);
-HIDDEN void testForCore(FILE * rfile);
+// HIDDEN void testForCore(FILE * rfile);
 
 // StrToWord is duplicated here from utility.cc to avoid full utility.o linking
 HIDDEN bool StrToWord(const char * str, Word * value);
@@ -171,80 +172,81 @@ HIDDEN int mkDisk(int argc, char * argv[])
 // Returns an EXIT_SUCCESS/FAILURE code
 HIDDEN int mkTape(int argc, char * argv[])
 {
-	FILE * tfile = NULL;
-	FILE * rfile = NULL;
-	Word blk[BLOCKSIZE];
-	Word tapeid = TAPEFILEID;
-	Word eof = TAPEEOF;
-	Word eot = TAPEEOT;
-	Word eob = TAPEEOB;
+    FILE * tfile = NULL;
+    FILE * rfile = NULL;
+    Word blk[BLOCKSIZE];
+    Word tapeid = TAPEFILEID;
+    Word eof = TAPEEOF;
+    Word eot = TAPEEOT;
+    Word eob = TAPEEOB;
 
-	int i, j;
-	int ret = EXIT_SUCCESS;
+    int i, j;
+    int ret = EXIT_SUCCESS;
 
     if (argc < 4 || strstr(argv[2], UARMFILETYPE) == NULL)
-	{
-		// too few args
-		fprintf(stderr, "%s : file name(s) wrong/missing\n", argv[0]);
-		ret = EXIT_FAILURE;
-	}
-	else
-	{
-		// tries to open output file
-		if ((tfile = fopen(argv[2], "w")) == NULL || \
-			fwrite((void *) &tapeid, WORDLEN, 1, tfile) != 1)
-			ret = EXIT_FAILURE;
-		else
-		{
-			// loops thru arguments trying to process each data file
-			for (i = 3; i < argc && ret != EXIT_FAILURE; i++)
-				if((rfile = fopen(argv[i], "r")) == NULL)
-					ret = EXIT_FAILURE;
-				else
-				{
-					// file exists and is readable: process it
+    {
+        // too few args
+        fprintf(stderr, "%s : file name(s) wrong/missing\n", argv[0]);
+        ret = EXIT_FAILURE;
+    }
+    else
+    {
+        // tries to open output file
+        if ((tfile = fopen(argv[2], "w")) == NULL || \
+                fwrite((void *) &tapeid, WORDLEN, 1, tfile) != 1)
+            ret = EXIT_FAILURE;
+        else
+        {
+            // loops thru arguments trying to process each data file
+            for (i = 3; i < argc && ret != EXIT_FAILURE; i++)
+                if((rfile = fopen(argv[i], "r")) == NULL)
+                    ret = EXIT_FAILURE;
+                else
+                {
+                    // file exists and is readable: process it
+                    fclose(rfile);
+                    coreElf *elf = new coreElf(argv[i]);
+                    if(!elf->allRight()){
+                        fprintf(stderr, "%s : error reading executable file %s : %s\n", argv[0], argv[i], elf->getError());
+                        return EXIT_FAILURE;
+                    }
 
-					// .core files should be stripped of magic file tag for
-					// .alignment reasons
-					testForCore(rfile);
+                    // splits file into blocks inside the tape image
+                    while (!elf->eof())
+                    {
+                        // clear block
+                        for (j = 0; j < BLOCKSIZE; j++)
+                            blk[j] = 0UL;
 
-					// splits file into blocks inside the tape image
-					while (!feof(rfile))
-					{
-						// clear block
-						for (j = 0; j < BLOCKSIZE; j++)
-							blk[j] = 0UL;
+                        if (elf->read((void *) blk, WORDLEN, BLOCKSIZE) > 0)
+                            // copy block to output file
+                            fwrite((void *) blk, WORDLEN, BLOCKSIZE, tfile);
+                        else
+                            // EOF: rewind output file to write EOF/EOT marker
+                            fseek(tfile, -WORDLEN, SEEK_CUR);
 
-						if (fread((void *) blk, WORDLEN, BLOCKSIZE, rfile) > 0)
-							// copy block to output file
-							fwrite((void *) blk, WORDLEN, BLOCKSIZE, tfile);
-						else
-							// EOF: rewind output file to write EOF/EOT marker
-							fseek(tfile, -WORDLEN, SEEK_CUR);
+                        if (!elf->eof())
+                            // marks end-of-block
+                            fwrite((void *) &eob, WORDLEN, 1, tfile);
+                        else
+                            if (i < (argc - 1))
+                                // more files to be processed: marks end-of-file
+                                fwrite((void *) &eof, WORDLEN, 1, tfile);
+                            else
+                                // marks end-of-tape
+                                fwrite((void *) &eot, WORDLEN, 1, tfile);
+                    }
+                }
 
-						if (!feof(rfile))
-							// marks end-of-block
-							fwrite((void *) &eob, WORDLEN, 1, tfile);
-						else
-							if (i < (argc - 1))
-								// more files to be processed: marks end-of-file
-								fwrite((void *) &eof, WORDLEN, 1, tfile);
-							else
-								// marks end-of-tape
-								fwrite((void *) &eot, WORDLEN, 1, tfile);
-					}
-					fclose(rfile);
-				}
+            // tries to close tape image file
+            if (fclose(tfile) != 0)
+                ret = EXIT_FAILURE;
+        }
 
-			// tries to close tape image file
-			if (fclose(tfile) != 0)
-				ret = EXIT_FAILURE;
-		}
-
-		if (ret == EXIT_FAILURE)
-			fprintf(stderr, "%s : error writing tape file image %s : %s\n", argv[0], argv[2], strerror(errno));
-	}
-	return(ret);
+        if (ret == EXIT_FAILURE)
+            fprintf(stderr, "%s : error writing tape file image %s : %s\n", argv[0], argv[2], strerror(errno));
+    }
+    return(ret);
 }
 
 
@@ -360,16 +362,16 @@ HIDDEN int writeDisk(const char * prg, const char * fname)
 // This function tests if file to be inserted is a .core file; if so the
 // magic file tag should be skipped for alignment reasons, else file should
 // be inserted as-is
-HIDDEN void testForCore(FILE * rfile)
-{
-	Word tag;
+// HIDDEN void testForCore(FILE * rfile)
+// {
+// 	Word tag;
 
-	// file existence have been tested by caller
-	if (fread((void *) &tag, WORDLEN, 1, rfile) == 0 || tag != COREFILEID)
-		// file is empty or not .core
-		rewind(rfile);
-	// else file is .core: leave file position as it is to skip tag
-}
+// 	// file existence have been tested by caller
+// 	if (fread((void *) &tag, WORDLEN, 1, rfile) == 0 || tag != COREFILEID)
+// 		// file is empty or not .core
+// 		rewind(rfile);
+// 	// else file is .core: leave file position as it is to skip tag
+// }
 
 
 // This function converts a string to a Word (typically, an address) value.

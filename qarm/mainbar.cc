@@ -33,6 +33,7 @@ mainBar::mainBar(QWidget *parent) :
     QToolBar(parent)
 {
     onState = false;
+    isDisabled = false;
 
     setMovable(false);
     setFloatable(false);
@@ -350,6 +351,22 @@ void mainBar::toggleStructsViewer(bool status){
 
 void mainBar::uncheckSTA(){
     structsAction->setChecked(false);
+}
+
+void mainBar::disableMainbar(bool value){
+        isDisabled = value;
+        playB->setEnabled(!value && onState);
+        resetB->setEnabled(!value);
+        stepB->setEnabled(!value && onState);
+        ramB->setEnabled(!value);
+        plusB->setEnabled(!value);
+        minusB->setEnabled(!value);
+        windowB->setEnabled(!value && onState);
+        breakpB->setEnabled(!value);
+        tlbB->setEnabled(!value);
+        speedSl->setEnabled(!value);
+        ramAction->setEnabled(!value);
+        structsAction->setEnabled(!value);
 }
 
 #endif //QARM_MAINBAR_CC

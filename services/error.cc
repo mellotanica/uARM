@@ -27,23 +27,19 @@
 #include "qarm/qarm.h"
 #include <QObject>
 
-static bool alreadyPanicing = false;
+// static bool alreadyPanicing = false;
 
 void Panic(const char* message)
 {
-    if(!alreadyPanicing){
-        alreadyPanicing = true;
 
         QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "PANIC", QString("PANIC: %1").arg(message).toStdString().c_str());
         error->show();
 
         MC_Holder::getInstance()->getConfig()->getMainWidget()->stop();
-        MC_Holder::getInstance()->getConfig()->getMainWidget()->setDisabled(true);
+        MC_Holder::getInstance()->getConfig()->getMainWidget()->disableMainbar(false, true);
 
         printf("uARM PANIC: %s\n", message);
 
-        error->connect(error, SIGNAL(accepted()), MC_Holder::getInstance()->getConfig()->getApp(), SLOT(quit()));
-    }
 }
 
 #endif //BASE_ERROR_CC
