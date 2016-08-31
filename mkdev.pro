@@ -1,4 +1,4 @@
-CONFIG += c++11
+CONFIG += c++11 silent
 QMAKE_LIBS += -lelf
 TARGET = uarm-mkdev
 

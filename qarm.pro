@@ -2,7 +2,7 @@ QT += core gui widgets
 
 TARGET = uarm
 
-CONFIG += c++11
+CONFIG += c++11 silent
 QMAKE_LIBS += -ldl
 QMAKE_LIBS += -lelf
 CONFIG += qt debug
