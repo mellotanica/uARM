@@ -44,6 +44,8 @@ public:
     void poweron();
     void run();
     void showT0();
+    void disableMainbar(bool value);
+    bool getDisabled() { return isDisabled; }
 
 public slots:
     void setSpeed(int speedVal);
@@ -99,6 +101,7 @@ private:
     QMenu *windowMenu, *ramMenu;
     QAction* showTerminalActions[N_DEV_PER_IL], *ramAction, *structsAction;
     bool onState;
+    bool isDisabled;
 };
 
 class styledButton : public QToolButton{

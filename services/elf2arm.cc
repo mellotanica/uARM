@@ -42,14 +42,18 @@
 #include <cstring>
 #include <stdarg.h>
 #include <errno.h>
+#include <unistd.h>
 
 #include "services/util.h"
 #include "services/debug.h"
-#include "services/symbol_table.h"
+#include "services/elf2arm.h"
 #include "armProc/blockdev_params.h"
 #include "facilities/arch.h"
 
-#include "elf2arm.h"
+#ifndef MKDEV_BUILD
+#include "services/symbol_table.h"
+#endif
+
 /*
  * Functions throughtout this module close over this global!
  */
@@ -65,6 +69,7 @@ static const size_t kBlockSize = 4096;
 
 #define elfError(emsg) ({*error = emsg; return 1;})
 
+#ifndef MKDEV_BUILD
 struct elfSymbol {
     elfSymbol(const std::string& name, Elf32_Sym* details)
         : name(name), details(details) {}
@@ -98,13 +103,9 @@ private:
     Elf_Data* data;
     Elf32_Sym* current;
 };
+#endif
 
 uint32_t toTargetEndian(uint32_t x);
-
-static void elf2aout(bool isCore);
-static void createSymbolTable();
-static void elf2bios();
-
 
 const char* programName;
 
@@ -165,7 +166,7 @@ inline uint32_t toTargetEndian(uint32_t x, Elf32_Ehdr *elfHeader)
 #endif
 }
 
-
+#ifndef MKDEV_BUILD
 elfSymbolTableIterator::elfSymbolTableIterator(Elf* elf)
     : stSec(getSectionByType(SHT_SYMTAB, elf)),
       elf(elf),
@@ -220,6 +221,7 @@ elfSymbolTableIterator elfSymbolTableIterator::operator++(int)
     ++(*this);
     return result;
 }
+#endif
 
 static int readCore(e2adata *edata, char **error, coreElf *newelf, uint8_t **dBuf, uint8_t **tBuf, Word *dSize, Word *tSize){
     // Check ELF object type
@@ -228,7 +230,6 @@ static int readCore(e2adata *edata, char **error, coreElf *newelf, uint8_t **dBu
 
     uint32_t *header = newelf->header;
     std::fill_n(header, N_AOUT_HDR_ENT, 0);
-    header[AOUT_HE_TAG] = COREFILEID;
 
     // Set program entry
     header[AOUT_HE_ENTRY] = edata->elfHeader->e_entry;
@@ -246,6 +247,9 @@ static int readCore(e2adata *edata, char **error, coreElf *newelf, uint8_t **dBu
     uint8_t* dataBuf = NULL;
     bool foundTextSeg = false;
     uint8_t* textBuf = NULL;
+
+#ifndef MKDEV_BUILD
+    header[AOUT_HE_TAG] = COREFILEID;
 
     //prepare data and text buffers
     for (size_t i = 0; i < phtSize; i++) {
@@ -297,6 +301,60 @@ static int readCore(e2adata *edata, char **error, coreElf *newelf, uint8_t **dBu
 
     header[AOUT_HE_TEXT_OFFSET] = 0;
     header[AOUT_HE_DATA_OFFSET] = header[AOUT_HE_TEXT_MEMSZ];
+#else
+    header[AOUT_HE_TAG] = AOUTFILEID;
+
+    //prepare data and text buffers
+    for (size_t i = 0; i < phtSize; i++) {
+        if (pht[i].p_type != PT_LOAD)
+            continue;
+        if (pht[i].p_flags == (PF_R | PF_W)) {// data segmet
+            if (foundDataSeg)
+                elfError("Redundant .data program header table entry");
+            foundDataSeg = true;
+            header[AOUT_HE_DATA_MEMSZ] = pht[i].p_memsz;
+            header[AOUT_HE_DATA_VADDR] = pht[i].p_vaddr;
+            header[AOUT_HE_DATA_FILESZ] = (pht[i].p_filesz / kBlockSize) * kBlockSize; //rounds memory size to 4k mem blocks sixe (actual memory to be allocated)
+            if (header[AOUT_HE_DATA_FILESZ] < pht[i].p_filesz)
+                header[AOUT_HE_DATA_FILESZ] += kBlockSize;
+            if (header[AOUT_HE_DATA_FILESZ] > 0) {
+                dataBuf = new uint8_t[header[AOUT_HE_DATA_FILESZ]];
+                *dSize = header[AOUT_HE_DATA_FILESZ];
+                std::fill_n(dataBuf, header[AOUT_HE_DATA_FILESZ], 0);
+            } else {
+                dataBuf = NULL;
+            }
+        } else if (pht[i].p_flags == (PF_R | PF_X)) {// text segment
+            if (foundTextSeg)
+                elfError("Redundant .text program header table entry");
+            if (pht[i].p_memsz == 0)
+                elfError("Empty .text segment");
+            foundTextSeg = true;
+            header[AOUT_HE_TEXT_MEMSZ] = pht[i].p_memsz;
+            header[AOUT_HE_TEXT_VADDR] = pht[i].p_vaddr;
+            header[AOUT_HE_TEXT_FILESZ] = ((AOUT_HE_TEXT_MEMSZ) / kBlockSize) * kBlockSize;
+            if (header[AOUT_HE_TEXT_FILESZ] < header[AOUT_HE_TEXT_MEMSZ])
+                header[AOUT_HE_TEXT_FILESZ] += kBlockSize;
+            textBuf = new uint8_t[header[AOUT_HE_TEXT_FILESZ]];
+            *tSize = header[AOUT_HE_TEXT_FILESZ];
+            std::fill_n(textBuf, header[AOUT_HE_TEXT_FILESZ], 0);
+        } else {
+            fprintf(stderr, "Warning: unknown program header table entry %u\n", (unsigned int) i);
+        }
+    }
+
+    if (!foundTextSeg)
+        elfError("Missing .text program header");
+
+    if (!foundDataSeg) {
+        header[AOUT_HE_DATA_MEMSZ] = header[AOUT_HE_DATA_FILESZ] = 0;
+        header[AOUT_HE_DATA_VADDR] = header[AOUT_HE_TEXT_VADDR] + header[AOUT_HE_TEXT_MEMSZ];
+        dataBuf = NULL;
+    }
+
+    header[AOUT_HE_TEXT_OFFSET] = 0;
+    header[AOUT_HE_DATA_OFFSET] = header[AOUT_HE_TEXT_FILESZ];
+#endif
 
     // Scan sections and copy data to a.out segments
     Elf_Scn* sd;
@@ -335,6 +393,7 @@ static int readCore(e2adata *edata, char **error, coreElf *newelf, uint8_t **dBu
     return 0;
 }
 
+#ifndef MKDEV_BUILD
 static int readStab(e2adata *edata, char **error, Word asid, SymbolTable **rstab)
 {
     static const char* const typeName[] = { "", "OBJ", "FUN" };
@@ -347,8 +406,8 @@ static int readStab(e2adata *edata, char **error, Word asid, SymbolTable **rstab
         elfSymbol s = *it;
         unsigned char type = ELF32_ST_TYPE(s.details->st_info);
         if (!s.name.empty() &&
-            (type == STT_FUNC || type == STT_OBJECT) &&
-            (s.name[0] != '_' || s.name == "__start"))
+                (type == STT_FUNC || type == STT_OBJECT) &&
+                (s.name[0] != '_' || s.name == "__start"))
         {
             if (type == STT_FUNC)
                 funCount++;
@@ -366,14 +425,14 @@ static int readStab(e2adata *edata, char **error, Word asid, SymbolTable **rstab
         unsigned char type = ELF32_ST_TYPE(s.details->st_info);
         unsigned char binding = ELF32_ST_BIND(s.details->st_info);
         if (!s.name.empty() &&
-            (type == STT_FUNC || type == STT_OBJECT) &&
-            (s.name[0] != '_' || s.name == "__start"))
+                (type == STT_FUNC || type == STT_OBJECT) &&
+                (s.name[0] != '_' || s.name == "__start"))
         {
             sprintf(typeStr, "%s:0x%.8lX:0x%.8lX:%s\0",
-                               typeName[type],
-                               (unsigned long) s.details->st_value,
-                               (unsigned long) s.details->st_size,
-                               bindingName[binding]);
+                    typeName[type],
+                    (unsigned long) s.details->st_value,
+                    (unsigned long) s.details->st_size,
+                    bindingName[binding]);
 
             err += stab->addSymbol(s.name.c_str(), typeStr);
         }
@@ -386,11 +445,6 @@ static int readStab(e2adata *edata, char **error, Word asid, SymbolTable **rstab
 
     *rstab = stab;
     return 0;
-}
-
-void elfLoader::closeElf(){
-    elf_end(edata.elf);
-    close(edata.file);
 }
 
 biosElf::biosElf(const char *fname){
@@ -414,8 +468,8 @@ biosElf::biosElf(const char *fname){
                     break;
                 }
                 if ((sh->sh_type == SHT_PROGBITS) &&
-                    (sh->sh_flags & SHF_ALLOC) &&
-                    (sh->sh_flags & SHF_EXECINSTR))
+                        (sh->sh_flags & SHF_ALLOC) &&
+                        (sh->sh_flags & SHF_EXECINSTR))
                 {
                     break;
                 }
@@ -451,7 +505,6 @@ coreElf::coreElf(const char *fname, Word asid, const char *stabFname){
                 readStab(&edata, &error, asid, &stab);
         }
     }
-    closeElf();
 }
 
 coreElf::coreElf(const char *fname, Word asid){
@@ -463,14 +516,51 @@ coreElf::coreElf(const char *fname, Word asid){
             readStab(&edata, &error, asid, &stab);
         }
     }
-    closeElf();
 }
+#else
+coreElf::coreElf(const char *fname){
+    daddr = taddr = 0;
+    dsize = tsize = 0;
+    error = "";
+    tread = false;
+    if(!initf(fname, &edata, &error))
+        readCore(&edata, &error, this, &dbuf, &tbuf, &dsize, &tsize);
+}
+
+int coreElf::read(void *dest, unsigned int size, unsigned int count){
+    int i;
+    uint8_t *tp = (uint8_t *) dest;
+    for(i = 0; i < (size * count); i++, tp++){
+        if(tread){ //read .data
+            if(daddr < dsize){
+                *tp = dbuf[daddr++];
+            } else
+                break;
+        } else { //read .text
+            if(taddr < tsize){
+                *tp = tbuf[taddr++];
+            } else {
+                tread = true;
+                i--;
+                tp--;
+            }
+        }
+    }
+
+    return i;
+
+}
+
+#endif
 
 coreElf::~coreElf(){
     if(dbuf != NULL)
         delete[](dbuf);
     if(tbuf != NULL)
         delete[](tbuf);
-    if(header != NULL)
-        delete[](header);
+}
+
+void elfLoader::closeElf(){
+    elf_end(edata.elf);
+    close(edata.file);
 }

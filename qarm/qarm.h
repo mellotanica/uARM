@@ -50,6 +50,7 @@ public:
     machine *getMachine() {return mac;}
     MachineConfig *getMachineConfig() {return MC_Holder::getInstance()->getConfig();}
     virtual void show();
+    void disableMainbar(bool fromConfig, bool value);
 
 protected:
     virtual void closeEvent(QCloseEvent* event);
@@ -81,7 +82,9 @@ private slots:
     void showTerminal(unsigned int devNo);
     void onMachineHalted();
     void powerOn();
+    void powerOff();
     void closeFWindow();
+    void onMachineReset();
 
 private:
     QApplication *application;

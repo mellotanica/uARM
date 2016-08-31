@@ -47,6 +47,7 @@ machine::~machine(){
 }
 
 void machine::reset(){
+    emit resetting();
     sysbus->reset();
     emit updateStatus(status2QString());
 }

@@ -48,6 +48,7 @@
 #include "qarm/machine_config_dialog_priv.h"
 #include "qarm/procdisplay.h"
 #include "qarm/qarmmessagebox.h"
+#include "qarm/qarm.h"
 #include "services/debug_session.h"
 
 MachineConfigDialog::MachineConfigDialog(MachineConfig* config, QWidget* parent)
@@ -484,6 +485,7 @@ void MachineConfigDialog::saveConfigChanges()
     config->setExternalStab(externalStabBox->isChecked());
 
     config->setAccessibleMode(accessibleModeCheckBox->isChecked());
+    config->getMainWidget()->disableMainbar(true, false);
 }
 
 
