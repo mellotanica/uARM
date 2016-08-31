@@ -35,11 +35,11 @@
 #include <string.h>
 #include <errno.h>
 
-#include <armProc/const.h>
-#include <armProc/types.h>
-#include <armProc/blockdev_params.h>
-#include <armProc/aout.h>
-#include <services/elf2arm.h>
+#include "armProc/const.h"
+#include "armProc/types.h"
+#include "armProc/blockdev_params.h"
+#include "armProc/aout.h"
+#include "services/elf2arm_mkdev.h"
 
 #define UARMFILETYPE	".uarm"
 
