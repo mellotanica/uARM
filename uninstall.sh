@@ -5,7 +5,9 @@ if [ `id -u` != "0" ]; then
     exit 1
 fi
 
-if [ `uname` == "Linux" ]; then
+OS=`uname -s`
+
+if [ $OS == "Linux" ]; then
     PREF="/usr"
 else
     PREF="/usr/local"
@@ -27,7 +29,7 @@ rm -rf "$INCLUDED"
 rm -rf "$TESTD"
 rm -f "$BIND"/uarm "$BIND"/uarm-readuarm "$BIND"/elf2uarm "$BIND"/uarm-mkdev
 
-if [ `uname` == "Darwin" ]; then
+if [ $OS == "Darwin" ]; then
 	rm -rf /applications/uarm.app
 fi
 

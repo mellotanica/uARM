@@ -102,7 +102,8 @@ if [[ "$PLATFORM" == "Linux" ]]; then
         exit 1
       fi
       QMCOMP="qtchooser -run-tool=qmake -qt=$VERSION"
-      echo "compiler command: \"$QMCOMP\""
+      echo "compiler command: \"$QMCOMP $*\""
+      echo
     else
       echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
       exit 1
