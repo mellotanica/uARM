@@ -7,6 +7,7 @@ function usage(){
 	echo -e "\t$PNAME\t compiles all binaries"
 	echo -e "\t$PNAME target\t compiles desired target"
 	echo -e "\t$PNAME -nc\t avoid ./configure execution before compilation"
+	echo -e "\t$PNAME -ca\t run \`make cleanall\` before compiling each target (sometimes needed to fix compilation errors)"
 	echo -e "\t$PNAME -h\t shows this help"
 	echo
 	echo -e "\tmake options are used by make when compiling each target"
@@ -16,8 +17,30 @@ function usage(){
 	echo -e "\t\tuarm"
 }
 
+function compile(){
+	echo "Compiling $1...."
+	echo
+	XN="$1"
+	BD="$1"-build
+	MD=`pwd`
+	shift
+	mkdir -p "$BD"
+	pushd "$BD" > /dev/null
+		$QMCOMP "$MD/$1"
+		shift
+		if $CLEANALL; then
+			echo "cleaning target $XN.."
+			make clean > /dev/null 2>&1
+			make cleanall > /dev/null 2>&1
+		fi
+		make $*
+	popd > /dev/null
+	cp "$BD/$XN" .
+}
+
 SET=""
 CONFIGURE=true
+CLEANALL=false
 
 if test $# -gt 0; then
 	SCAN=false
@@ -38,6 +61,9 @@ if test $# -gt 0; then
 				;;
 			"-nc")
 				CONFIGURE=false
+				;;
+			"-ca")
+				CLEANALL=true
 				;;
 			*)
 				echo "unknown target: $1"
@@ -102,16 +128,10 @@ if $CONFIGURE; then
 fi
 
 if [[ "$SET" = *"u"* ]]; then
-	echo "Compiling uarm...."
-	echo
-	$QMCOMP qarm.pro
-	make $*
+	compile "uarm" "qarm.pro" $*
 fi
 
 if [[ "$SET" = *"m"* ]]; then
-	echo "Compiling mkdev...."
-	echo
-	$QMCOMP mkdev.pro
-	make $*
+	compile "uarm-mkdev" "mkdev.pro" $*
 fi
 
