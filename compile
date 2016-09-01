@@ -35,7 +35,7 @@ function compile(){
 		fi
 		make $*
 	popd > /dev/null
-	cp "$BD/$XN" .
+	cp -R "$BD/$XN" .
 }
 
 SET=""
@@ -128,7 +128,11 @@ if $CONFIGURE; then
 fi
 
 if [[ "$SET" = *"u"* ]]; then
-	compile "uarm" "qarm.pro" $*
+	if [[ "$PLATFORM" == "Darwin" ]]; then
+		compile "uarm.app" "qarm.pro" $*
+	else
+		compile "uarm" "qarm.pro" $*
+	fi
 fi
 
 if [[ "$SET" = *"m"* ]]; then
