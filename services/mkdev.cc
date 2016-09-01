@@ -39,7 +39,7 @@
 #include "armProc/types.h"
 #include "armProc/blockdev_params.h"
 #include "armProc/aout.h"
-#include "services/elf2arm_mkdev.h"
+#include "services/elf2arm.h"
 
 #define UARMFILETYPE	".uarm"
 

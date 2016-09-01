@@ -10,11 +10,11 @@ HEADERS += \
     armProc/const.h \
     armProc/types.h \
     armProc/aout.h \
-    services/elf2arm_mkdev.h
+    services/elf2arm.h
 
 SOURCES += \
     services/mkdev.cc \
-    services/elf2arm_mkdev.cc
+    services/elf2arm.cc
 
 macx {
     INCLUDEPATH += /usr/local/include

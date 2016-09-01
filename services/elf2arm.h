@@ -1,8 +1,10 @@
 #ifndef ELF2ARM_H
 #define ELF2ARM_H
 
-#include "armProc/aout.h"
+#ifndef MKDEV_BUILD
 #include "services/symbol_table.h"
+#endif
+#include "armProc/aout.h"
 
 #ifdef MACOS_BUILD
 #include <libelf/libelf.h>
@@ -51,6 +53,7 @@ class coreElf : public elfLoader{
 public:
     ~coreElf();
 
+#ifndef MKDEV_BUILD
     coreElf(const char *fname, Word asid);
     coreElf(const char *fname, Word asid, const char *stabFname);
 
@@ -63,13 +66,23 @@ public:
     Byte readTextByte() {return (taddr < tsize ? tbuf[taddr++] : 0);}
 
     SymbolTable *getSymbolTable() {return stab;}
+#else
+    coreElf(const char *fname);
+
+    int read(void *dest, unsigned int size, unsigned int count);
+    bool eof() { return (daddr >= dsize && taddr >= tsize); }
+#endif
 
     uint32_t header[N_AOUT_HDR_ENT];
 private:
     Word dsize, tsize;
     unsigned int daddr, taddr;
     uint8_t *dbuf, *tbuf;
+#ifndef MKDEV_BUILD
     SymbolTable *stab;
+#else
+    bool tread;
+#endif
 };
 
 #endif // ELF2ARM_H
