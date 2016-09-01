@@ -237,17 +237,13 @@ QWidget* MachineConfigDialog::createGeneralTab(QWidget *parent)
         tempHL->addWidget(tlbSizeList);
         layout->addLayout(tempHL);
 
-        layout->addWidget(stopOnInterruptBox);
-
-        layout->addWidget(new QLabel("<b>BIOS</b>", tabWidget));
+        layout->addWidget(new QLabel("<b>Firmware and Software</b>", tabWidget));
 
         tempHL = new QHBoxLayout();
         tempHL->addWidget(new QLabel("Execution ROM:", tabWidget));
         tempHL->addWidget(romFileInfo[ROM_TYPE_BIOS].lineEdit);
         tempHL->addWidget(BIOSFileChooserButton);
         layout->addLayout(tempHL);
-
-        layout->addWidget(new QLabel("<b>Boot</b>", tabWidget));
 
         tempHL = new QHBoxLayout();
         tempHL->addWidget(new QLabel("Core file:", tabWidget));
@@ -256,6 +252,8 @@ QWidget* MachineConfigDialog::createGeneralTab(QWidget *parent)
         layout->addLayout(tempHL);
 
         layout->addWidget(new QLabel("<b>Debugging Support</b>", tabWidget));
+
+        layout->addWidget(stopOnInterruptBox);
 
         tempHL = new QHBoxLayout();
         tempHL->addWidget(new QLabel("Symbol Table ASID:", tabWidget));
@@ -291,29 +289,27 @@ QWidget* MachineConfigDialog::createGeneralTab(QWidget *parent)
         layout->addWidget(new QLabel("TLB Size (Entries):", tabWidget), 4, 1);
         layout->addWidget(tlbSizeList, 4, 2);
 
-        layout->addWidget(stopOnInterruptBox, 5, 1, 1, 3);
+        layout->addWidget(new QLabel("<b>Firmware and Software</b>", tabWidget), 5, 0, 1, 3);
 
-        layout->addWidget(new QLabel("<b>BIOS</b>", tabWidget), 6, 0, 1, 3);
+        layout->addWidget(new QLabel("Execution ROM:", tabWidget), 6, 1);
+        layout->addWidget(romFileInfo[ROM_TYPE_BIOS].lineEdit, 6, 2, 1, 2);
+        layout->addWidget(BIOSFileChooserButton, 6, 4);
 
-        layout->addWidget(new QLabel("Execution ROM:", tabWidget), 7, 1);
-        layout->addWidget(romFileInfo[ROM_TYPE_BIOS].lineEdit, 7, 2, 1, 2);
-        layout->addWidget(BIOSFileChooserButton, 7, 4);
+        layout->addWidget(new QLabel("Core file:", tabWidget), 7, 1);
+        layout->addWidget(romFileInfo[ROM_TYPE_CORE].lineEdit, 7, 2, 1, 2);
+        layout->addWidget(coreFileChooserButton, 7, 4);
 
-        layout->addWidget(new QLabel("<b>Boot</b>", tabWidget), 8, 0, 1, 3);
+        layout->addWidget(new QLabel("<b>Debugging Support</b>", tabWidget), 8, 0, 1, 3);
 
-        layout->addWidget(new QLabel("Core file:", tabWidget), 9, 1);
-        layout->addWidget(romFileInfo[ROM_TYPE_CORE].lineEdit, 9, 2, 1, 2);
-        layout->addWidget(coreFileChooserButton, 9, 4);
+        layout->addWidget(stopOnInterruptBox, 9, 1, 1, 3);
 
-        layout->addWidget(new QLabel("<b>Debugging Support</b>", tabWidget), 10, 0, 1, 3);
+        layout->addWidget(new QLabel("Symbol Table ASID:", tabWidget), 10, 1);
+        layout->addWidget(stabAsidEdit, 10, 2);
+        layout->addWidget(externalStabBox, 10, 3);
 
-        layout->addWidget(new QLabel("Symbol Table ASID:", tabWidget), 11, 1);
-        layout->addWidget(stabAsidEdit, 11, 2);
-        layout->addWidget(externalStabBox, 11, 3);
-
-        layout->addWidget(new QLabel("External Symbol Table:", tabWidget), 12, 1);
-        layout->addWidget(romFileInfo[ROM_TYPE_STAB].lineEdit, 12, 2, 1, 2);
-        layout->addWidget(stabFileChooserButton, 12, 4);
+        layout->addWidget(new QLabel("External Symbol Table:", tabWidget), 11, 1);
+        layout->addWidget(romFileInfo[ROM_TYPE_STAB].lineEdit, 11, 2, 1, 2);
+        layout->addWidget(stabFileChooserButton, 11, 4);
 
 
     }
