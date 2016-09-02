@@ -9,15 +9,15 @@ cask 'uarm' do
 
   depends_on formula: ['qt5', 'libelf', 'boost']
 
-  installer script: 'compile'
-  app 'uarm.app', target: 'uARM.app'
-  binary 'uarm.app/Contents/MacOS/uarm'
-  binary 'uarm-mkdev'
-  artifact 'icons', target: '/usr/local/lib/uarm/icons'
-  artifact 'facilities', target: '/usr/local/include/uarm'
-  artifact 'ldscript', target: '/usr/local/include/uarm/ldscripts'
-  artifact 'test', target: '/usr/local/share/doc/uarm/examples'
-  artifact 'default/uarm', target: '/etc/default/uarm'
+  installer script: 'uARM-master/compile'
+  app 'uARM-master/uarm.app', target: 'uARM.app'
+  binary 'uARM-master/uarm.app/Contents/MacOS/uarm'
+  binary 'uARM-master/uarm-mkdev'
+  artifact 'uARM-master/icons', target: '/usr/local/lib/uarm/icons'
+  artifact 'uARM-master/facilities', target: '/usr/local/include/uarm'
+  artifact 'uARM-master/ldscript', target: '/usr/local/include/uarm/ldscripts'
+  artifact 'uARM-master/test', target: '/usr/local/share/doc/uarm/examples'
+  artifact 'uARM-master/default/uarm', target: '/etc/default/uarm'
 
   caveats do
     files_in_usr_local
