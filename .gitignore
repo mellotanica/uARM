@@ -3,10 +3,14 @@ config.h
 config.log
 config.status
 Makefile
-elf2uarm
 uarm
 uarm-mkdev
 *.user
 moc_*.cpp
 *.app/
-.*
+.DS_Store
+uarm.png
+uarm.psd
+uarm-build/
+uarm.app-build/
+uarm-mkdev-build/
