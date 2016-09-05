@@ -149,7 +149,6 @@ private:
 
     std::string fileName;
 
-    bool loadCoreFile;
     bool refreshOnPause;
     bool stopOnException;
     bool stopOnTLBChange;
@@ -157,7 +156,6 @@ private:
     bool accessibleMode;
 
     Word ramSize;
-    unsigned int cpus;
     unsigned int clockRate;
     unsigned int refreshRate;
     Word tlbSize;
