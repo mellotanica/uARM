@@ -219,13 +219,6 @@ QWidget* MachineConfigDialog::createGeneralTab(QWidget *parent)
         layout->addLayout(tempHL);
 
         tempHL = new QHBoxLayout();
-        tempHL->addWidget(new QLabel("GUI Refresh Rate:", tabWidget));
-        tempHL->addWidget(refreshRateSpinner);
-        layout->addLayout(tempHL);
-
-        layout->addWidget(refreshEnabledBox);
-
-        tempHL = new QHBoxLayout();
         tempHL->addWidget(new QLabel("RAM Size (Frames):", tabWidget));
         tempHL->addWidget(ramSizeSpinner);
         layout->addLayout(tempHL);
@@ -253,6 +246,13 @@ QWidget* MachineConfigDialog::createGeneralTab(QWidget *parent)
 
         layout->addWidget(new QLabel("<b>Debugging Support</b>", tabWidget));
 
+        tempHL = new QHBoxLayout();
+        tempHL->addWidget(new QLabel("GUI Refresh Rate:", tabWidget));
+        tempHL->addWidget(refreshRateSpinner);
+        layout->addLayout(tempHL);
+
+        layout->addWidget(refreshEnabledBox);
+
         layout->addWidget(stopOnInterruptBox);
 
         tempHL = new QHBoxLayout();
@@ -278,28 +278,28 @@ QWidget* MachineConfigDialog::createGeneralTab(QWidget *parent)
         layout->addWidget(new QLabel("Default Clock Rate (MHz):", tabWidget), 1, 1);
         layout->addWidget(clockRateSpinner, 1, 2);
 
-        layout->addWidget(new QLabel("GUI Refresh Rate:", tabWidget), 2, 1);
-        layout->addWidget(refreshRateSpinner, 2, 2);
-        layout->addWidget(refreshEnabledBox, 2, 3);
+        layout->addWidget(new QLabel("RAM Size (Frames):", tabWidget), 2, 1);
+        layout->addWidget(ramSizeSpinner, 2, 2);
+        layout->addWidget(ramSizeLabel, 2, 3);
 
-        layout->addWidget(new QLabel("RAM Size (Frames):", tabWidget), 3, 1);
-        layout->addWidget(ramSizeSpinner, 3, 2);
-        layout->addWidget(ramSizeLabel, 3, 3);
+        layout->addWidget(new QLabel("TLB Size (Entries):", tabWidget), 3, 1);
+        layout->addWidget(tlbSizeList, 3, 2);
 
-        layout->addWidget(new QLabel("TLB Size (Entries):", tabWidget), 4, 1);
-        layout->addWidget(tlbSizeList, 4, 2);
+        layout->addWidget(new QLabel("<b>Firmware and Software</b>", tabWidget), 4, 0, 1, 3);
 
-        layout->addWidget(new QLabel("<b>Firmware and Software</b>", tabWidget), 5, 0, 1, 3);
+        layout->addWidget(new QLabel("Execution ROM:", tabWidget), 5, 1);
+        layout->addWidget(romFileInfo[ROM_TYPE_BIOS].lineEdit, 5, 2, 1, 2);
+        layout->addWidget(BIOSFileChooserButton, 5, 4);
 
-        layout->addWidget(new QLabel("Execution ROM:", tabWidget), 6, 1);
-        layout->addWidget(romFileInfo[ROM_TYPE_BIOS].lineEdit, 6, 2, 1, 2);
-        layout->addWidget(BIOSFileChooserButton, 6, 4);
+        layout->addWidget(new QLabel("Core file:", tabWidget), 6, 1);
+        layout->addWidget(romFileInfo[ROM_TYPE_CORE].lineEdit, 6, 2, 1, 2);
+        layout->addWidget(coreFileChooserButton, 6, 4);
 
-        layout->addWidget(new QLabel("Core file:", tabWidget), 7, 1);
-        layout->addWidget(romFileInfo[ROM_TYPE_CORE].lineEdit, 7, 2, 1, 2);
-        layout->addWidget(coreFileChooserButton, 7, 4);
+        layout->addWidget(new QLabel("<b>Debugging Support</b>", tabWidget), 7, 0, 1, 3);
 
-        layout->addWidget(new QLabel("<b>Debugging Support</b>", tabWidget), 8, 0, 1, 3);
+        layout->addWidget(new QLabel("GUI Refresh Rate:", tabWidget), 8, 1);
+        layout->addWidget(refreshRateSpinner, 8, 2);
+        layout->addWidget(refreshEnabledBox, 8, 3);
 
         layout->addWidget(stopOnInterruptBox, 9, 1, 1, 3);
 

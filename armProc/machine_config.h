@@ -92,8 +92,6 @@ public:
 
     // STATIC: now only direct core loading is possible.. change this!
     //void setLoadCoreEnabled(bool setting) { loadCoreFile = setting; }
-    void setLoadCoreEnabled(bool setting) { loadCoreFile = setting | true; }
-    bool isLoadCoreEnabled() const { return loadCoreFile; }
 
     void setStopOnException(bool setting) { stopOnException = setting; }
     bool getStopOnException() const { return stopOnException; }
@@ -101,8 +99,7 @@ public:
     void setRamSize(Word size);
     Word getRamSize() const { return ramSize; }
 
-    void setNumProcessors(unsigned int value);
-    unsigned int getNumProcessors() const { return cpus; }
+    unsigned int getNumProcessors() const { return 1; }
 
     void setClockRate(unsigned int value);
     unsigned int getClockRate() const { return clockRate; }

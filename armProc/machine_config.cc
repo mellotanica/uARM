@@ -88,8 +88,6 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
     std::auto_ptr<MachineConfig> config(new MachineConfig(fileName, app, widget));
 
     try {
-        if (root->HasMember("num-processors"))
-            config->setNumProcessors(root->Get("num-processors")->AsNumber());
         if (root->HasMember("clock-rate"))
             config->setClockRate(root->Get("clock-rate")->AsNumber());
         if (root->HasMember("refresh-rate"))
@@ -104,11 +102,8 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
             config->setStopOnTLBChange(root->Get("pause-on-tlb")->AsBool());
         if (root->HasMember("accessible-mode"))
             config->setAccessibleMode(root->Get("accessible-mode")->AsBool());
-
-        if (root->HasMember("boot")) {
-            JsonObject* bootOpt = root->Get("boot")->AsObject();
-            config->setLoadCoreEnabled(bootOpt->Get("load-core-file")->AsBool());
-            config->setROM(ROM_TYPE_CORE, bootOpt->Get("core-file")->AsString());
+        if (root->HasMember("core-file")) {
+            config->setROM(ROM_TYPE_CORE, root->Get("core-file")->AsString());
         }
 
         if (root->HasMember("execution-rom"))
@@ -177,11 +172,7 @@ void MachineConfig::Save()
     root->Set("pause-on-exc", getStopOnException());
     root->Set("pause-on-tlb", getStopOnTLBChange());
     root->Set("accessible-mode", getAccessibleMode());
-
-    JsonObject* bootOpt = new JsonObject;
-    bootOpt->Set("load-core-file", isLoadCoreEnabled());
-    bootOpt->Set("core-file", getROM(ROM_TYPE_CORE));
-    root->Set("boot", bootOpt);
+    root->Set("core-file", getROM(ROM_TYPE_CORE));
 
     root->Set("execution-rom", getROM(ROM_TYPE_BIOS));
 
@@ -248,11 +239,6 @@ void MachineConfig::setRamSize(Word size)
 void MachineConfig::setTLBSize(Word size)
 {
     tlbSize = bumpProperty(MIN_TLB_SIZE, size, MAX_TLB_SIZE);
-}
-
-void MachineConfig::setNumProcessors(unsigned int value)
-{
-    cpus = bumpProperty(MIN_CPUS, value, MAX_CPUS);
 }
 
 void MachineConfig::setClockRate(unsigned int value)
@@ -356,7 +342,6 @@ void MachineConfig::setMACId(unsigned int devNo, const uint8_t* value)
 
 void MachineConfig::resetToFactorySettings()
 {
-    setNumProcessors(DEFAULT_NUM_CPUS);
     setClockRate(DEFAULT_CLOCK_RATE);
     setRefreshRate(DEFAULT_REFRESH_RATE);
     setRefreshOnPause(DEFAULT_REFRESH_ON_PAUSE);
@@ -369,7 +354,6 @@ void MachineConfig::resetToFactorySettings()
 
     setROM(ROM_TYPE_BIOS, "/usr/include/uarm/BIOS");
 
-    setLoadCoreEnabled(true);
     setROM(ROM_TYPE_CORE, "kernel");
     setROM(ROM_TYPE_STAB, "");
     setSymbolTableASID(0);
