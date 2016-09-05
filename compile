@@ -2,7 +2,7 @@
 
 function usage(){
 	PNAME=$(basename $0)
-	echo -e "Usage\t$PNAME [-h] [-nc] [target] -- [make options]"
+	echo -e "Usage\t$PNAME [-h] [-nc] [-nc] [target] -- [make options]"
 	echo
 	echo -e "\t$PNAME\t compiles all binaries"
 	echo -e "\t$PNAME target\t compiles desired target"
