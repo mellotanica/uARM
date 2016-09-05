@@ -163,7 +163,6 @@ void MachineConfig::Save()
 {
     scoped_ptr<JsonObject> root(new JsonObject);
 
-    root->Set("num-processors", (int) getNumProcessors());
     root->Set("clock-rate", (int) getClockRate());
     root->Set("refresh-rate", (int) getRefreshRate());
     root->Set("refresh-on-pause", getRefreshOnPause());
