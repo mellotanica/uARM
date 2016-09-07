@@ -43,9 +43,9 @@ structures_window::structures_window(machine *mac, QWidget * parent, Qt::WindowF
     connect(ramViewer, SIGNAL(doubleClicked(Word)), selectWidget, SLOT(triggerOpenRam(Word)));
 
     showRam = new QToolButton(mainWidget);
-    showRam->setText("Show in Ram Viewer");
+    showRam->setText("Show in Bus Inspector");
     showRam->setAccessibleName(showRam->text());
-    showRam->setAccessibleDescription("Show selected data structures in separate a Ram Viewer window");
+    showRam->setAccessibleDescription("Show selected data structures in separate a Bus Inspector window");
     connect(showRam, SIGNAL(clicked()), selectWidget, SLOT(triggerOpenRam()));
 
     mainLayout->addWidget(selectWidget);

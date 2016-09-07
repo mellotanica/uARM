@@ -61,6 +61,7 @@ private:
     void initRamView(machine *mac);
     void refreshBounds(Word start, Word end);
     void inline setLablelVal(QLineEdit *lab, Word val);
+    void setSecondField(bool val);
 
     HexView *ramViewer = NULL;
     QVBoxLayout *mainLayout;
