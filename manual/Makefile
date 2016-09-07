@@ -1,6 +1,6 @@
 all: manual.pdf
 
-manual.pdf: $(wildcard *.tex) $(wildcard tex/*.tex) $(wildcard tex/tables/*.tex)
+manual.pdf: $(wildcard *.tex) $(wildcard tex/*.tex) $(wildcard tex/tables/*.tex) machine.uarm.cfg
 	pdflatex manual.tex
 	pdflatex manual.tex
 

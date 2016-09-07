@@ -7,6 +7,41 @@
 \usepackage{framed}
 \usepackage{adjustbox}
 \usepackage{hhline}
+\usepackage{listings}
+\usepackage{tabularx}
+
+\colorlet{punct}{red!60!black}
+\definecolor{background}{gray}{0.95}
+\definecolor{delim}{RGB}{20,105,176}
+\colorlet{numb}{magenta!60!black}
+
+\lstset{%
+ backgroundcolor=\color{background},
+ basicstyle=\footnotesize\ttfamily,
+ commentstyle=\color{green},
+ frame=lines,
+ keepspaces=true
+}
+
+\lstdefinelanguage{json}{
+    literate=
+     *{0}{{{\color{numb}0}}}{1}
+      {1}{{{\color{numb}1}}}{1}
+      {2}{{{\color{numb}2}}}{1}
+      {3}{{{\color{numb}3}}}{1}
+      {4}{{{\color{numb}4}}}{1}
+      {5}{{{\color{numb}5}}}{1}
+      {6}{{{\color{numb}6}}}{1}
+      {7}{{{\color{numb}7}}}{1}
+      {8}{{{\color{numb}8}}}{1}
+      {9}{{{\color{numb}9}}}{1}
+      {:}{{{\color{punct}{:}}}}{1}
+      {,}{{{\color{punct}{,}}}}{1}
+      {\{}{{{\color{delim}{\{}}}}{1}
+      {\}}{{{\color{delim}{\}}}}}{1}
+      {[}{{{\color{delim}{[}}}}{1}
+      {]}{{{\color{delim}{]}}}}{1},
+}
 
 % restore default italic emph behavior
 \makeatletter
@@ -24,6 +59,8 @@
 \newcommand{\register}[1]{\textbf{#1}}
 \newcommand{\field}[1]{\textit{#1}}
 \newcommand{\addr}[1]{\texttt{#1}}
+\newcommand{\asm}[1]{\texttt{\expandafter\MakeUppercase\expandafter{#1}}}
+\newcommand{\instr}[1]{\texttt{#1}}
 
 \newcommand{\centerinput}[1]{\vspace{5px}
 \begin{adjustbox}{center}

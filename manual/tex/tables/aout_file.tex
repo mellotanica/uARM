@@ -1,0 +1,25 @@
+\begin{minipage}{\textwidth}
+\begin{framed}
+	\begin{center}
+		\textbf{a.out File Format}
+	\end{center}
+	\centering
+	\begin{bytefield}[]{26}
+		\memsection{\footnotesize \emph{.data} File Size}{}{4}{16}{\emph{.data} contents}\\
+		\memsection{\footnotesize \emph{.data} Start Offset}{\footnotesize Program Start}{4}{16}{\emph{.text} contents}\\
+		\memsection{}{}{5}{16}{\color{gray}\rule{\width}{\height}}\\
+		\begin{rightwordgroup}{a.out Header}
+		\memsection{0x0024}{}{1}{16}{\emph{.data} File Size}\\
+		\memsection{0x0020}{}{1}{16}{\emph{.data} File Start Pffset}\\
+		\memsection{0x001C}{}{1}{16}{\emph{.data} Memory Size}\\
+		\memsection{0x0018}{}{1}{16}{\emph{.data} Start Addr.}\\
+		\memsection{0x0014}{}{1}{16}{\emph{.text} File Size}\\
+		\memsection{0x0010}{}{1}{16}{\emph{.text} File Start Offset}\\
+		\memsection{0x000C}{}{1}{16}{\emph{.text} Memory Size}\\
+		\memsection{0x0008}{}{1}{16}{\emph{.text} Start Addr.}\\
+		\memsection{0x0004}{}{1}{16}{Program Start Addr.}\\
+		\memsection{0x0000}{}{1}{16}{a.out Magic File No.}
+		\end{rightwordgroup}
+	\end{bytefield}
+\end{framed}
+\end{minipage}

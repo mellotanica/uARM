@@ -4,161 +4,151 @@
 
 \asubsection{Bootstrap Function}
 
-The bootstrap program bundled with \uarm{} installation has initializes hardware facilities and starts execution.
+The bootstrap program bundled with \uarm{} installation initializes hardware facilities and starts execution.
+The code for the bootstrap routine can be found in the file \texttt{BIOS.s}.
 
-The operation it performs are:
+The BIOS code performs the following operations at boot time:
 
 \begin{enumerate}
-\item populate Exception Vector with Branch instructions to basic exception handling routines
-\item set default Exception States Vector entries with \texttt{Branch to PANIC} instructions
-\item retrieve entry point from kernel binary file
-\item set execution mode to System mode with ARM ISA and all interrupts enabled
-\item set exit point and ramtop value
-\item clear all used scratch registers
-\item jump to entry point
+\item Populate of the Exception Vector with Branch instructions to ROM Level Exception Handlers;
+\item Set default Exception States Vector entries with \texttt{Branch to PANIC} instructions;
+\item Retrieve Entry Point from core binary code loaded in RAM;
+\item Set execution mode to System mode with ARM ISA and all interrupts enabled;
+\item Set Exit Point and \texttt{RAMTOP} value;
+\item Clear all used scratch registers;
+\item Jump to Entry Point.
 \end{enumerate}
 
-\asubsection{Low Level Handlers}
+\texttt{BIOS.s} source file also contains the code for ROM Level Exception Handlers (see Sec. \ref{sec:man:romExceptionHandlers}) and ROM Level Services; the default installation directory of this and the other support files is \texttt{/usr/include/uarm/}.
 
-In addition to bootstrapping the machine, BIOS code provides low level exception handlers:
+\asubsection{ROM Level Services}
 
-\asubsubsection{Undefined Instruction Exception Handler}
-
-When an Undefined Instruction Exception is raised, the processor stores its internal state at the moment of the exception into the \emph{Old Area} of the exception states vector relative to Undefined Exceptions and loads the content of the \emph{New Area}.
-
-\asubsubsection{Interrupts Exception Handlers}
-
-For both Fast and regular Interrupt Exceptions the processor behaves in a way similar to Undefined Exceptions, it stores its state at the time of the interrupt and loads the \emph{New Area} from Interrupts Exception States Vector's slot.
-
-\asubsubsection{Software Interrupt Handler}
-
-In addition to the regular operations (the same as the Undef and Interrupts handlers), in case of an SWI instruction the BIOS responds for known Low Level Services and sets the Cause register to the right value for the requested interruption (Syscall or Breakpoint).
-
-\asubsubsection{Data and Prefetch Exception Handlers}
-
-These two handlers share most of their code and perform special operations in case Virtual Memory is turned on:
-\begin{itemize}
-	\item if VM is disabled, Abort Exceptions are treated as Undefined Exceptions,
-	\item else low level TLB management is required.
-\end{itemize}
-
-In the latter case, the handler corrects the return address, setting it to the address of the faulting instruction and stores the processor state in the \emph{TLB Old Area} of the Exception States Vector.
-It then checks if the Abort was labeled as a TLB-Miss and, if it was the case, it performs the TLB Refill procedure described in Virtual Memory section.
-
-\asubsection{Low Level Services}
-
-Low level services are requested by issuing a SWI instruction with the right parameter:
+ROM Level Services are requested by issuing a \asm{SWI} instructions with certain parameters and are served by the BIOS code:
 
 \asubsubsection{Halt}
 
-By executing \texttt{SWI \#1}, the BIOS will print "\texttt{SYSTEM HALTED.}" on Terminal 0 and shut down the virtual machine.
+By executing \asm{SWI \#1}, the BIOS will print "\texttt{SYSTEM HALTED.}" on Terminal 0 and shut down the virtual machine.
 
 \asubsubsection{Panic}
 
-By executing \texttt{SWI \#2}, the BIOS will print "\texttt{KERNEL PANIC.}" on Terminal 0 and enter an infinite loop.
+By executing \asm{SWI \#2}, the BIOS will print "\texttt{KERNEL PANIC.}" on Terminal 0 and enter an infinite loop.
 
 \asubsubsection{LDST}
 
-A \texttt{SWI \#3} instruction will begin the loading of the processor state stored at the address specified by \emph{a1} register to actual processor's registers, checking destination mode and setting only the right processor's registers window.
+A \asm{SWI \#3} instructions will begin the loading of the processor state stored at the address loaded into \register{a1} register to actual processor's registers, checking destination mode and setting only the right register window.
 
 \asubsubsection{Wait}
 
-By executing \texttt{SWI \#4}, the BIOS will put the machine in IDLE state waiting for an interrupt to wake the system up.
+By executing \asm{SWI \#4}, the BIOS will put the machine in IDLE state waiting for an interrupt to wake up the system up.
 
 \asubsubsection{System Calls / Breakpoints}
 
-If a \texttt{SWI \#8} or \texttt{SWI \#9} instruction is executed, the syscall handler passes up the call, setting the right cause in CP15 Cause register.
+If a \asm{SWI \#8} or \asm{SWI \#9} instructions is executed, the syscall handler passes up the call, setting the right cause in \register{CP15.Cause} register.
 
 \asection{System Library}\label{sec:man:systemLibrary}
 
-System library is provided by \emph{libuarm}, it offers a small but increasing set of methods to access low level functionalities.
+System library is provided by \emph{libuarm}, it offers a set of methods to access low level functionalities from \emph{C} language:
 
-\asubsubsection{tprint(char *s)}
+\asubsubsection{\instr{tprint(char *s)}}
 
 Print a '\textbackslash0' terminated array of chars to Terminal 0.
-
 This function uses busy waiting to wait for the device to be ready.
 
-\asubsubsection{HALT()}
+\asubsubsection{\instr{HALT()}}\label{sec:man:HALT}
 
-Run BIOS Halt function.
+Request BIOS Halt service.
 
-\asubsubsection{PANIC()}
+\asubsubsection{\instr{PANIC()}}
 
-Run BIOS Panic function.
+Request BIOS Panic service.
 
-\asubsubsection{WAIT()}
+\asubsubsection{\instr{WAIT()}}
 
-Run BIOS Wait function.
+Request BIOS Wait service.
 
-\asubsubsection{LDST(void *addr)}
+\asubsubsection{\instr{LDST(void *addr)}}
 
-Calls the BIOS function that loads the entire processor state from state\_t stored at \emph{addr} address.
+Request BIOS LDST service setting \register{a1} to \texttt{addr} value.
 
-\asubsubsection{STST(void *addr)}
+\asubsubsection{\instr{STST(void *addr)}}
 
 Stores the actual processor state in state\_t structure pointed by \emph{addr}.
 
-\asubsubsection{SYSCALL(unsigned int sysNum, unsigned int arg1, unsigned int arg2, unsigned int arg3)}
+\asubsubsection{\instr{SYSCALL(unsigned int sysNum, unsigned int arg1, unsigned int arg2, unsigned int arg3)}}\label{sec:man:SYSCALL}
 
 Generates a software exception leading to kernel defined Syscall handler.
+\register{a1} is loaded with \texttt{sysNum}, \register{a2} is loaded with \texttt{arg1}, \register{a3} is loaded with \texttt{arg2} and \register{a4} is loaded with \texttt{arg3}
 
-\asubsubsection{BREAK(unsigned int arg0, unsigned int arg1, unsigned int arg2, unsigned int arg3)}
+\asubsubsection{\instr{BREAK(unsigned int arg0, unsigned int arg1, unsigned int arg2, unsigned int arg3)}}
 
 Generates a software exception leading to kernel defined Breakpoint handler.
+\register{a1} is loaded with \texttt{arg0}, \register{a2} is loaded with \texttt{arg1}, \register{a3} is loaded with \texttt{arg2} and \register{a4} is loaded with \texttt{arg3}
 
-\asubsubsection{getSTATUS() / setSTATUS()}
+\asubsubsection{\instr{getSTATUS()} / \instr{setSTATUS()}}
 
-Manipulate Current Program Status Register.
+Manipulate Current Program Status Register (\register{CPSR}).
 
-\asubsubsection{getCAUSE() / setCAUSE()}
+\asubsubsection{\instr{getCAUSE()} / \instr{setCAUSE()}}
 
-Manipulate Exception/Interrupt Cause register.
+Manipulate Exception/Interrupt Cause register (\register{CP15.R15}).
 
-\asubsubsection{getTIMER() / setTIMER()}
+\asubsubsection{\instr{getTIMER()} / \instr{setTIMER()}}
 
 Manipulate Interval Timer.
 
-\asubsubsection{getTODHI() / getTODLO()}
+\asubsubsection{\instr{getTODHI()} / \instr{getTODLO()}}
 
 Returns the upper/lower part of Time of Day 64-bit register.
 
-\asubsubsection{getCONTROL() / setCONTROL()}
+\asubsubsection{\instr{getCONTROL()} / \instr{setCONTROL()}}
 
-Manipulate System Control Register.
+Manipulate System Control Register (\register{CP15.SCB}).
 
-\asubsubsection{getTLB\_Index() / setTLB\_Index(unsigned int index)}
+\asubsubsection{\instr{getTLB\_Index()} / \instr{setTLB\_Index(unsigned int index)}}
 
 Manipulate TLB Index register.
 
-\asubsubsection{getTLB\_Random()}
+\asubsubsection{\instr{getTLB\_Random()}}
 
 Returns TLB Random register.
 
-\asubsubsection{getEntryHi() / setEntryHi(unsigned int hi) / getEntryLo() / setEntryLo(unsigned int lo)}
+\asubsubsection{\instr{getEntryHi()} / \instr{setEntryHi(unsigned int hi)} / \instr{getEntryLo()} / \instr{setEntryLo(unsigned int lo)}}
 
-Manipulate TLB Entry Hi and Entry Low registers.
+Manipulate Page Table Entry Hi and Entry Low registers (\register{CP15.R2.EntryHi} and \register{CP15.R2.EntryLow}).
 
-\asubsubsection{getBadVAddr()}
+\asubsubsection{\instr{getBadVAddr()}}
 
-Returns BadVAddr register, which contains the faulting address in case of Page Fault Exceptions.
+Returns Faulting Address register (\register{CP15.R6}).
 
-\asubsubsection{TLBWR()}
+\asubsubsection{\instr{TLBWR()}}
 
-Write the contents of EntryHi and EntryLo to the TLB slot indicated by TLB Random register value.
+Write the contents of \register{CP15.R2} to the TLB slot indicated by TLB Random register value.
 
-\asubsubsection{TLBWI()}
+\asubsubsection{\instr{TLBWI()}}
 
-Write the contents of EntryHi and EntryLo to the TLB slot indicated by TLB Index register value.
+Write the contents of \register{CP15.R2} to the TLB slot indicated by TLB Index register value.
 
-\asubsubsection{TLBR()}
+\asubsubsection{\instr{TLBR()}}
 
-Read the contents of TLB slot indicated by TLB Index register value in EntryHi and EntryLo registers.
+Read the contents of TLB slot indicated by TLB Index register value to \register{CP15.R2} register.
 
-\asubsubsection{TLBP()}
+\asubsubsection{\instr{TLBP()}}
 
-Scan the TLB searching for a pair that matches VPN in EntryHi and ASID in EntryHi or that has G flag set in EntryLo and is Valid, if a match is found, its index in the TLB cache is stored as TLB Index register value, otherwise that register will have 31st bit set to 1.
+Scan the TLB searching for a pair that matches \field{VPN} in and \field{ASID} in \register{CP15.R2.EntryHi} or that has \field{G} flag set in \register{CP15.R2.EntryLo} and is \field{V}alid, if a match is found, its index in the TLB cache is stored as TLB Index register value, otherwise that register will have the most significant bit set to 1.
 
 \asubsubsection{TLBCLR()}
 
 Set all TLB contents to 0.
+
+\asubsection{Additional Libraries}
+
+Two more simple libraries are provided in addition to the system library:
+
+\asubsubsection{\texttt{ulibuarm}}
+
+A simple subset of \texttt{libuarm} to be used by user mode programs, only exposes a mean to request system calls through the same \instr{SYSCALL} instruction; see Section \ref{sec:man:SYSCALL}.
+
+\asubsubsection{\texttt{libdiv}}
+
+This library implements integer division and module operations that are not provided by the processor instruction set, it must be linked together with any program that uses divisions.
+

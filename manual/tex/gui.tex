@@ -1,23 +1,509 @@
 \achapter{Emulator Usage}
 
-\asection{Compiling and \texttt{elf2uarm} tool}
+The following sections will cover the usage of the emulator itself, along with the necessary tools required for compiling the programs to be run, debugging functionalities provided by \uarm{} and the support tool \texttt{uarm-mkdev} used to create device files needed for advanced usage.
 
-\asection{\texttt{uarm-mkdev} tool}
+\asection{Compiling and Running the Machine}
 
-\asection{Graphical User Interface}
+\uarm{} is an ARM7tdmi-based system emulator; in order to build a program for the correct ARM architecture, an ARM compiler is needed.
+Once a valid executable file is ready, the machine must be configured to load the proper core file (and optionally BIOS file).
+At last the machine is run and the output is read from terminal screens or printed files.
+
+\asubsection{C Language Development for \uarm{}}\label{sec:man:development}
+Run time C-library support utilities are \uline{obviously} not available. 
+This includes I/O statements (e.g. \texttt{printf} from \texttt{stdio.h}), storage allocation calls (e.g. \texttt{malloc}) and file manipulation methods.
+In general any C-library method that interfaces with the operating system is not supported; \uarm{} does not have an OS to support these calls - unless you write one to do so. 
+The \texttt{libuarm} library, described in Section \ref{sec:man:systemLibrary}, is the only support library available.
+
+The \uarm{} linker requires a small function, named \texttt{\_\_start()}. 
+This function is to be the entry point to the program being linked.
+Typically \texttt{\_\_start()} is provided from system library and will initialize some registers and then call \texttt{main()}.
+After \texttt{main()} concludes, control is returned to \texttt{start()} which should perform some appropriate termination service. 
+Two such functions, written in assembler, are provided:
+\begin{itemize}
+\item \texttt{crtso.o}: This file is to be used when linking together the files for the kernel/OS. 
+The version of \texttt{\_\_start()} in this file simply runs the \texttt{main()} function of the program (i.e. kernel), assuming it is loaded in RAM beginning at \addr{0x0000.8000}. 
+
+\item \texttt{crti.o}: This file is to be used when linking together the files for individual U-proc’s. 
+The version of \texttt{\_\_start()} in this file assumes that the program’s (i.e. U-proc’s) header has 0x8000.0000 as its starting (virtual) address. 
+Some registers are stored and restored before and after the \texttt{main()} call. 
+\texttt{\_\_start()} assumes that the kernel will initialize \$SP.
+The last instruction if the \texttt{\_\_start()} routine is the peaceful termination of the program using the dedicated Syscall.
+As the Syscall numbering is implementation dependent, the value at the beginning of this file \uline{needs to be modified accordingly from the OS developer}.
+\end{itemize}
+
+\asubsection{Compiling}
+
+\texttt{arm-none-eabi} toolchain will be taken into example to explain the compiling process, but any ARM cross-toolchain, or any toolchain run on an ARM system should be able to generate proper code for \uarm{} execution.
+
+To be sure the compiler will not include the host system's libraries (see Sec. \ref{sec:man:development}), the \texttt{-c} option is necessary while compiling each source file, as well as the \texttt{-mcpu=arm7tdmi} to ensure maximum compatibility with the system.
+
+Once each source file has been compiled into an object file, everything has to be linked together using the provided start files (\texttt{crtso.o} and \texttt{crti.o}) and the \texttt{-T} option to select the right memory map:
+\begin{itemize}
+	\item \texttt{elf32ltsarm.h.uarmcore.x} is the memory map used for kernel binaries, which are meant to be executed with virtual memory turned off;
+	\item \texttt{elf32ltsarm.h.uarmaout.x} is the memory map used for Uproc's binaries, which are meant to be executed with virtual memory enabled.
+\end{itemize}
+
+\asubsubsection{Compiling an Operating System}
+Take as an example a program composed of the following modules:
+\begin{itemize}
+	\item \texttt{core.c}, \texttt{core.h}: core module, uses \texttt{libuarm} library;
+	\item \texttt{service.c}, \texttt{service.h}: library implementing service functions;
+	\item \texttt{test.c}: test module to check program behavior.
+\end{itemize}
+
+To build such a program using \texttt{arm-none-eabi} toolchain one should execute the following commands:\\
+\begin{minipage}{\textwidth}
+\begin{lstlisting}
+arm-none-eabi-gcc -c -mcpu=arm7tdmi core.c -o core.o
+arm-none-eabi-gcc -c -mcpu=arm7tdmi service.c -o service.o
+arm-none-eabi-gcc -c -mcpu=arm7tdmi test.c -o test.o
+
+arm-none-eabi-ld -T \\
+/usr/include/uarm/ldscripts/elf32ltsarm.h.uarmcore.x \\
+/usr/include/uarm/crtso.o /usr/include/uarm/libuarm.o \\
+core.o service.o test.o -o kernel
+\end{lstlisting}
+\end{minipage}
+
+\texttt{/usr/include/uarm/} is the default installation directory for support files, in this example, and in the ones that will follow, this location will be considered as valid and filled with the provided support files.
+The order of the object files in the linking (last) command is important: specifically, the first two support files must be in their respective positions.
+
+\asubsubsection{Compiling a Uproc file}
+Take as an example a user mode program that one wishes to run on an already existing \uarm{} operating system: \texttt{uproc.c}.
+This program will use system calls as well as integer divisions, respectively provided by \texttt{ulibuarm} and \texttt{libdiv} libraries.
+
+To build such a program using \texttt{arm-none-eabi} toolchain one should execute the following commands:\\
+\begin{minipage}{\textwidth}
+\begin{lstlisting}
+arm-none-eabi-gcc -c -mcpu=arm7tdmi uproc.c -o uproc.o
+
+arm-none-eabi-ld -T 
+/usr/include/uarm/ldscripts/elf32ltsarm.h.uarmaout.x \\
+/usr/include/uarm/crti.o /usr/include/uarm/ulibuarm.o \\
+/usr/include/uarm/libdiv.o uproc.o -o uproc
+\end{lstlisting}
+\end{minipage}
+
+Finally, this executable file can be (optionally) loaded onto a tape cartridge with the following command:
+
+\noindent
+\begin{lstlisting}
+uarm-mkdev -t uproc.uarm uproc
+\end{lstlisting}
+
+\noindent
+which produces the preloaded “tape cartridge” file: \texttt{uproc.uarm} (for further details see Sec. \ref{sec:man:mkdev}).
+
+\asubsubsection{Compiling BIOS ROM}
+
+ROM code development must be done in ARM assembler. 
+Consider the case where one has a new version of the execution time ROM routines: \texttt{testrom.s}.
+
+One should assemble the source file using the command:\\
+\begin{lstlisting}
+arm-none-eabi-gcc -mcpu=arm7tdmi -c -fPIC testrom.s -o testrom
+\end{lstlisting}
+
+Note the use of the \texttt{-fPIC} option to generate position independent code. (i.e. No relocations)
 
 \asubsection{Settings Breakdown}
 
+All the possible configurations for the simulation execution are accessible through the main settings window inside \uarm{}.
+To get show the settings window simply click on the \emph{Machine Config Button} (the first button in the main bar with the Screwdriver and Wrench icon).
+
+The configurations are split into three categories: \emph{General}, \emph{Devices} and \emph{Accessibility}.
+
+\asubsubsection{General Settings}
+
+The first tab provides configurations for the main simulator features and is divided into three categories: 
+\begin{itemize}
+	\item \emph{Hardware} - These settings modify core hardware structure
+		\begin{itemize}
+			\item Default Clock Rate (MHz): This value represents the simulated clock speed of the processor, it does not influence the simulation speed but the external devices will take this value into account to establish the cycles count needed to complete a task.
+			\item RAM Size (Frames): This value represents the actual size of installed RAM expressed in ram Frames, a label next to the input field will show the corresponding value in Bytes.
+			\item TLB Size (Entries): This value represents the number of Entries (i.e. the size) of the Translation Lookaside Buffer (see Sec. \ref{sec:man:tlb}).
+		\end{itemize}
+	\item \emph{Firmware and Software} - These settings specify options regarding the Firmware binaries and the Core/Bootstrap binaries.
+		\begin{itemize}
+			\item Execution ROM: The ARM ELF file specified by this setting will be loaded into the Execution ROM and will be executed at boot time, the default value is \texttt{/usr/include/uarm/BIOS}.
+			\item Core file: The ARM ELF file specified by this setting will be loaded into RAM starting from address \addr{0x0000.8000} and will be automatically loaded from default BIOS after the startup routines (see Sec. \ref{sec:man:bios}).
+		\end{itemize}
+	\item \emph{Debugging Support} - These settings modify the behavior of some debugging tools included into the simulator
+		\begin{itemize}
+			\item Enable constant refresh: If enabled, the contents of the debugger components will be automatically updated during the machine running time, otherwise the contents will be updated each time the execution is paused. \label{sec:man:constantRefresh}
+			\item GUI Refresh Rate: If constant refresh is enabled, this value represents the number of processor cycles that will elapse between each GUI update.
+			\item Pause execution on Exception: If enabled, the execution will pause each time an exception is raised, i.e. each time the \register{pc} value is below \addr{0x0000.0020}.
+			\item Symbol Table ASID: Sets the default ASID for associated with loaded Symbol Table in the Breakpoint Window.
+			\item External Symbol Table: If enabled, the ARM ELF file specified will be the one from which the Symbol Table loaded in Breakpoint and Data Structures windows is generated.
+		\end{itemize}
+\end{itemize}
+
+\asubsubsection{Devices Settings}
+
+Settings for external devices are accessible from this tab.
+The main drop-down menu is used to select the type of device to configure, then the main contents will change accordingly, showing the settings for each one of the eight devices of the selected type.
+
+Each single device has a relative ``Enable'' checkbox that will affect its presence into the simulation.
+
+Device specific configurations are:
+\begin{itemize}
+	\item \emph{Tapes}
+		\begin{itemize}
+			\item Device File: A tape file created with \texttt{uarm-mkdev} tool to be loaded into the tape drive
+		\end{itemize}
+	\item \emph{Disks}
+		\begin{itemize}
+			\item Device File: A hard disk file created with \texttt{uarm-mkdev} tool to be attached to the system
+		\end{itemize}
+	\item \emph{Terminals}
+		\begin{itemize}
+			\item Device File: A text file onto which the simulator will dump all the terminal contents
+		\end{itemize}
+	\item \emph{Printers}
+		\begin{itemize}
+			\item Device File: A text file onto which the printer will write its output
+		\end{itemize}
+	\item \emph{Network Interfaces}
+		\begin{itemize}
+			\item Device File: The path of the vde\_switch that will be created and will be used from the network interface
+			\item Fixed MAC address: If enabled, the network interface MAC address will be fixed to a user defined value.
+			\item MAC address: If fixed MAC address is enabled, this will be the MAC address of the network interface.
+		\end{itemize}
+\end{itemize}
+
+\asubsubsection{Accessibility Settings}
+
+Setting related to accessibility features are accessible through this tab.
+At the time of writing the only available option is \emph{Enable Increased Accessibility}. When enabled and after a program restart, this setting will change the graphical interface in favor of a set of much accessible widgets.
+
+As an example, the main processor viewer window, that is implemented with a matrix of text labels, will be replaced by an array of text fields, each one displaying a full ``window'' of registers (see Sec. \ref{sec:man:processorRegisters}).
+
+\asubsubsection{Global Settings}
+
+Global interface settings are stored in \texttt{/etc/default/uarm} in Unix-based systems.
+This file is used to choose the preferred font face and size to be used by \uarm{} for displaying registers and Bus contents in its graphical user interface.
+
+The default \texttt{Monospace} font face should be available in some form in any system, but these settings could be some times necessary to fix display problems.
+The default size leads to a correct sizing of the emulator windows most of the times, but if there are sizing issues (windows/fonts too big/small), this is the value that needs to be adjusted.
+
+\asubsubsection{Configuration File Fields}\label{sec:man:confFileFields}
+
+All configurations are stored in a \emph{Json} file, the default location for this file is \linebreak \texttt{\$HOME/.config/uarm/machine.uarm.cfg}, where \texttt{\$HOME} is the current user's home directory.
+Using the \texttt{-c} command line option (see Sec. \ref{sec:man:commandLineOptions}) a different configuration file can be specified.
+If the configuration file is missing (both the default file or a user selected one), a new file with default settings values is created in its place.
+
+A configuration file can be directly modified outside of \uarm{} with any text editor and will be recognized by the machine if all fields are valid.
+Any missing field will be initialized by the program with its default value.
+
+The structure of a simple configuration file is shown below:
+
+\spinput{configfile.tex}
+
+Each field of the configuration file refers to a setting that can be reached through the Main Settings Window:\\
+\begin{tabularx}{\textwidth}{|>{\hsize=.7\hsize}X|l|l|>{\hsize=1.3\hsize}X|}
+	\hline
+	Field & Type & Settings' Tab & Setting Name \\
+	\hline
+	\hline
+	\texttt{accessible-mode} & \texttt{bool} & Accessibility & Enable Increased Accessibility\\
+	\hline
+	\texttt{clock-rate} & \texttt{int} & General & Default Clock Rate \\
+	\hline
+	\texttt{core-file} & \texttt{string} & General & Core file \\
+	\hline
+	\texttt{devices: \newline \- \ \{dev\}[0-7]: \newline \- \ \ \ \ enabled} & \texttt{bool} & Devices & Enable \\
+	\hline
+	\texttt{devices: \newline \- \ \{dev\}[0-7]: \newline \- \ \ \ \ file} & \texttt{string} & Devices & Device File \\
+	\hline
+	\texttt{devices: \newline \- \ eth[0-7]: \newline \- \ \ \ \ address} & \texttt{string} & Devices & Fixed MAC address \& MAC address \\
+	\hline
+	\texttt{execution-rom} & \texttt{string} & General & Execution ROM \\
+	\hline
+	\texttt{num-ram-frames} & \texttt{int} & General & RAM Size \\
+	\hline
+	\texttt{pause-on-exc} & \texttt{bool} & General & Pause execution on Exception \\
+	\hline
+	\texttt{pause-on-tlb} & \texttt{bool} & Breakpoints\footnote{This setting can be found in the Breakpoints window, see Section \ref{sec:man:breakpoints}.} & Stop on TLB change \\
+	\hline
+	\texttt{refresh-on-pause} & \texttt{bool} & General & Enable constant refresh \\
+	\hline
+	\texttt{refresh-rate} & \texttt{int} & General & GUI Refresh Rate \\
+	\hline
+	\texttt{symbol-table: \newline \- \ asid} & \texttt{int} & General & Symbol Table ASID \\
+	\hline
+	\texttt{symbol-table: \newline \- \ external-stab} & \texttt{bool} & General & External Symbol Table (checkbox) \\
+	\hline
+	\texttt{symbol-table: \newline \- \ file} & \texttt{string} & General & External Symbol Table (line edit) \\
+	\hline
+	\texttt{tlb-size} & \texttt{int} & General & TLB Size \\
+	\hline
+\end{tabularx}
+
+\vspace{6pt}
+Where \texttt{\{dev\}} is one of the following:
+
+\vspace{4pt}
+\noindent
+\begin{center}
+\begin{tabular}{|l|l|}
+	\hline
+	\texttt{\{dev\}} & Device \\
+	\hline
+	\hline
+	\texttt{disk} & Disks\\
+	\hline
+	\texttt{eth} & Network\\
+	\hline
+	\texttt{printer} & Printers\\
+	\hline
+	\texttt{tape} & Tapes\\
+	\hline
+	\texttt{terminal} & Terminals\\
+	\hline
+\end{tabular}
+\end{center}
+
 \asubsection{Terminal Windows}
+
+Once the machine is powered on, a dedicated window is accessible for each enabled terminal through the \emph{Terminals} sub menu.
+
+Each Terminal Window shows the terminal contents, both input and output, and has a control bar at the bottom.
+Through the control bar the user can simulate a hardware failure to test special system features and see a hidden status bar through the \emph{Show Status} button.
+
+The terminal status shows the value of the terminal transmitter (\texttt{TX}) and receiver (\texttt{RX}) sub-devices status words along with the \register{TOD} value relative to the last update of the status registers.
+
+\asubsection{Command Line Options}\label{sec:man:commandLineOptions}
+
+A small set of additional options are available by running the program from a command line.
+The full launch command synopsis is:
+
+\noindent
+\begin{lstlisting}
+uarm [-c <config.conf>] [-e [-x]] [--dumpExec <dumpfile>]
+\end{lstlisting}
+
+Where:\\
+\begin{itemize}
+	\item \texttt{-c <config.cfg>} is used to load/create a user defined configuration file (see Sec. \ref{sec:man:confFileFields}).
+	\item \texttt{-e} enables \emph{Autorun}: the machine is powered on and started with the program start.
+	\item \texttt{-x} enables \emph{Run and Exit}: if Autorun is enabled, exit the program when the machine reaches the \texttt{HALT} instruction (see Sec. \ref{sec:man:HALT}).
+	\item \texttt{--dumpExec <dumpfile>} enables \emph{Execution Dump}: the file \texttt{<dumpfile>} is filled with every binary instruction executed by the machine at run time and the relative decompiled assembly code. The file \texttt{<dumpfile>} is overwritten if already existent.
+\end{itemize}
+
+\asubsection{Binary Formats}
+The cross-compiler and cross-linker generate code in the \emph{Executable and Linking Format} (ELF). 
+While the ELF format allows for efficient compilation and execution by an OS it is also quite complex. 
+Using the ELF format would therefore un-necessarily complicate the student OS development process since there are no program loaders or support libraries available until one writes them.
+
+Hence \uarm{} converts on the fly the executable core files in a simpler format, based on the predecessor to the ELF format: \emph{a.out}.
+User mode programs are converted in a.out format as well as they get loaded on tape by the tool \texttt{uarm-mkdev}.
+
+\asubsubsection{The a.out Format}
+A program, once compiled and linked may be logically split into two areas or sections. 
+The primary areas are:
+\begin{itemize}
+	\item \emph{.text}: This area contains all the compiled code for the executable program.
+		All of the program’s functions are placed contiguously one after another in the order the functions are presented to the linker.
+	\item \emph{.data}: This area contains all the global and static variables and data structures. 
+		It in turn is logically divided into two sub-sections:
+		\begin{itemize}
+			\item \emph{.data}: Those global and static variables and data structures that have a defined (i.e. initialized) value at program start time.
+			\item \emph{.bss}: Those global and static variables and data structures that do NOT have a defined (i.e. initialized) value at program start time.
+		\end{itemize}
+\end{itemize}
+
+Local, i.e. automatic, variables are allocated/deallocated on/from the program’s stack, while dynamic variables are allocated from the program’s \emph{heap}.
+A heap, like a stack, is an OS allocated segment of a program’s (virtual) address space.
+Unlike stack management, which is dealt with automatically by the code produced by the compiler, heap management is performed by the OS. 
+The compiler can produce stack management code since the number and size of each function’s local variables are known at compile time. 
+Since the number and size of dynamic variables cannot be known until run-time, heap management falls to the OS. 
+Heap management can safely be ignored by OS authors who are not supporting dynamic variables, i.e. there are no \texttt{malloc}-type SYSCALLs.
+
+\begin{center}
+\begin{tabular}{|l|c|p{8.7cm}|}
+	\hline
+	\multicolumn{3}{|c|}{\textbf{a.out Header}}\\
+	\hline
+	\textbf{Field Name} & \textbf{File Offset} & \textbf{Field Description}\\
+	\hline
+	\hline
+	a.out Magic File No. & \addr{0x0000} & Special identifier used for file type recognition. \\
+	\hline
+	Program Start Addr. & \addr{0x0004} & Address (virtual) from which program execution should begin. Typically this is \addr{0x0000.8074} fore kernel and \addr{0x8000.0094} for user mode programs. \\
+	\hline
+	\emph{.text} Start Addr. & \addr{0x0008} & Address (virtual) for the start of the .text area. It is fixed to \addr{0x0000.0000} for core and \addr{0x8000.0000} for user mode programs. \\
+	\hline
+	\emph{.text} Memory Size & \addr{0x000C} & Size of the memory space occupied by the .text section.\\
+	\hline
+	\emph{.text} File Start Offset & \addr{0x0010} & Offset into a.out file where \emph{.text} begins. Since the header is part of \emph{.text}, this is always \addr{0x0000.0000} \\
+	\hline
+	\emph{.text} File Size & \addr{0x0014} & Size of \emph{.text} area in the a.out file. Larger than \emph{.text} Mem. Size since its padded to the nearest 4KB block boundary. \\
+	\hline
+	\emph{.data} Start Addr. & \addr{0x0018} & Address (virtual) for the start of the \emph{.data} area. The \emph{.data} area is placed immediately after the \emph{.text} area at the start of a 4KB block, i.e. \emph{.text} Start Addr. + \emph{.text} File Size.\\
+	\hline
+	\emph{.data} Memory Size & \addr{0x001C} & Size of the memory space occupied by the full \emph{.data} area, including the \emph{.bss} area.\\
+	\hline
+	\emph{.data} File Start Offset & \addr{0x0020} & Offset into the a.out file where \emph{.data} begins. This should be the same as the \emph{.text} File Size.\\
+	\hline
+	\emph{.data} File Size & \addr{0x0024} & Size of \emph{.data} area in the a.out file. Different from the \emph{.data} Memory Size since it doesn’t include the \emph{.bss} area but is padded to the nearest 4KB block boundary.\\
+	\hline
+\end{tabular}
+\end{center}
+
+\spinput{aout_file.tex}
+
+\uline{Important Point}: The \emph{.data} area is given an address space immediately after the \emph{.text} address space, aligned to the next 4KB block, insuring that \emph{.text} and \emph{.data} areas are completely separated.
+The \emph{.bss} area immediately follows the \emph{.data} area and is NOT aligned to a separate 4KB block.
+
+\emph{.text} and \emph{.data} Memory Sizes are provided for sophisticated memory allocation purposes:
+\begin{itemize}
+	\item The size of each U-proc’s PgTbl can be determined dynamically, instead of “one size fits all” approach.
+	\item PTE’s that represent the \emph{.text} area can be marked as read-only, while entries that represent the \emph{.data} area can be marked as writable.
+\end{itemize}
+
+The program loader which reads in the contents of a U-proc’s a.out file, needs to be aware that the \emph{.text} and \emph{.data} areas are contiguous and have a starting virtual address of \addr{0x8000.0000}. 
+The \emph{.bss} area, while not explicitly described in the a.out file, will occupy the virtual address space immediately after the \emph{.data} area. 
+Zero’ing out the \emph{.bss} area will insure that all uninitialized global and static variables and data structures begin with an initial value of zero. 
+Finally, the loader loads the \register{pc} with the Program Start Addr.; i.e. the contents of the second word of the a.out program header.
+
+a.out files have padded \emph{.text} and \emph{.data} sections to facilitate file reading/loading.
+Each section is padded to a multiple of the frame size or disk and tape block size.
+This allows the kernel/OS to easily load the program and insure that the program’s \emph{.text} and \emph{.data} occupy disjoint frame sets.
+
+\asection{\texttt{uarm-mkdev} tool}\label{sec:man:mkdev}
+
+While the log files for holding terminal and printer output are standard text files, and which if not present for any active printer or terminal, will be automatically created by \uarm{} at startup time, the disk and tape cartridge files must be explicitly created beforehand. 
+One uses the \texttt{uarm-mkdev} device creation utility to create the files that represent these persistent memory devices.
+
+\asubsection{Creating Disk Devices}
+
+Disks in \uarm{} are read/write sealed devices with specific performance figures.
+The \texttt{uarm-mkdev} utility allows one to create an \uline{empty} disk only; this way an OS developer may elect any desired disk data organization.
+
+The created “disk” file represents the entire disk contents, even when empty.
+Hence this file may be very large. 
+It is recommended to create small disks which can be used to represent a little portion of an otherwise very large disk unit.
+
+Disks are created via:
+
+\noindent
+\begin{lstlisting}
+uarm-mkdev -d <diskfile.uarm> [cyl [head [sect [rpm [seekt [datas]]]]]]
+\end{lstlisting}
+
+\noindent
+where:
+\begin{itemize}
+	\item \texttt{-d} instructs the utility to build a disk file image.
+	\item \texttt{<diskfile.uarm>} is the name of the disk file image to be created.
+	\item The following six optional parameters allow one to set the drive’s geometry: number of cylinders, heads/surfaces, and sectors, and the drive’s performance statistics: the disk rotation speed in rotations per minute, the average cylinder-to-cylinder seek time, and the sector data occupancy percentage.
+\end{itemize}
+
+As with real disks, differing performance statistics result in differing simulated drive performance. 
+e.g. A faster rotation speed results in less latency delay and a smaller sector data occupancy percentage results in shorter read/write times.
+
+The default values for all these parameters are shown when entering the \texttt{uarm-mkdev} command alone without any parameters.
+
+\asubsection{Creating Tape Cartridges}
+Tape devices in \uarm{} are read-only devices which are typically used for the fast loading of large quantities of data into the simulation without having to resort to typing the data directly into a terminal.
+Tapes are typically used to load user programs (Uproc’s).
+
+A tape cartridge file image will contain a properly-formatted copy of the file(s) the user wishes loaded onto it.
+
+Tape cartridge image files are created via:
+
+\noindent
+\begin{lstlisting}
+uarm-mkdev -t <tapefile.uarm> <file> [<file>] ... [<file>]
+\end{lstlisting}
+
+\noindent
+where:
+\begin{itemize}
+	\item \texttt{-t} instructs the utility to build a tape cartridge file image.
+	\item \texttt{<tapefile.uarm>} is the name of the tape cartridge file image to be created.
+	\item  The concluding space-separated list of \texttt{<file>} names are the files that will be included on the tape cartridge file image. 
+		These files, of which there must be at least one, executable ARM ELF files.
+		Each file will be zero-padded to a multiple of the 4KB block size and sliced up using the \uline{EOB} and \uline{EOF} block markers. 
+		The tape’s end will be marked with a \uline{EOT} marker.
+\end{itemize}
 
 \asection{Debugging}
 
+Some more tools can be accessed through the main interface bar.
+These tools are meant to be used during run time to debug the program running on \uarm{}.
+
+All the contents shown by viewers gets updated each time the execution is paused or when the emulation speed is limited to low (i.e. non maximum) values.
+In addition to these updates, the viewers' contents can also be updated programmatically by toggling the \emph{Enable constant refresh} setting (see Sec. \ref{sec:man:constantRefresh}).
+
 \asubsection{Registers Contents View}
+The main window shows the contents of all processor registers, along with the relevant coprocessor registers and some memory mapped system information, see Sections \ref{sec:man:processorRegisters}, \ref{sec:man:coprocessorRegisters} and \ref{sec:man:systemInformationRegisters} for further explanations of each register.
 
-\asubsection{Breakpoints}
+On top of the processor registers matrix is shown the Execution Pipeline and the assembly translation of the currently executing operation.
 
-\asubsection{Bus Inspector}
+This viewer gives some useful information about the current status of the machine, along with the first four arguments of each function call that the compiler usually stores in \register{a1}-\register{a4} registers.
+
+\asubsection{Breakpoints}\label{sec:man:breakpoints}
+The \emph{Breakpoint} button in the main bar shows the relative window.
+Through the breakpoint window the user can set any number of breakpoints by specifying the memory address that the machine will have to look for to pause execution.
+
+Each time the value of the \register{pc} register equals any of the set breapoints, and the \emph{Stop on Breakpoint} option is enabled, the execution is paused and all the matching breakpoints are highlighted.
+
+Breakpoints can be automatically set at the beginning of a function by selecting the function name from the top list and clicking the \emph{Add} button, or they can be set at any custom address by specifying the desired value by hand in the \emph{Address} field.
+Breakpoints can be individually disabled by toggling the checkbox near their identifier.
+
+\emph{ASID} field is used when virtual memory is enabled, in this case the breakpoints will trigger only if the desired virtual address is reached with the specific ASID set in \register{CPSR.R2.EntryHy}.\field{ASID}.
+
+\emph{Stop on TLB change} will enable automatic execution pause each time the content of the TLB (see Sec. \ref{sec:man:tlb}) changes.
+
+One common strategy for debugging with breakpoints is to add one or more debugging functions with empty bodies to be placed into the suspect function code and set breakpoints on the debugging functions to check the execution flow.
+A more complex approach, that requires a bit of ARM assembly understanding, is to decompile the target binary using the cross toolchain (an example command is shown below) and manually setting breakpoints at interesting points inside function body.
+
+\begin{lstlisting}
+arm-none-eabi-objdump -d kernel | less
+\end{lstlisting}
+
+\asubsection{Bus Inspector}\label{sec:man:busInspector}
+
+The \emph{Memory} menu gives access to the \emph{Bus Inspector} tool.
+The inspector permits to investigate the contents of the System Bus, beginning with Exception Vector, up to the actual RAM memory (see Sec. \ref{sec:man:reservedAddressSpace} and \ref{sec:man:memory}).
+
+To view the contents of a specific bus region, the bus area can be specified in two ways:
+\begin{itemize}
+	\item inserting start and end addresses, or
+	\item inserting start address and area size.
+\end{itemize}
+Both input methods require the beginning address of the bus region; to specify a size, the \emph{+} button must be enabled.
+Addresses and sizes must be inserted in hexadecimal format.
+
+Once the area has been selected, clicking the \emph{Display Portion} button will extend the inspector window showing the bus contents.
+The bus region maximum size allowed by the Bus Inspector is 10KB, if a larger area is requested, an alert message will inform the user that it is not possible to show a bus portion bigger than 10KB.
+
+A text field below the address bar is left for the user to note down a friendly name for the shown bus region.
+If the name and the region match the ones of a known object found in the symbol table, the address will be updated across machine resets (i.e. if the program is modified and built again between two runs and a global data structure changes its position in memory or size, the inspector will change the addresses accordingly).
+
+The last component of the Bus Inspector tool window is the bus area contents viewer: the memory addresses are displayed in the leftmost column, the central column shows the raw hexadecimal contents and on the right is shown the decompiled ARM code.\footnote{The Bus Inspector tries to decompile each memory word, without knowing if it is code or data, it is up to the programmer to decide if the decompiled assembly is meaningful or garbage.}
+
+Unlike the other debugging tools, the number of Bus Inspector windows is not limited to one.
+Given the nature of this tool, it can be useful for the programmer to keep multiple inspectors open to check different bus regions simultaneously.
 
 \asubsection{Structures Viewer}
 
+The second entry in \emph{Memory} menu is \emph{Structures Viewer}.
+This tool shows a list of all the global data structures\footnote{All global variables are present in the symbol table, thus not only variables of some \texttt{struct} type are listed, but all variables, including base type ones, that aren't local to some function.} present in the loaded symbol table along with their contents.
+
+Once the desired object has been chosen from the top table, its memory contents are shown in the lower section of the window in the same fashion as Bus Inspector (see Sec. \ref{sec:man:busInspector}).
+
+The \emph{Show in Bus Inspector} button opens a new Bus Inspector window preloaded with address, size and name of the active object, this way the Bus Inspector will keep the address and size updated across machine resets (see Sec. \ref{sec:man:busInspector}).
+
 \asubsection{TLB Viewer}
+
+The \emph{TLB} button in the main bar leads to the TLB Viewer tool window.
+This window shows the contents of the Translation Lookaside Buffer (see Sec. \ref{sec:man:tlb}).
+
+Each entry in the TLB is displayed in one row of the central table, split in two 32-bit words: EntryHi and EntryLo.
+The right panel shows the breakdown of both words into the composing fields as described in Section \ref{sec:man:pageTableEntry}.
+
+When the execution is paused, the contents of the TLB can be modified through the central table. 
+This feature can be useful to debug Paging Algorithms and TLB Exception Handlers.
+

@@ -7,9 +7,9 @@
 	\ttfamily
 	\begin{bytefield}[bitheight=1.6\baselineskip,bitwidth=12px,endianness=big]{32}
 		\bitheader{0,7,8,15,16,31}\\
-		\bitbox{16}{\color{gray}\rule{\width}{\height}}\bitbox{8}{\footnotesize Transmitted Char}\bitbox{8}{\footnotesize Transmit Status}\\
+		\bitbox{16}{\color{gray}\rule{\width}{\height}}\bitbox{8}{\footnotesize \field{TRANSD-CHAR}}\bitbox{8}{\footnotesize \field{TRANSM-STAT}}\\
 		\\
-		\bitbox{16}{\color{gray}\rule{\width}{\height}}\bitbox{8}{\footnotesize Received Char}\bitbox{8}{\footnotesize Receive Status}\\
+		\bitbox{16}{\color{gray}\rule{\width}{\height}}\bitbox{8}{\footnotesize \field{RECVD-CHAR}}\bitbox{8}{\footnotesize \field{RECV-STAT}}\\
 	\end{bytefield}\\
 \end{framed}
 \end{minipage}

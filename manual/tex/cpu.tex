@@ -49,9 +49,9 @@ Only the first 8 registers (\register{R0} $\rightarrow$ \register{R7}) are gener
 
 \spinput{Thumb_reg.tex}
 
-\asection{System Coprocessor}
+\asection{System Coprocessor}\label{sec:man:coprocessorRegisters}
 
-CP15 gives access to a total of three 64-bit and three 32-bit registers which provide additional information and functionalities to regular processor operations:
+CP15 gives access to a total of three 64-bit and four 32-bit registers which provide additional information and functionalities to regular processor operations:
 
 \asubsubsection{Register 0 (\register{IDC}) - ID Codes}
 \register{R0} is a read-only 64-bit register that contains system implementation information such as \emph{Processor ID} and \emph{TLB type}, as required by ARM specifications.
@@ -69,6 +69,9 @@ See sec. \ref{sec:manual:systemControlRegister} for further details.
 \register{R2} is a 64-bit register which contains the active Page Table Entry when MMU is enabled. Its structure is the same as the Page Table Entry described in sec. \ref{sec:man:virtualMemory}.
 
 The lower 32 bits of this register are addressed as \register{CP15.R2.EntryLow} or just \register{EntryLow} and the higher 32 bits are addressed as \register{CP15.R2.EntryHi} or simply \register{EntryHi}.
+
+\asubsubsection{Register 6 - Faulting Address}
+\register{R6} is a read-only register that is automatically loaded each time a Page Fault Exception is raised with the memory address that generated the exception.
 
 \asubsubsection{Register 8 - TLB Random}
 \register{R8} is a special read-only register used to index the TLB randomly (see sec. \ref{sec:man:tlb}).
@@ -93,7 +96,7 @@ Page Error & = \texttt{5}\\
 \end{tabular}
 
 \asubsubsection{Register 15 (\field{IPC}) - Interrupt Cause}
-\register{R15}.\field{IPC} shows on which lines interrupts are pending, when interrupts have been handled (i.e. the interrupt request has been acknowledged, see sec. \ref{sec:man:device}) the value of this register is updated.
+\register{R15}.\field{IPC} shows on which lines interrupts are pending, when interrupts have been handled (i.e. the interrupt request has been acknowledged, see Sec. \ref{sec:man:devices}) the value of this register is updated.
 
 \asection{Execution Control}
 
@@ -216,6 +219,7 @@ During the bootstrap process, six of the seven Exception Vector registers must b
 The BIOS code fills these registers with jump instruction opcodes pointing to its internal handler procedures.
 
 The BIOS exception handlers provide a safe and automatic way to enter kernel level handlers by storing the processor state as it was before the exception was raised and loading the kernel handler's processor state from a known memory location inside the Kernel Reserved Frame (see sec. \ref{sec:man:kernelReservedFrame}).
+While storing the processor state, all ROM Level Exception Handlers move the value of the \register{lr} register to the \register{pc} register, making easier the return to the regular execution.
 
 In addition to this general behavior, some handlers provide other functionalities as described below.
 
@@ -241,4 +245,7 @@ This behavior is necessary, because discerning the exception type from kernel le
 
 Both these exceptions are treated as generic exceptions and the BIOS handlers will adopt the default behavior, storing the old processor state into the Interrupt Old Area and then loading the processor state stored into the Interrupt New Area.
 
+\asubsection{Notes About Exception Handlers}
 
+When writing Exception Handlers code, it is well advised to pay attention to the Program Counter value stored in the Old Area.
+As described above, each exception leaves a different value in Link Return register and this value is automatically moved to \register{Old Area.pc} by the ROM Level Exception Handlers, so, for example, when handling an Interrupt, the \register{Old Area.pc} has to be decreased by 4 to point to the right return instruction.

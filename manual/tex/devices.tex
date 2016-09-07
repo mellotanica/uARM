@@ -371,13 +371,13 @@ The Read Pending status codes are only used when the network adapter is operatin
 		\hline
 		1 & ACK & Acknowledge a pending interrupt\\
 		\hline
-		2 & READCONF & Read configuration data into DATA0 \& DATA1\\
+		2 & READCONF & Read configuration data into \register{DATA0} \& \register{DATA1}\\
 		\hline
-		3 & READNET & Read the next packet from the adapter and copy it into RAM starting at the address in DATA0\\
+		3 & READNET & Read the next packet from the adapter and copy it into RAM starting at the address in \register{DATA0}\\
 		\hline
-		4 & WRITENET & Send a packet of data starting at the RAM address in DATA0, whose length is in DATA1\\
+		4 & WRITENET & Send a packet of data starting at the RAM address in \register{DATA0}, whose length is in \register{DATA1}\\
 		\hline
-		5 & CONFIG & Update adapter configuration data from values in DATA0 \& DATA1\\
+		5 & CONFIG & Update adapter configuration data from values in \register{DATA0} \& \register{DATA1}\\
 		\hline
 	\end{tabular}
 \end{center}
@@ -449,7 +449,7 @@ A printer’s device register \register{COMMAND} field is read/writable and is u
 		\hline
 		1 & ACK & Acknowledge a pending interrupt\\
 		\hline
-		2 & PRINTCHR & Transmit the character in DATA0 over the line\\
+		2 & PRINTCHR & Transmit the character in \register{DATA0} over the line\\
 		\hline
 	\end{tabular}
 \end{center}
@@ -476,13 +476,13 @@ To support the two-subdevices a terminal interface’s device register is redefi
 		Field \# & Address & Field Name\\
 		\hline
 		\hline
-		0 & (base) + 0x0 & RECV STATUS\\
+		0 & (base) + 0x0 & \register{RECV-STATUS}\\
 		\hline
-		1 & (base) + 0x4 & RECV COMMAND\\
+	1 & (base) + 0x4 & \register{RECV-COMMAND}\\
 		\hline
-		2 & (base) + 0x8 & TRANSM STATUS\\
+	2 & (base) + 0x8 & \register{TRANSM-STATUS}\\
 		\hline
-		3 & (base) + 0xc & TRANSM COMMAND\\
+	3 & (base) + 0xc & \register{TRANSM-COMMAND}\\
 		\hline
 	\end{tabular}
 \end{center}
@@ -496,7 +496,7 @@ The \field{Status} byte has the following meaning:
 \begin{center}
 	\begin{tabular}{|c|c|c|}
 		\hline
-		Code & RECV STATUS & TRANSM STATUS\\
+		Code & \field{RECV-STATUS} & \field{TRANSM-STATUS}\\
 		\hline
 		\hline
 		0 & Device Not Installed & Device not installed\\
@@ -527,8 +527,7 @@ A terminal’s \register{TRANSM\_COMMAND} and \register{RECV\_COMMAND} fields ar
 \begin{center}
 	\begin{tabular}{|c|c|c|>{\centering\arraybackslash}p{6cm}|}
 		\hline
-		& TRANSM & RECV & \\
-		Code & COMMAND & COMMAND & Operation \\
+		Code & \field{TRANSM-CMD} & \field{RECV-CMD} & Operation \\
 		\hline
 		\hline
 		0 & RESET & RESET & Reset the transmitter or receiver interface\\

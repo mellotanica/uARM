@@ -75,7 +75,7 @@ When the MMU is enabled the user process \field{ASID} is stored in the \register
 \asubsection{Page Table}\label{sec:man:pageTable}
 The \register{CP15.R2} register is organized as a Page Table Entry (PTE):
 
-\spinput{CP15.R2.tex}
+\spinput{CP15.R2.tex}\label{sec:man:pageTableEntry}
 
 The Hi half of each entry identifies the logical frame to which the entry refers and the \field{ASID} of the owning process.
 The Low half of each entry specifies the physical corresponding frame (if any) and contains 3 flags used for memory protection schemes:

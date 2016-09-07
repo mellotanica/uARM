@@ -6,10 +6,10 @@
 	\centering
 	\ttfamily
 	\begin{bytefield}[bitheight=1.6\baselineskip,bitwidth=12px,endianness=big]{32}
-		\bitheader{0,7,8,15,16,31}\\
-		\bitbox{16}{\color{gray}\rule{\width}{\height}}\bitbox{8}{\footnotesize Transmit Char}\bitbox{8}{\footnotesize Transmit Command}\\
+	\bitheader{0,7,8,15,16,31}\\
+	\bitbox{16}{\color{gray}\rule{\width}{\height}}\bitbox{8}{\footnotesize \field{TRANSM-CHAR}}\bitbox{8}{\footnotesize \field{TRANSM-CMD}}\\
 		\\
-		\bitbox{24}{\color{gray}\rule{\width}{\height}}\bitbox{8}{\footnotesize Receive Command}\\
+		\bitbox{24}{\color{gray}\rule{\width}{\height}}\bitbox{8}{\footnotesize \field{RECV-CMD}}\\
 	\end{bytefield}\\
 \end{framed}
 \end{minipage}
