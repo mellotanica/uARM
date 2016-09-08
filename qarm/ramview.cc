@@ -30,6 +30,7 @@
 #include "armProc/machine_config.h"
 
 ramView::ramView(machine *mac, QWidget *parent) :
+    offset(false),
     QWidget(parent)
 {
     initRamView(mac);
@@ -70,9 +71,7 @@ void ramView::initRamView(machine *mac){
     startEd->setMaxLength(8);
 
     endEd = new QLineEdit(this);
-    endEd->setAccessibleName("End Address");
-    endEd->setToolTip(endEd->accessibleName());
-    endEd->setAccessibleDescription("End address in hexadecimal format without leading 0x");
+    setSecondField(offset);
     endEd->setValidator(hexValidator);
     endEd->setMaxLength(8);
 
@@ -85,7 +84,7 @@ void ramView::initRamView(machine *mac){
 
     offsetButton = new QToolButton(this);
     offsetButton->setText("+");
-    offsetButton->setAccessibleName("Second limit is an offset");
+    offsetButton->setAccessibleName("Second field is size");
     offsetButton->setToolTip(offsetButton->accessibleName());
     offsetButton->setCheckable(true);
     offsetButton->setChecked(offset);
@@ -103,8 +102,21 @@ void ramView::initRamView(machine *mac){
     connect(visualizeB, SIGNAL(clicked()), this, SLOT(visualize()));
 }
 
+void ramView::setSecondField(bool val){
+    if(val){
+        endEd->setAccessibleName("Region Size");
+        endEd->setToolTip(endEd->accessibleName());
+        endEd->setAccessibleDescription("Bus region size in hexadecimal format without leading 0x");
+    } else {
+        endEd->setAccessibleName("End Address");
+        endEd->setToolTip(endEd->accessibleName());
+        endEd->setAccessibleDescription("End address in hexadecimal format without leading 0x");
+    }
+}
+
 void ramView::toggleOffset(bool val){
     offset = val;
+    setSecondField(val);
 }
 
 void ramView::newRamLabel(QWidget *parent){
