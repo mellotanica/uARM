@@ -131,8 +131,7 @@ OTHER_FILES += \
     configure \
     configure.ac \
     default/uarm \
-    elf2uarm.pro \
-    facilities/BIOS.rom.uarm \
+    facilities/BIOS \
     facilities/BIOS.s \
     facilities/bios_const.h \
     facilities/crti.o \
@@ -155,8 +154,8 @@ OTHER_FILES += \
     ldscript/elf32ltsarm.h.uarmaout.x \
     ldscript/elf32ltsarm.h.uarmcore.x \
     README.txt \
-    test/dataP_MOV_MVN_BIC.s \
-    test/helloWorld.c
+    test/helloWorld.c \
+    uarm.icns
 
 DISTFILES += \
     todo.txt
