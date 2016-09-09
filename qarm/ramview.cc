@@ -30,8 +30,8 @@
 #include "armProc/machine_config.h"
 
 ramView::ramView(machine *mac, QWidget *parent) :
-    offset(false),
-    QWidget(parent)
+    QWidget(parent),
+    offset(false)
 {
     initRamView(mac);
 }
