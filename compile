@@ -33,7 +33,7 @@ function compile(){
 			make clean > /dev/null 2>&1
 			make cleanall > /dev/null 2>&1
 		fi
-		make $*
+		make -j $*
 	popd > /dev/null
 	cp -R "$BD/$XN" .
 }
@@ -129,11 +129,12 @@ if $CONFIGURE; then
 fi
 
 if [[ "$SET" = *"u"* ]]; then
+	local uarm="uarm"
 	if [[ "$PLATFORM" == "Darwin" ]]; then
-		compile "uarm.app" "qarm.pro" $*
-	else
-		compile "uarm" "qarm.pro" $*
+		uarm="uarm.app"
 	fi
+
+	compile $uarm "qarm.pro" $*
 fi
 
 if [[ "$SET" = *"m"* ]]; then
