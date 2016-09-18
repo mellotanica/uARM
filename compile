@@ -2,13 +2,14 @@
 
 function usage(){
 	PNAME=$(basename $0)
-	echo -e "Usage\t$PNAME [-h] [-nc] [-ca] [target] -- [make options]"
+	echo -e "Usage\t$PNAME [-h] [-nc] [-ca] [-u] [target] -- [make options]"
 	echo
 	echo -e "\t$PNAME\t compiles all binaries"
+	echo -e "\t$PNAME -h\t shows this help"
 	echo -e "\t$PNAME target\t compiles desired target"
 	echo -e "\t$PNAME -nc\t avoid ./configure execution before compilation"
 	echo -e "\t$PNAME -ca\t run \`make cleanall\` before compiling each target (sometimes needed to fix compilation errors)"
-	echo -e "\t$PNAME -h\t shows this help"
+	echo -e "\t$PNAME -u\t compile universal binaries"
 	echo
 	echo -e "\tmake options are used by make when compiling each target"
 	echo 
@@ -33,7 +34,7 @@ function compile(){
 			make clean > /dev/null 2>&1
 			make cleanall > /dev/null 2>&1
 		fi
-		make -j $*
+		make $*
 	popd > /dev/null
 	cp -R "$BD/$XN" .
 }
@@ -41,6 +42,7 @@ function compile(){
 SET=""
 CONFIGURE=true
 CLEANALL=false
+UNIVERSAL=false
 
 if test $# -gt 0; then
 	SCAN=false
@@ -64,6 +66,9 @@ if test $# -gt 0; then
 				;;
 			"-ca")
 				CLEANALL=true
+				;;
+			"-u")
+				UNIVERSAL=true
 				;;
 			*)
 				echo "unknown target: $1"
@@ -121,7 +126,10 @@ elif [[ "$PLATFORM" == "Darwin" ]]; then
             brew install "$pkg"
         fi
     done
-    QMCOMP="$(brew --prefix qt5)/bin/qmake QMAKE_MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}')"
+    QMCOMP="$(brew --prefix qt5)/bin/qmake"
+    if ! $UNIVERSAL; then
+    	QMCOMP="$QMCOMP QMAKE_MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}')"
+    fi
 fi
 
 if $CONFIGURE; then
@@ -129,7 +137,7 @@ if $CONFIGURE; then
 fi
 
 if [[ "$SET" = *"u"* ]]; then
-	local uarm="uarm"
+	uarm="uarm"
 	if [[ "$PLATFORM" == "Darwin" ]]; then
 		uarm="uarm.app"
 	fi
