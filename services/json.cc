@@ -35,7 +35,7 @@
 
 #include "services/lang.h"
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 static const char* const jsonTypeName[] = {
@@ -397,7 +397,7 @@ JsonNode* JsonParser::ParseNode()
 
 JsonNode* JsonParser::ParseObject()
 {
-    auto_ptr<JsonObject> object(new JsonObject);
+    unique_ptr<JsonObject> object(new JsonObject);
     TokenType type;
 
     type = NextToken();
@@ -422,7 +422,7 @@ JsonNode* JsonParser::ParseObject()
 
 JsonNode* JsonParser::ParseArray()
 {
-    auto_ptr<JsonArray> array(new JsonArray);
+    unique_ptr<JsonArray> array(new JsonArray);
 
     TokenType type = LookAhead();
     if (type == TOKEN_ARRAY_END)

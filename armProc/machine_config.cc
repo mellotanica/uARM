@@ -70,7 +70,7 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
         return NULL;
     }
 
-    std::auto_ptr<JsonObject> root;
+    std::unique_ptr<JsonObject> root;
 
     try {
         JsonParser parser;
@@ -85,7 +85,7 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
         return NULL;
     }
 
-    std::auto_ptr<MachineConfig> config(new MachineConfig(fileName, app, widget));
+    std::unique_ptr<MachineConfig> config(new MachineConfig(fileName, app, widget));
 
     try {
         if (root->HasMember("clock-rate"))
@@ -146,7 +146,7 @@ MachineConfig* MachineConfig::LoadFromFile(const std::string& fileName, std::str
 
 MachineConfig* MachineConfig::Create(const std::string& fileName, const std::string& homedir, QApplication *app, qarm *widget)
 {
-    std::auto_ptr<MachineConfig> config(new MachineConfig(fileName, app, widget));
+    std::unique_ptr<MachineConfig> config(new MachineConfig(fileName, app, widget));
 
     // The constructor initializes all the basic fields to sane
     // initial values; in addition, we enable a terminal device for
