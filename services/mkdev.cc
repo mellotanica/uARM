@@ -128,7 +128,6 @@ HIDDEN void showHelp(const char * prgName)
 // Returns an EXIT_SUCCESS/FAILURE code
 HIDDEN int mkDisk(int argc, char * argv[])
 {
-	char * diskFile;
 	int i;
 	bool error = false;
 	int ret = EXIT_SUCCESS;
@@ -142,7 +141,6 @@ HIDDEN int mkDisk(int argc, char * argv[])
 	else
 	{
 		// start argument decoding
-		diskFile = argv[2];
 		if (argc == 3)
 			// all by default: build file image
 			ret = writeDisk(argv[0], argv[2]);
