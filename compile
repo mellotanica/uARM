@@ -96,7 +96,7 @@ if [[ "$PLATFORM" == "Linux" ]]; then
 
     if [ $QMAKERET -ne 127 ]; then
       VERSION=0
-      for v in `qtchooser -l`; do
+      for v in `qtchooser -list-versions`; do
         if [[ $v == 5* ]]; then
         VERSION=`echo $v`
         break
@@ -107,8 +107,6 @@ if [[ "$PLATFORM" == "Linux" ]]; then
         exit 1
       fi
       QMCOMP="qtchooser -run-tool=qmake -qt=$VERSION"
-      echo "compiler command: \"$QMCOMP $*\""
-      echo
     else
       echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
       exit 1
@@ -122,7 +120,6 @@ elif [[ "$PLATFORM" == "Darwin" ]]; then
         if brew list -1 | grep -q "^${pkg}\$"; then
             echo "Package '$pkg' is installed"
         else
-            echo "Package '$pkg' is not installed"
             brew install "$pkg"
         fi
     done
@@ -131,6 +128,8 @@ elif [[ "$PLATFORM" == "Darwin" ]]; then
     	QMCOMP="$QMCOMP QMAKE_MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}')"
     fi
 fi
+echo "Compiler command: \"$QMCOMP $*\""
+echo
 
 if $CONFIGURE; then
 	./configure
