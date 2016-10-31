@@ -1236,7 +1236,7 @@ void processor::branch(Word *rd, Word offset, bool link, bool exchange){
 		if(offset >> 24 != 0)
             for(unsigned i = 25; i < (sizeof(Word) * 8); i++)	//magic numbers, this operation is strictly based on 32bit words..
                 offset |= (1<<i);
-		*pc += (SWord) offset;
+	*pc += (SWord) offset;
     }
 }
 
@@ -1531,7 +1531,7 @@ void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest, b
     if((checkBit(op1, 31) == checkBit(sop2, 31))
       && (checkBit(op1, (31)) != checkBit(op1, (31))))
         overflow = true;
-	if(S){	// S == 1
+    if(S){	// S == 1
 		if(dest == getPC()){
 			Word *savedPSR = getVisibleRegister(REG_SPSR);
             if(savedPSR != NULL)
