@@ -101,8 +101,12 @@ if [ $QMAKERET -ne 127 ]; then
 	echo "compiler command: \"$QMCOMP $*\""
 	echo
 else
-	echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
-	exit 1
+	if test -n "$(which qmake-qt5)"; then
+		QMCOMP="qmake-qt5"
+	else
+		echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
+		exit 1
+	fi
 fi
 
 if $CONFIGURE; then
