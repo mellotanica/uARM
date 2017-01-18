@@ -108,8 +108,12 @@ if [[ "$PLATFORM" == "Linux" ]]; then
       fi
       QMCOMP="qtchooser -run-tool=qmake -qt=$VERSION"
     else
-      echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
-      exit 1
+      if test -n "$(which qmake-qt5)"; then
+	    	QMCOMP="qmake-qt5"
+    	else
+		    echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
+		    exit 1
+	    fi
     fi
 elif [[ "$PLATFORM" == "Darwin" ]]; then
     which -s brew
@@ -127,6 +131,7 @@ elif [[ "$PLATFORM" == "Darwin" ]]; then
     if ! $UNIVERSAL; then
     	QMCOMP="$QMCOMP QMAKE_MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}')"
     fi
+
 fi
 echo "Compiler command: \"$QMCOMP $*\""
 echo
