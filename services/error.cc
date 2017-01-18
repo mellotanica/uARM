@@ -27,7 +27,7 @@
 #include "qarm/qarm.h"
 #include <QObject>
 
-static bool alreadyPanicing = false;
+// static bool alreadyPanicing = false;
 
 void Panic(const char* message)
 {

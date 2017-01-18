@@ -30,18 +30,18 @@
 // This class implements the block devices' 512 byte sectors/tape blocks.
 // Each object contains a single buffer; methods are provided to read/write
 // these blocks from/to real files and to access to the word-sized contents.
-// This class is provided primarily to make DMA transfer easier and to 
-// standardize block handling. 
+// This class is provided primarily to make DMA transfer easier and to
+// standardize block handling.
 
 class Block
 {
 public:
-		
+
     // This method returns an empty (unitialized) 512 byte Block
     Block();
-		
+
     // Object deletion is done by default handler
-		
+
     // This method fills a Block with file contents starting at "offset"
     // bytes from file start, as computed by caller.
     // Returns TRUE if read does not succeed, FALSE otherwise
@@ -51,7 +51,7 @@ public:
     // bytes from file start, as computed by caller. Returns TRUE if
     // write does not succeed, FALSE otherwise
     bool WriteBlock(FILE * blkFile, SWord offset);
-		
+
     // This method returns the Word contained in the Block at ofs (Word
     // items) offset, range [0..BLOCKSIZE - 1]. Warning: in-bounds
     // checking is leaved to caller
@@ -61,7 +61,7 @@ public:
     // ofs (Word items) offset, range [0..BLOCKSIZE - 1]. Warning:
     // in-bounds checking is leaved to caller
     void setWord(unsigned int ofs, Word value);
-			
+
 private:
     // Block contents
     Word blkBuf[BLOCKSIZE];
@@ -74,7 +74,7 @@ private:
 // This class contains the simulated disk drive geometry and performance
 // parameters. They are filled by mkdev utility and used by DiskDevice class
 // for detailed disk performance simulation.
-// Position, min, max and default values, where applicable, are defined in 
+// Position, min, max and default values, where applicable, are defined in
 // h/blockdev.h header file.
 //
 // Parameters are:
@@ -88,25 +88,25 @@ private:
 class DriveParams
 {
 	public:
-		
+
 		// This method reads from disk parameters from file header, builds a
 		// DriveParams object, and returns the disk sectors start offset:
 		// this allows to modify the parameters' size without changing the
 		// caller.  If fileOfs returned is 0, something has gone wrong; file
 		// is rewound after use
 		DriveParams(FILE * diskFile, SWord * fileOfs);
-		
-		// Object deletion is done by default handler		
 
-		// These methods return the corresponding geometry or performance 
-		// figure 
+		// Object deletion is done by default handler
+
+		// These methods return the corresponding geometry or performance
+		// figure
 		unsigned int getCylNum(void);
 		unsigned int getHeadNum(void);
 		unsigned int getSectNum(void);
 		unsigned int getRotTime(void);
 		unsigned int getSeekTime(void);
 		unsigned int getDataSect(void);
-		
+
 		private:
 			// parameter buffer
 			unsigned int parms[DRIVEPNUM];

@@ -3,12 +3,12 @@
 
 
 	# remember that $sp has to be set by kernel too
-	
+
  	# useful constants
-	
-	# This is the standard __start function for generic program 
+
+	# This is the standard __start function for generic program
 	# activation: it loads r15 with starting address and
-	# at main() function return calls kernel TERMINATE service  
+	# at main() function return calls kernel TERMINATE service
 	# (a SYSCALL with r0 == TERMINATE)
 
 	.text
@@ -16,7 +16,7 @@
 	.extern main
 
 __start:
-	# $sp has to be set to correct value by kernel 
+	# $sp has to be set to correct value by kernel
 
 	SUB sp, sp, #16
 	STR fp, [sp], #12

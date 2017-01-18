@@ -109,12 +109,12 @@ SymbolTable::SymbolTable(Word asid, int numF, int numO)
 {
     if (ftSize > 0) {
         fTable = new Symbol* [ftSize];
-        for (int i = 0; i < ftSize; i++)
+        for (unsigned int i = 0; i < ftSize; i++)
             fTable[i] = NULL;
     }
     if (otSize > 0)  {
         oTable = new Symbol* [otSize];
-        for (int i = 0; i < otSize; i++)
+        for (unsigned int i = 0; i < otSize; i++)
             oTable[i] = NULL;
     }
     lastF = lastO = 0;
@@ -155,7 +155,7 @@ int SymbolTable::finalizeSymbolTable(int error){
         sortTable(fTable, ftSize);
 
         // backpatch FUN part of symbol table for gcc bug
-        for (int i = 0; i < ftSize - 1; i++)
+        for (unsigned int i = 0; i < ftSize - 1; i++)
             if (fTable[i]->getEnd() == fTable[i]->getStart())
                 // backpatch needed
                 fTable[i]->setSize(fTable[i+1]->getStart() - fTable[i]->getStart());
@@ -168,6 +168,7 @@ int SymbolTable::finalizeSymbolTable(int error){
         const Symbol* s = Get(i);
         map[s->getName()].push_back(s);
     }
+    return 0;
 }
 
 // This method builds a symbol table from .stab file fName produced by
@@ -213,7 +214,7 @@ SymbolTable::SymbolTable(Word asid, const char* fName)
     if (otSize > 0)  {
         oTable = new Symbol* [otSize];
         for (i = 0; i < otSize; i++)
-            oTable[i] = NULL; 
+            oTable[i] = NULL;
     }
 
     // scans symbol table file and builds objects
@@ -273,7 +274,7 @@ SymbolTable::SymbolTable(Word asid, const char* fName)
 SymbolTable::~SymbolTable()
 {
     unsigned int i;
-	
+
     if (fTable != NULL) {
         for (i = 0; i < ftSize; i++)
             delete fTable[i];
@@ -385,7 +386,7 @@ int SymbolTable::search(Symbol** table, unsigned int size, Word pos) const
 
     return found ? b : NOTFOUND;
 }
-		
+
 void SymbolTable::sortTable(Symbol** table, size_t size)
 {
     struct Compare {

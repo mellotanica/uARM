@@ -42,7 +42,7 @@ public:
     ramView(machine *mac, Word start, Word end, QString label, bool offset = false, QWidget *parent = 0);
 
 signals:
-    
+
 
 public slots:
     void visualize();

@@ -35,7 +35,7 @@
 
 #include "services/lang.h"
 
-using std::auto_ptr;
+using std::unique_ptr;
 using std::string;
 
 static const char* const jsonTypeName[] = {
@@ -323,6 +323,7 @@ JsonString::JsonString(const string& value)
 
 void JsonString::Serialize(string& result, bool indent, unsigned int indentWidth, unsigned int level)
 {
+    (void)indent, (void)indentWidth, (void)level;
     result.append('"' + Value() + '"');
 }
 
@@ -333,6 +334,7 @@ JsonNumber::JsonNumber(int value)
 
 void JsonNumber::Serialize(string& result, bool indent, unsigned int indentWidth, unsigned int level)
 {
+    (void)indent, (void)indentWidth, (void)level;
     std::stringstream stream;
     stream << Value();
     string temp;
@@ -347,6 +349,7 @@ JsonBool::JsonBool(bool value)
 
 void JsonBool::Serialize(string& result, bool indent, unsigned int indentWidth, unsigned int level)
 {
+    (void)indent, (void)indentWidth, (void)level;
     result.append(Value() ? "true" : "false");
 }
 
@@ -356,6 +359,7 @@ JsonNull::JsonNull()
 
 void JsonNull::Serialize(string& result, bool indent, unsigned int indentWidth, unsigned int level)
 {
+    (void)indent, (void)indentWidth, (void)level;
     result.append("null");
 }
 
@@ -393,7 +397,7 @@ JsonNode* JsonParser::ParseNode()
 
 JsonNode* JsonParser::ParseObject()
 {
-    auto_ptr<JsonObject> object(new JsonObject);
+    unique_ptr<JsonObject> object(new JsonObject);
     TokenType type;
 
     type = NextToken();
@@ -418,7 +422,7 @@ JsonNode* JsonParser::ParseObject()
 
 JsonNode* JsonParser::ParseArray()
 {
-    auto_ptr<JsonArray> array(new JsonArray);
+    unique_ptr<JsonArray> array(new JsonArray);
 
     TokenType type = LookAhead();
     if (type == TOKEN_ARRAY_END)
@@ -507,7 +511,7 @@ void JsonParser::SkipWhitespace()
 JsonParser::TokenType JsonParser::ReadString()
 {
     ++input;
-    
+
     while (input != eos) {
         if (*input == '"') {
             ++input;

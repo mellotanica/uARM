@@ -554,7 +554,7 @@ TLB_LOOP:
     LDMIA r1!, {r5, r6}
     CMP r1, r2
     Bgt TLB_LOOP_EXIT
-    
+
     AND r7, r5, r8
     CMP r7, r3
     Bne TLB_LOOP    /* wrong vaddr */

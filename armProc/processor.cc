@@ -103,7 +103,7 @@ Word *processor::getVisibleRegister(Byte num){
 		return &cpu_registers[REG_PC];
 	if(num <= 7)	//common to all modes
 		return &cpu_registers[num];
-	
+
 	ProcessorMode mode = getMode();
 	if(mode != MODE_FAST_INTERRUPT && num < 13) //only fiq has special registers r7-r12
 		return &cpu_registers[num];
@@ -688,7 +688,7 @@ void processor::execTrap(ExceptionMode exception){
         case EXC_IRQ:   // !! check return address
 			if(cpu_registers[REG_CPSR] & T_MASK)	//thumb state
                 cpu_registers[REG_LR_IRQ] = *getPC() + (branchHappened() ? 6 : 2);  //EDIT: check this!!
-			else 									//ARM state                    
+			else 									//ARM state
                 cpu_registers[REG_LR_IRQ] = *getPC() + (branchHappened() ? 4 : 0);
 			spsr = REG_SPSR_IRQ;
 			break;
@@ -700,12 +700,12 @@ void processor::execTrap(ExceptionMode exception){
 			spsr = REG_SPSR_FIQ;
 			break;
 	}
-	
+
 	Word *cpsr = getVisibleRegister(REG_CPSR);
 	if(exception != EXC_RESET)
 		cpu_registers[spsr] = *cpsr;	//spsr contains old cpsr
 	*cpsr &= 0xFFFFFFE0;
-	
+
     resetBitReg(cpsr, T_POS);	//execute in arm state
     setBitReg(cpsr, I_POS);	//disable normal interrupts
     setBitReg(cpsr, F_POS); //disable fast interrupts
@@ -734,7 +734,7 @@ void processor::execTrap(ExceptionMode exception){
 			*cpsr |= MODE_FAST_INTERRUPT;
 			break;
 	}
-	
+
     *getPC() = exception;
     old_pc = 0xFFFFFFFF;
 
@@ -773,7 +773,7 @@ void processor::execute(){
 
 	Byte codeHi;
 	Byte codeLow;
-	
+
 	if(cpu_registers[REG_CPSR] & T_MASK){	// processor in Thumb state
         HalfWord instr;
 		if(*getPC() & 2){	//read second halfword
@@ -799,7 +799,7 @@ void processor::execute(){
  * Istructions implementations *
  * 							   *
  * *************************** */
- 
+
 void processor::coprocessorOperation(){
     coprocessor *cp = coproc; //cpint->getCoprocessor((pipeline[PIPELINE_EXECUTE] >> 8) & 0xF);
 	if(cp == NULL){	//no coprocessor can take this command: undefined trap!
@@ -929,7 +929,7 @@ void processor::coprocessorTransfer(bool memAcc, bool toCoproc){
             Word rec;
             if(cp->registerTransfer(&rec, opcode, rm, rn, info, toCoproc))
                 dataAbortTrap();
-		
+
 			if(rd == getPC()){
                 copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, &rec);
                 copyBitFromReg(&cpu_registers[REG_CPSR], Z_POS, &rec);
@@ -960,19 +960,19 @@ void processor::multiply(Word *rd, Word *rm, Word *rs, Word *rn , bool accumulat
 		Word *destHi, *destLo;
         destLo = rn;
         destHi = rd;
-		
+
 		if(	getPC() == rm || getPC() == rs || getPC() == destHi || getPC() == destLo ||	// r15 can't be used
 			rm == destHi || rm == destLo || destHi == destLo){	//destination registers and rm must be all different registers
 			unpredictable();
 			return;
 		}
-		
+
 		if(U){
 			DoubleWord result = (DoubleWord)*rm * (DoubleWord)*rs;
 			if(accumulate){
 				DoubleWord accumulator = (DoubleWord)*destLo + ((DoubleWord)*destHi << (sizeof(Word) * 8));
 				result += accumulator;
-			
+
 			}
 			*destLo = result & 0xFFFFFFFF;
 			*destHi = (result >> (sizeof(Word)*8)) & 0xFFFFFFFF;
@@ -986,7 +986,7 @@ void processor::multiply(Word *rd, Word *rm, Word *rs, Word *rn , bool accumulat
 			*destLo = result & 0xFFFFFFFF;
 			*destHi = (result >> (sizeof(Word)*8)) & 0xFFFFFFFF;
 		}
-		
+
 		if(S){
             copyBitFromReg(&cpu_registers[REG_CPSR], N_POS, destHi, 31);
             copyBitReg(&cpu_registers[REG_CPSR], Z_POS, ((*destHi == 0 && *destLo == 0) ? 1 : 0));
@@ -1012,16 +1012,16 @@ void processor::singleDataSwap(){
 	Word *src = getVisibleRegister(pipeline[PIPELINE_EXECUTE] & 0xF);
 	Word *dest = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 12) & 0xF);
 	Word *base = getVisibleRegister((pipeline[PIPELINE_EXECUTE] >> 16) & 0xF);
-	
+
 	if(src == getPC() || dest == getPC() || base == getPC()){
 		unpredictable();
 		return;
 	}
-	
+
     bool B = checkBit(pipeline[PIPELINE_EXECUTE], 22);	// swap byte/word
-	
+
 	Word tmpRead;
-	
+
 	bus->getRam()->lockMem();
 	loadStore(true, false, true, B, false, &tmpRead, base, 0);
 	loadStore(false, false, true, B, false, src, base, 0);
@@ -1056,7 +1056,7 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
     Word writeBackAddr = *rn + ((U ? 1 : -1) * 4 * regn);
 
     //first address points always to lower most stored register
-    Word *preg, paddr, address = *rn + ((U ? 1 : -1) * (P ? 4 : 0)) - (U ? 0 : ((regn - 1) * 4));
+    Word paddr, address = *rn + ((U ? 1 : -1) * (P ? 4 : 0)) - (U ? 0 : ((regn - 1) * 4));
 	if(load){		//LDM
 		if(S){	//user bank transfer / mode change
 			if(getMode() == MODE_USER){	// S bit should be set only in privileged mode
@@ -1128,13 +1128,13 @@ void processor::blockDataTransfer(Word *rn, HalfWord list, bool load, bool P, bo
 				if(list & (1<<i)){		// if register i is marked store it
                     if(!firstChecked){	// if first register to be stored is base address register
                         firstChecked = true;
-                        if(preg == NULL || mapVirtual(address, &paddr, WRITE) ||
+                        if(mapVirtual(address, &paddr, WRITE) ||
                                 !checkAbort(bus->writeW(&paddr, *getVisibleRegister(i), true))){   // store the initial value before writing back return address
                             dataAbortTrap();
                             return;
                         }
                     } else{
-                        if(preg == NULL || mapVirtual(address, &paddr, WRITE) ||
+                        if(mapVirtual(address, &paddr, WRITE) ||
                                 !checkAbort(bus->writeW(&paddr, *getVisibleRegister(i), true))){
                             dataAbortTrap();
                             return;
@@ -1236,7 +1236,7 @@ void processor::branch(Word *rd, Word offset, bool link, bool exchange){
 		if(offset >> 24 != 0)
             for(unsigned i = 25; i < (sizeof(Word) * 8); i++)	//magic numbers, this operation is strictly based on 32bit words..
                 offset |= (1<<i);
-		*pc += (SWord) offset;
+	*pc += (SWord) offset;
     }
 }
 
@@ -1260,19 +1260,19 @@ void processor::halfwordDataTransfer(Word *rd, Word *rn, Word *rm, Word offs, bo
     Word offset;
     if(rn == getVisibleRegister(REG_PC))	//if source is r15 the address must be instruction addr+12
 		address += 12;
-	
+
 	if(I)	//immediate offset
         offset = offs;
 	else
         offset = *rm;
-	
+
 	if(P){	//preindexing
 		if(U)
 			address += offset;
 		else
 			address -= offset;
 	}
-	
+
 	if(!(sign && !load_halfwd) && ((address & 1) > 0)) {	//if address is not halfword aligned return unpredictable value
         *rd = bus->get_unpredictable();
 	} else {	//address is ok
@@ -1320,7 +1320,7 @@ void processor::halfwordDataTransfer(Word *rd, Word *rn, Word *rm, Word offs, bo
 			}
 		}
     }
-	
+
 	if(P) {	//preindexing
 		if(W)	//Writeback
             *rn = address;
@@ -1346,7 +1346,7 @@ void processor::singleMemoryAccess(bool L){
     U = checkBit(pipeline[PIPELINE_EXECUTE], 23);
     B = checkBit(pipeline[PIPELINE_EXECUTE], 22);
     W = checkBit(pipeline[PIPELINE_EXECUTE], 21);
-	
+
 	loadStore(L, P, U, B, W, srcDst, base, offset);
 }
 
@@ -1355,7 +1355,7 @@ void processor::loadStore(bool L, bool P, bool U, bool B, bool W, Word* srcDst, 
     Word paddr, address = *base;
 	if(P){	//pre-indexing
 		address += ((U ? 1 : -1) * offset);
-			
+
 		if(B){
             if(L){
                 Byte read;
@@ -1531,7 +1531,7 @@ void processor::dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest, b
     if((checkBit(op1, 31) == checkBit(sop2, 31))
       && (checkBit(op1, (31)) != checkBit(op1, (31))))
         overflow = true;
-	if(S){	// S == 1
+    if(S){	// S == 1
 		if(dest == getPC()){
 			Word *savedPSR = getVisibleRegister(REG_SPSR);
             if(savedPSR != NULL)

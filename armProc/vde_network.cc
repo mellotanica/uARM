@@ -80,7 +80,7 @@ public:
 private:
     char *content;
     int len;
-    struct netblock *next;
+    class netblock *next;
 };
 
 class netblockq {
@@ -118,7 +118,7 @@ unsigned int testnetinterface(const char *name)
 }
 
 netinterface::netinterface(const char *name, const char *addr, int intnum)
-{ 
+{
 	char name2[1024];
 	int size;
 
@@ -180,14 +180,14 @@ unsigned int netinterface::writedata(char *buf, int len)
 
 unsigned int netinterface::polling()
 {
-	int len, fd;
+	int len;
 	//socklen_t datainsize;
 	//struct sockaddr_un datain;
 	do {
 		if ((poll(&polldata,1,0)) < 0) {
 			sprintf(strbuf,"poll: %s",strerror(errno));
 			Panic(strbuf);
-		} else 
+		} else
 			if (polldata.revents & POLLIN) {
 				/* We don't store sender address to avoid EINVAL in recvfrom */
 				len=vdepluglib.vde_recv(vdeconn,packbuf,MAXPACKETLEN,0);
@@ -204,10 +204,10 @@ unsigned int netinterface::polling()
 
 void netinterface::setaddr(char *iethaddr)
 {
-	register int i;
-	for (i=0;i<6;i++) 
+	int i;
+	for (i=0;i<6;i++)
 		ethaddr[i]=iethaddr[i];
-		
+
 //	for (int i = 0; i < 6; i++)
 //		printf("%x:",ethaddr[i]);
 //	printf("\n");
@@ -215,7 +215,7 @@ void netinterface::setaddr(char *iethaddr)
 
 void netinterface::getaddr(char *pethaddr)
 {
-	register int i;
+	int i;
 	for (i=0;i<6;i++)
 		pethaddr[i]=ethaddr[i];
 }
@@ -237,7 +237,7 @@ netblock::netblock(const char *icontent,int ilen)
 	if (ilen>0) {
 		content=new char [ilen];
 		memcpy(content,icontent,ilen);
-	} else 
+	} else
 		content=NULL;
 	len=ilen;
 }
@@ -278,7 +278,7 @@ netblockq::netblockq(int imaxelem)
 
 netblockq::~netblockq()
 {
-	class netblock *next;	
+	class netblock *next;
 	while (head != NULL)
 	{
 		next=head->getNext();
@@ -293,12 +293,12 @@ int netblockq::enqueue(const char *content,int len)
 		return 0;
 	else
 	{
-		class netblock *oldtail=tail;	
+		class netblock *oldtail=tail;
 		tail=new netblock(content,len);
 		if (oldtail!=NULL)
 			oldtail->setNext(tail);
 		tail->setNext(NULL);
-		if (head==NULL) 
+		if (head==NULL)
 			head=tail;
 		nelem++;
 		return 1;
@@ -314,7 +314,7 @@ int netblockq::dequeue(char *pcontent, int len)
 {
 	if (head==NULL)
 		return 0;
-	else 
+	else
 	{
 		class netblock *oldhead=head;
 		int packlen;

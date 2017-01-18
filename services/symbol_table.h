@@ -30,6 +30,7 @@
 
 #include "facilities/arch.h"
 #include "armProc/types.h"
+#include "services/utility.h"
 
 // A symbol table entry. It represents a "named" address range,
 // associated to the ASID of the containing symbol table.

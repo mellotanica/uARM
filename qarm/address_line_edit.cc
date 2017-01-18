@@ -93,6 +93,7 @@ public:
 
 QValidator::State AsidValidator::validate(QString& input, int& pos) const
 {
+    (void)pos;
     input.replace(' ', '0');
     QString temp = input;
     bool ok;

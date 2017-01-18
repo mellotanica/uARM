@@ -341,7 +341,7 @@ void qarm::selectBios(){
 
 bool qarm::openRAM(){
     const char *coreF = MC_Holder::getInstance()->getConfig()->getROM(ROM_TYPE_CORE).c_str();
-    if(coreF != ""){
+    if(strcmp(coreF, "") != 0){
         coreElf *elf;
         if(MC_Holder::getInstance()->getConfig()->getExternalStab()){
             elf = new coreElf(coreF, MC_Holder::getInstance()->getConfig()->getSymbolTableASID(),
@@ -388,7 +388,7 @@ bool qarm::openRAM(){
 
 bool qarm::openBIOS(){
     const char *bfile = MC_Holder::getInstance()->getConfig()->getROM(ROM_TYPE_BIOS).c_str();
-    if(bfile != ""){
+    if(strcmp(bfile, "") != 0){
         biosElf *elf = new biosElf(bfile);
         Word address, size;
         if(!elf->allRight()){

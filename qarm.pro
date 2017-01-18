@@ -2,7 +2,7 @@ QT += core gui widgets
 
 TARGET = uarm
 
-QMAKE_CXXFLAGS += -std=c++11
+CONFIG += c++11 silent
 QMAKE_LIBS += -ldl
 QMAKE_LIBS += -lelf
 CONFIG += qt debug
@@ -131,8 +131,7 @@ OTHER_FILES += \
     configure \
     configure.ac \
     default/uarm \
-    elf2uarm.pro \
-    facilities/BIOS.rom.uarm \
+    facilities/BIOS \
     facilities/BIOS.s \
     facilities/bios_const.h \
     facilities/crti.o \
@@ -155,14 +154,17 @@ OTHER_FILES += \
     ldscript/elf32ltsarm.h.uarmaout.x \
     ldscript/elf32ltsarm.h.uarmcore.x \
     README.txt \
-    test/dataP_MOV_MVN_BIC.s \
-    test/helloWorld.c
+    test/helloWorld.c \
+    uarm.icns
 
 DISTFILES += \
     todo.txt
 
-#OS X specific
-macx:INCLUDEPATH += -I /usr/local/include
-macx:LIBS += -L /usr/local/lib
-macx:HEADERS += services/fmemopen.h
-macx:SOURCES += services/fmemopen.c
+macx {
+    INCLUDEPATH += /usr/local/include
+    LIBS += -L/usr/local/lib
+    HEADERS += services/fmemopen.h
+    SOURCES += services/fmemopen.c
+    ICON = uarm.icns
+    DEFINES += MACOS_BUILD
+}

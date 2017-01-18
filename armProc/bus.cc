@@ -297,7 +297,7 @@ bool systemBus::fetch(Word pc, bool armMode, bool isVirtual){
 
 
 Word systemBus::get_unpredictable(){
-    Word ret;
+    Word ret = 0;
     for(unsigned i = 0; i < sizeof(Word) * 8; i++)
         ret |= (rand() % 1 ? 1 : 0) << i;
     return ret;
@@ -478,7 +478,7 @@ bool systemBus::readRomB(Word *address, Byte *dest){
     if(addr < DEVTOP && addr >= DEVBASEADDR){   //read device register
         DeviceAreaAddress da(addr);
         Device* device = devTable[da.line()][da.device()];
-        *dest = (Byte) ((device->ReadDevReg(da.field())) >> ((*address % 4) * 8)) & 0xFF;   
+        *dest = (Byte) ((device->ReadDevReg(da.field())) >> ((*address % 4) * 8)) & 0xFF;
     } else {
         if(!getRomVector(address, &romptr))
             return false;

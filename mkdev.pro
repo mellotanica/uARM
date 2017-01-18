@@ -1,4 +1,4 @@
-QMAKE_CXXFLAGS += -std=c++11
+CONFIG += c++11 silent
 QMAKE_LIBS += -lelf
 TARGET = uarm-mkdev
 
@@ -9,8 +9,16 @@ HEADERS += \
     armProc/blockdev_params.h \
     armProc/const.h \
     armProc/types.h \
+    armProc/aout.h \
     services/elf2arm.h
 
 SOURCES += \
     services/mkdev.cc \
     services/elf2arm.cc
+
+macx {
+    INCLUDEPATH += /usr/local/include
+    LIBS += -L/usr/local/lib
+    CONFIG -= app_bundle
+    DEFINES += MACOS_BUILD
+}

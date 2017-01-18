@@ -44,9 +44,9 @@ using namespace std;
 /*
  * comment/uncomment lines to disable/enable coprocessors
  * coprocessor lines other than 4,5,6,7,14 and 15 are reserved
- * 
+ *
  * each coprocessor must be a an object of the class cpN where N is the coprocessor line number
- * cpN class must be and implementation of coprocessor interface 
+ * cpN class must be and implementation of coprocessor interface
  * (with explicit fetch() decode() and execute() implementations)
  */
 #define COPROCESSOR_CP15 15

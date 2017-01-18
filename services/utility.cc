@@ -80,16 +80,16 @@ bool UnsSub(Word *dest, Word s1, Word s2)
 // This function adds the _signed_ quantities a1 and a2, puts result into
 // dest (casting it to unsigned), and returns TRUE if a overflow occurred,
 // FALSE otherwise
-bool SignAdd(Word *dest, SWord a1, SWord a2) 
+bool SignAdd(Word *dest, SWord a1, SWord a2)
 {
     *dest = (Word) (a1 + a2);
     return (SIGNBIT(a1) == SIGNBIT(a2) && SIGNBIT(*dest) != SIGNBIT(a1));
 }
 
 // This function subtracts the _signed_ quantity s2 from s1, puts result
-// into dest (casting it to unsigned), and returns TRUE if a underflow 
+// into dest (casting it to unsigned), and returns TRUE if a underflow
 // occurred, FALSE otherwise
-bool SignSub(Word *dest, SWord s1, SWord s2) 
+bool SignSub(Word *dest, SWord s1, SWord s2)
 {
     *dest = (Word) (s1 - s2);
     return (SIGNBIT(s1) != SIGNBIT(s2) && SIGNBIT(*dest) != SIGNBIT(s1));
@@ -99,7 +99,7 @@ bool SignSub(Word *dest, SWord s1, SWord s2)
 // returning back the high and low part of the unsigned 64 bit result via
 // hip and lop pointers
 // Algorithm used is "classical":
-// given the 32 bit quantities AB and CD, divided into high and low 16 bit 
+// given the 32 bit quantities AB and CD, divided into high and low 16 bit
 // parts A, B, C and D
 //
 //              AB x
@@ -111,21 +111,21 @@ bool SignSub(Word *dest, SWord s1, SWord s2)
 //
 // where AD, BD etc. are the 32 bit results of the multiplication of A by D,
 // etc., and X.Y means (X << 16) + Y to allow the addition of the intermediate
-// results. 
+// results.
 // This chunk of code (C) J. Larus (SPIM, 1990) (with minor modifications)
 void UnsMult(Word m1, Word m2, Word * hip, Word * lop)
 {
 	Word a, b, c, d, x, y;
-	
+
 	a = (m1 & ~(IMMMASK)) >> HWORDLEN;
 	b = (m1 & IMMMASK);
 	c = (m2 & ~(IMMMASK)) >> HWORDLEN;
 	d = (m2 & IMMMASK);
-	
+
 	*lop = b * d;
 	x = (a * d) + (b * c);
 	y = (((*lop) >> HWORDLEN) & IMMMASK) + x;
-	
+
 	*lop = ((*lop) & IMMMASK) | ((y & IMMMASK) << HWORDLEN);
 	*hip = ((y >> HWORDLEN) & IMMMASK) + (a * c);
 }
@@ -151,23 +151,23 @@ void SignMult(SWord m1, SWord m2, SWord * hip, SWord * lop)
 		negResult = !negResult;
 		m2 = - m2;
 	}
-	
+
 	UnsMult((Word) m1, (Word) m2, (Word *) hip, (Word *) lop);
-	
+
 	if (negResult)
 	{
 		// must 2-complement result (and keep count of *lop -> *hip carry)
-		
+
 		// 1-complement
 		*hip = ~(*hip);
 		*lop = ~(*lop);
-		
+
 		// add 1 to lower word to get 2-complement and check for carry
 		if (UnsAdd((Word *) lop, (Word) (*lop), 1UL))
 			// overflow occurred: carry out to hip
 			(*hip)++;
 	}
-} 
+}
 
 
 // This function prints a variable list of arguments to the standard
@@ -175,11 +175,11 @@ void SignMult(SWord m1, SWord m2, SWord * hip, SWord * lop)
 void trace(char *format, ...)
 {
 	va_list args;
-	
+
 	va_start(args, format);
 	vfprintf(stderr, format, args);
 	va_end(args);
-	
+
 	getchar();
 }
 
@@ -191,8 +191,8 @@ bool StrToWord(const char * str, Word * value)
 	bool valid = true;
 
 	// tries to convert the string into a unsigned long
-	*value = strtoul(str, &endp, 0); 
-	
+	*value = strtoul(str, &endp, 0);
+
 	if (endp != NULL)
 	{
 		// there may be some garbage

@@ -25,7 +25,11 @@
 #define DEFAULT_CONFIG_FILE "machine.uarm.cfg"
 #define DEFAULT_CONFIG_PATH "uarm"
 
+#ifdef MACOS_BUILD
+#define LIB_PATH "/usr/local/lib/uarm/"
+#else
 #define LIB_PATH "/usr/lib/uarm/"
+#endif
 
 #define PIPECOLS    6
 #define CPUCOLS     8

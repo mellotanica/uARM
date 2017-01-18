@@ -67,9 +67,10 @@ if [ "$ICONSONLY" == "false" ]; then
 		cp uarm "$BIND"
 	else
 		cp -r uarm.app /applications
+		cp uarm.app/Contents/MacOS/uarm "$BIND"
 	fi
 	cp uarm-mkdev "$BIND"
-	
+
 	for d in default/*; do
 		f=`basename "$d"`
 		if test -f "$DEFAULTD/$f"; then

@@ -37,7 +37,7 @@ int SymbolTableModel::rowCount(const QModelIndex& parent) const
 {
     if (!parent.isValid())
         return table->Size();
-    else 
+    else
         return 0;
 }
 
@@ -90,11 +90,13 @@ QVariant SymbolTableModel::data(const QModelIndex& index, int role) const
 
 QVariant EmptySymbolTableModel::data(const QModelIndex &index, int role) const
 {
+    (void)index, (void)role;
     return QVariant();
 }
 
 int EmptySymbolTableModel::rowCount(const QModelIndex& parent) const
 {
+    (void)parent;
     return 0;
 }
 
@@ -126,5 +128,6 @@ QVariant SortFilterSymbolTableModel::headerData(int section,
 bool SortFilterSymbolTableModel::filterAcceptsRow(int sourceRow,
                                                   const QModelIndex& sourceParent) const
 {
+    (void)sourceParent;
     return table->Get(sourceRow)->getType() == tableType;
 }

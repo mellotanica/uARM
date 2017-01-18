@@ -2,13 +2,14 @@
 
 function usage(){
 	PNAME=$(basename $0)
-	echo -e "Usage\t$PNAME [-h] [-nc] [-nc] [target] -- [make options]"
+	echo -e "Usage\t$PNAME [-h] [-nc] [-ca] [-u] [target] -- [make options]"
 	echo
 	echo -e "\t$PNAME\t compiles all binaries"
+	echo -e "\t$PNAME -h\t shows this help"
 	echo -e "\t$PNAME target\t compiles desired target"
 	echo -e "\t$PNAME -nc\t avoid ./configure execution before compilation"
 	echo -e "\t$PNAME -ca\t run \`make cleanall\` before compiling each target (sometimes needed to fix compilation errors)"
-	echo -e "\t$PNAME -h\t shows this help"
+	echo -e "\t$PNAME -u\t compile universal binaries"
 	echo
 	echo -e "\tmake options are used by make when compiling each target"
 	echo 
@@ -35,12 +36,13 @@ function compile(){
 		fi
 		make $*
 	popd > /dev/null
-	cp "$BD/$XN" .
+	cp -R "$BD/$XN" .
 }
 
 SET=""
 CONFIGURE=true
 CLEANALL=false
+UNIVERSAL=false
 
 if test $# -gt 0; then
 	SCAN=false
@@ -65,6 +67,9 @@ if test $# -gt 0; then
 			"-ca")
 				CLEANALL=true
 				;;
+			"-u")
+				UNIVERSAL=true
+				;;
 			*)
 				echo "unknown target: $1"
 				usage
@@ -82,39 +87,66 @@ if test -z "$SET"; then
 	SET="u:m:e"
 fi
 
-qtchooser >> /dev/null 2> /dev/null
-QMAKERET=`echo $?`
+QMCOMP="qmake"
+PLATFORM=`uname -s`
 
-if [ $QMAKERET -ne 127 ]; then
-	VERSION=0
-	for v in `qtchooser -l`; do
-		if [[ $v == 5* ]]; then
-			VERSION=`echo $v`
-			break
-		fi
-	done
-	if [ "$VERSION" == 0 ]; then
-		echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
-		exit 1
-	fi
-	QMCOMP="qtchooser -run-tool=qmake -qt=$VERSION"
-	echo "compiler command: \"$QMCOMP $*\""
-	echo
-else
-	if test -n "$(which qmake-qt5)"; then
-		QMCOMP="qmake-qt5"
-	else
-		echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
-		exit 1
-	fi
+if [[ "$PLATFORM" == "Linux" ]]; then
+    qtchooser >> /dev/null 2> /dev/null
+    QMAKERET=`echo $?`
+
+    if [ $QMAKERET -ne 127 ]; then
+      VERSION=0
+      for v in `qtchooser -list-versions`; do
+        if [[ $v == 5* ]]; then
+        VERSION=`echo $v`
+        break
+        fi
+      done
+      if [ "$VERSION" == 0 ]; then
+        echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
+        exit 1
+      fi
+      QMCOMP="qtchooser -run-tool=qmake -qt=$VERSION"
+    else
+      if test -n "$(which qmake-qt5)"; then
+	    	QMCOMP="qmake-qt5"
+    	else
+		    echo "!!!!!!!! it seems you don't have qt5 installed, aborting compilation !!!!!!!!"
+		    exit 1
+	    fi
+    fi
+elif [[ "$PLATFORM" == "Darwin" ]]; then
+    which -s brew
+    if [[ $? != 0 ]] ; then
+        /usr/bin/ruby -e "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/master/install)"
+    fi
+    for pkg in qt5 libelf boost; do
+        if brew list -1 | grep -q "^${pkg}\$"; then
+            echo "Package '$pkg' is installed"
+        else
+            brew install "$pkg"
+        fi
+    done
+    QMCOMP="$(brew --prefix qt5)/bin/qmake"
+    if ! $UNIVERSAL; then
+    	QMCOMP="$QMCOMP QMAKE_MACOSX_DEPLOYMENT_TARGET=$(sw_vers -productVersion | awk -F '.' '{print $1 "." $2}')"
+    fi
+
 fi
+echo "Compiler command: \"$QMCOMP $*\""
+echo
 
 if $CONFIGURE; then
 	./configure
 fi
 
 if [[ "$SET" = *"u"* ]]; then
-	compile "uarm" "qarm.pro" $*
+	uarm="uarm"
+	if [[ "$PLATFORM" == "Darwin" ]]; then
+		uarm="uarm.app"
+	fi
+
+	compile $uarm "qarm.pro" $*
 fi
 
 if [[ "$SET" = *"m"* ]]; then

@@ -65,7 +65,7 @@ public:
     ~processor();
 
     void reset();
-	
+
     Word *getPC() {return &cpu_registers[REG_PC];}
 	void nextCycle();
 
@@ -78,26 +78,26 @@ public:
     //STATIC: only one processor at this time..
     Word getId() const { return 0; }
     Word Id() const { return 0; }
-	
+
     bool interruptsEnabled() { return !(bool)((cpu_registers[REG_CPSR] >> I_POS) & 1);}
     bool timerEnabled() { return !(bool)((cpu_registers[REG_CPSR] >> F_POS) & 1);}
     bool exceptionRaised() { return wasException; }
 
     //coprocessor_interface *getCopInt() {return cpint;}
     cp15* getCP15() {return coproc;}
-	
+
     void setEndianess(bool bigEndian) {BIGEND_sig = bigEndian;}	//system is set little endian by default, use this method to change the setting
     ProcessorStatus getStatus() {return status;}
     Word *getRegister(Byte reg) {return &cpu_registers[reg];}
-	
+
     Word *getRegList(){return cpu_registers;}
 
     Word *getVisibleRegister(Byte reg);
-	
+
     Word *getPipeline(unsigned int i) {return &pipeline[i];}
-	
+
     systemBus *getBus() {return bus;}
-	
+
     void getTLB(unsigned int index, Word * hi, Word * lo) const;
     Word getTLBHi(unsigned int index) const;
     Word getTLBLo(unsigned int index) const;
@@ -108,7 +108,7 @@ public:
     // processor could abort the execution cycle of coprocessors in case of interrupts or traps
     void cycle();
     void clockTick();
-	
+
     void AssertIRQ(unsigned int il);
     void DeassertIRQ(unsigned int il);
 
@@ -131,10 +131,10 @@ private:
     bool BIGEND_sig;
 
     bool wasException;
-	
+
 	ARMisa *execARM;
 	Thumbisa *execThumb;
-	
+
     size_t tlbSize;
     scoped_array<TLBEntry> tlb;
 
@@ -144,7 +144,7 @@ private:
 	bool condCheck();
     bool condCheck(Byte cond);
 	void barrelShifter(bool immediate, Byte byte, Byte half);
-	
+
 	void undefinedTrap();
 	void softwareInterruptTrap();
 	void dataAbortTrap();
@@ -160,7 +160,7 @@ private:
     void fetch();
     void decode() {}
 	void execute();
-	
+
     bool mapVirtual(Word vaddr, Word * paddr, Word accType, Word size = sizeof(Word));
     bool probeTLB(unsigned int * index, Word asid, Word vpn);
     void setTLBRegs(Word vaddr);
@@ -181,7 +181,7 @@ private:
 	void singleMemoryAccess(bool L);
 	void dataPsum(Word op1, Word op2, bool carry, bool sum, Word *dest, bool S);
 	void bitwiseReturn(Word *dest, bool S);
-	
+
 	void loadStore(bool load, bool P, bool U, bool B, bool W, Word* srcDst, Word* base, Word offset);
 
 	void setOP(string mnemonic, bool isARM){

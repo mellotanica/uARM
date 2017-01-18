@@ -20,7 +20,7 @@
  */
 
 /****************************************************************************
- * 
+ *
  * This module implements some classes used from the SystemBus for the
  * scheduling of device events (such as device operations completion and
  * interrupts generation).  They are: Event class, to keep track of single
@@ -55,7 +55,7 @@ void Event::AddBefore(Event * ev)
     next = ev;
 }
 
-// This method inserts an Event after another, linking the former to the 
+// This method inserts an Event after another, linking the former to the
 // successor of the latter
 void Event::InsAfter(Event * ev)
 {
@@ -119,7 +119,7 @@ uint64_t EventQueue::InsertQ(uint64_t tod, Word delay, Event::Callback callback)
         ins->AddBefore(head);
         head = ins;
     } else {
-        // should find place in queue: check lastIns to shorten search time 
+        // should find place in queue: check lastIns to shorten search time
         if (lastIns != NULL && !(ins->getDeadline() <= lastIns->getDeadline()))
             // can start from lastIns
             p = lastIns;
@@ -150,7 +150,7 @@ void EventQueue::RemoveHead()
         head = head->Next();
 
         if (p == lastIns)
-	    // reposition lastIns to the new head  
+	    // reposition lastIns to the new head
 	    lastIns = head;
 
 	delete p;

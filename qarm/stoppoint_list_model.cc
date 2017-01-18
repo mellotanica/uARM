@@ -52,7 +52,7 @@ int BaseStoppointListModel::rowCount(const QModelIndex& parent) const
 {
     if (!parent.isValid())
         return stoppoints->Size();
-    else 
+    else
         return 0;
 }
 
@@ -136,7 +136,7 @@ const char* const StoppointListModel::headers[StoppointListModel::N_COLUMNS] = {
 //    "Victims"
 };
 
-StoppointListModel::StoppointListModel(StoppointSet* spSet, 
+StoppointListModel::StoppointListModel(StoppointSet* spSet,
                                        const char* collectionName,
                                        char idPrefix,
                                        QObject* parent)
@@ -275,6 +275,7 @@ Qt::ItemFlags StoppointListModel::flags(const QModelIndex& index) const
 
 bool StoppointListModel::setData(const QModelIndex& index, const QVariant& value, int role)
 {
+    (void)value;
     if (!index.isValid())
         return false;
 
@@ -302,6 +303,7 @@ void StoppointListModel::onHit(size_t spIndex,
                                Word addr,
                                const processor* cpu)
 {
+    (void)stoppoint, (void)addr, (void)cpu;
     victims[spIndex] |= 1; // << cpu->getId();
 
     QModelIndex idIndex = index(spIndex, COLUMN_STOPPOINT_ID);

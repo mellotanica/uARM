@@ -1,7 +1,7 @@
 /* -*- mode: C++; c-basic-offset: 4; indent-tabs-mode: nil -*- */
 
 #ifndef BASE_ERROR_H
-#define BASEs_ERROR_H
+#define BASE_ERROR_H
 
 // INFO: needed for Panic();
 

@@ -57,7 +57,7 @@ bool SignAdd(Word *dest, SWord a1, SWord a2);
 
 
 // This function subtracts the _signed_ quantity s2 from s1, puts result
-// into dest (casting it to unsigned), and returns TRUE if a underflow 
+// into dest (casting it to unsigned), and returns TRUE if a underflow
 // occurred, FALSE otherwise
 bool SignSub(Word *dest, SWord s1, SWord s2);
 

@@ -41,9 +41,9 @@ extern "C"{
 
 HexView::HexView(Word start, Word end, machine *mac, QWidget* parent)
     : QPlainTextEdit(parent),
+      mac(mac),
       start(start),
       end(end),
-      mac(mac),
       length(((end - start) >> 2) + 1),
       invalidByteRepr(QString("%1%2")
                       .arg(QChar(kInvalidLocationChar))
@@ -102,7 +102,7 @@ void HexView::Refresh()
     buf.reserve(length * kCharsPerWord);
 
     for (Word addr = start; addr <= end && addr >= start; addr += WS) {
-        Word data;
+        Word data = 0;
         unsigned int wi = (addr - start) >> 2;
         if (wi && !(wi % kWordsPerRow)){ //no more bytes to print, add disassembly
             if(data != 0 && data){
@@ -220,6 +220,7 @@ void HexView::keyPressEvent(QKeyEvent* event)
 }
 
 void HexView::mouseDoubleClickEvent(QMouseEvent *event){
+    (void)event;
     emit doubleClicked(dataAtCursor());
 }
 

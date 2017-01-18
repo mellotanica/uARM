@@ -20,7 +20,7 @@
  */
 
 /****************************************************************************
- * 
+ *
  * This module contains constant & macro definitions useful for block devices
  * handling and for file identification.
  *
@@ -32,7 +32,7 @@
 // tape markers
 #define TAPESTART	3
 #define TAPEEOB	2
-#define TAPEEOF	1 
+#define TAPEEOF	1
 #define TAPEEOT	0
 
 

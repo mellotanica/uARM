@@ -40,7 +40,7 @@ class procDisplay : public QWidget
     Q_OBJECT
 public:
     explicit procDisplay(QWidget *parent = 0);
-        
+
 public slots:
     void resetLabels(int val = 0);
     void updateLabels(Word *cpu, Word *cp15, Word *pipeline, Word todH, Word todL, Word timer, QString ass);

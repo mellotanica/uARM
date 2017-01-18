@@ -81,7 +81,7 @@ int TLBModel::rowCount(const QModelIndex& parent) const
 {
     if (!parent.isValid())
         return MC_Holder::getInstance()->getConfig()->getTLBSize();
-    else 
+    else
         return 0;
 }
 

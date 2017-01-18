@@ -1,7 +1,9 @@
 #ifndef ELF2ARM_H
 #define ELF2ARM_H
 
+#ifndef MKDEV_BUILD
 #include "services/symbol_table.h"
+#endif
 #include "armProc/aout.h"
 
 #ifdef MACOS_BUILD
@@ -41,7 +43,7 @@ public:
     Byte readByte() {return (address < size ? buf[address++] : 0);}
 
 private:
-    int address;
+    unsigned int address;
     Word size;
     uint8_t *buf;
 };
@@ -74,7 +76,7 @@ public:
     uint32_t header[N_AOUT_HDR_ENT];
 private:
     Word dsize, tsize;
-    int daddr, taddr;
+    unsigned int daddr, taddr;
     uint8_t *dbuf, *tbuf;
 #ifndef MKDEV_BUILD
     SymbolTable *stab;

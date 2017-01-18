@@ -30,15 +30,15 @@
 #include "armProc/machine_config.h"
 
 ramView::ramView(machine *mac, QWidget *parent) :
-    offset(false),
-    QWidget(parent)
+    QWidget(parent),
+    offset(false)
 {
     initRamView(mac);
 }
 
 ramView::ramView(machine *mac, Word start, Word end, QString label, bool offset, QWidget *parent):
-    offset(offset),
-    QWidget(parent)
+    QWidget(parent),
+    offset(offset)
 {
     initRamView(mac);
 
@@ -184,9 +184,9 @@ void ramView::visualize(){
             }
             char *message;
             if(start > end){
-                message = "Start address cannot be higher than End address...";
+                message = (char *)"Start address cannot be higher than End address...";
             } else {
-                message = "Memory segment too large,\n max displayble size: 10 KB";
+                message = (char *)"Memory segment too large,\n max displayble size: 10 KB";
             }
             QarmMessageBox *warning = new QarmMessageBox(QarmMessageBox::WARNING, "Warning", message, this);
             warning->show();

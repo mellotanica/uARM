@@ -25,7 +25,7 @@
 #include "Thumbisa.h"
 
 void Thumbisa::execute(Byte hi, Byte low, HalfWord instr){
-	
+
     (*this.*main_table[hi][low])(instr);
 }
 
@@ -276,7 +276,7 @@ void Thumbisa::CMPH(HalfWord instr){
 
 void Thumbisa::DP(HalfWord instr){	//data processing, triggers an ALU operation
 	p->debugThumb(__FUNCTION__);
-	
+
     Byte hi = (instr >> 8) & 3;
     Byte low = (instr >> 6) & 3;
     Word *rd = p->getVisibleRegister((Byte)instr&7);
@@ -551,14 +551,16 @@ void Thumbisa::SUB(HalfWord instr){
 }
 
 void Thumbisa::SWI(HalfWord instr){
+    (void)instr;
 	p->debugThumb(__FUNCTION__);
-	
+
         p->softwareInterruptTrap();
 }
 
 void Thumbisa::UND(HalfWord instr){
+    (void)instr;
 	p->debugThumb(__FUNCTION__);
-	
+
         p->undefinedTrap();
 }
 
