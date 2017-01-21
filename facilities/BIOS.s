@@ -328,13 +328,13 @@ HALT_LOOP:
     B HALT_LOOP
 
 haltMess:
-    .asciz "SYSTEM HALTED.\0"
+    .asciz "SYSTEM HALTED.\n"
 
 unknownMess:
-    .asciz "UNKNOWN SERVICE.\nKERNEL PANIC!\0"
+    .asciz "UNKNOWN SERVICE.\nKERNEL PANIC!\n"
 
 panicMess:
-    .asciz "KERNEL PANIC!\0"
+    .asciz "KERNEL PANIC!\n"
 
     .asciz "padd"
 
