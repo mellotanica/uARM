@@ -47,7 +47,7 @@ inline Word SWAP_ENDIANESS(Word wp){
     return ret;
 }
 
-qarm::qarm(QApplication *app, QFile *confFile, bool autorun, bool runandexit):
+qarm::qarm(QApplication *app, QFile *confFile, bool autorun, bool runandexit, bool gui):
     application(app)
 {
     // INFO: machine config init
@@ -174,7 +174,9 @@ qarm::qarm(QApplication *app, QFile *confFile, bool autorun, bool runandexit):
         }
         toolbar->poweron();
         toolbar->run();
-        toolbar->showT0();
+        if(gui){
+            toolbar->showT0();
+        }
     }
 }
 
