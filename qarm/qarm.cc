@@ -39,8 +39,6 @@
 #include <QIcon>
 #include <QWindow>
 
-#include <stdio.h>
-
 inline Word SWAP_ENDIANESS(Word wp){
     Byte *tp = (Byte *) &wp;
     Word ret = ((Byte) (*tp) | ((Byte) *(tp+1)) << 8 | ((Byte) *(tp+2)) << 16 | ((Byte) *(tp+3)) << 24);
@@ -62,15 +60,15 @@ qarm::qarm(QApplication *app, QFile *confFile, bool autorun, bool runandexit, bo
         	configDir.append(QString("/").append(DEFAULT_CONFIG_PATH));
     	}
     	QDir *defaultPath = new QDir(configDir);
-   	if(!defaultPath->exists())
+   	    if(!defaultPath->exists())
         	if(!defaultPath->mkdir(defaultPath->absolutePath())){   //config folder not accessible..
         	    QarmMessageBox *error = new QarmMessageBox(QarmMessageBox::CRITICAL, "Fatal", "Cannot create uarm folder in config directory!", this);
         	    error->show();
         	    app->exit();
         	}
-	configFilePath = defaultPath->absolutePath().toStdString()+"/"+DEFAULT_CONFIG_FILE;
+        configFilePath = defaultPath->absolutePath().toStdString()+"/"+DEFAULT_CONFIG_FILE;
     } else {
-	configFilePath = confFile->fileName().toStdString();
+        configFilePath = confFile->fileName().toStdString();
     }
 
     DebugSession *debugger;
@@ -108,6 +106,7 @@ qarm::qarm(QApplication *app, QFile *confFile, bool autorun, bool runandexit, bo
 
     clock = new QTimer(this);
 
+    // FIXME: slow
     bpWindow = new breakpoint_window(mac, this);
     structWindow = new structures_window(mac, this);
     tlbWindow = new tlb_window(mac, this);

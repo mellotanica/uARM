@@ -32,6 +32,7 @@ breakpoint_window::breakpoint_window(machine *mac, QWidget * parent, Qt::WindowF
     QWidget *mainWidget = new QWidget();
     QVBoxLayout *mainLayout = new QVBoxLayout(mainWidget);
 
+    // FIXME: slow
     addWidget = new AddBreakpointDialog(mainWidget);
 
     QWidget *buttonsW = new QWidget(mainWidget);
