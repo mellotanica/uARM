@@ -62,7 +62,7 @@ void readConfigs(){
 int main(int argn, char **argv){
     int i;
     QFile *configFile = NULL;
-    bool autorun = false, runandexit = false;
+    bool autorun = false, runandexit = false, gui = true;
     QApplication app(argn, argv);
     readConfigs();
     //FIXME: ugly debug dump
@@ -87,10 +87,17 @@ int main(int argn, char **argv){
             if(!strcmp(argv[i], "-x")){
                 runandexit = true;
             }
+            if(!strcmp(argv[i], "--no-gui")){
+                gui = false;
+            }
         }
     }
     app.setFont(monoLabel::getMonospaceFont(), "procDisplay");
-    qarm *wid = new qarm(&app, configFile, autorun, runandexit);
-    wid->show();
+    qarm *wid = new qarm(&app, configFile, autorun, runandexit, gui);
+    if(gui){
+        wid->show();
+    } else {
+        app.setQuitOnLastWindowClosed(false);
+    }
     return app.exec();
 }

@@ -40,6 +40,7 @@ AddBreakpointDialog::AddBreakpointDialog(QWidget* parent)
     QGridLayout* layout = new QGridLayout(this);
 
     layout->addWidget(new QLabel("ASID:", this), 0, 0);
+    // FIXME: slow
     asidEditor = new AsidLineEdit(this);
     asidEditor->setAccessibleName("Breakpoint ASID");
     asidEditor->setAsid(MC_Holder::getInstance()->getConfig()->getSymbolTableASID());

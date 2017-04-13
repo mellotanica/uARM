@@ -103,6 +103,7 @@ QValidator::State AsidValidator::validate(QString& input, int& pos) const
     return (value <= MachineConfig::MAX_ASID) ? Acceptable : Invalid;
 }
 
+// FIXME: slow
 AsidLineEdit::AsidLineEdit(QWidget* parent)
     : QLineEdit(parent)
 {
